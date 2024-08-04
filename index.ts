@@ -1,7 +1,9 @@
-import $ from 'jquery';
+import $ from "jquery"
+import div from "./components/div"
 
-function render() {
-    $('#root').html('Hello World');
+function render(children: HTMLElement) {
+    $("#root").html(children)
 }
 
 export default render
+export { div }
