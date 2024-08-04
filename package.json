@@ -1,11 +1,22 @@
 {
   "name": "eta",
+  "version": "0.1.0",
+  "author": "Gibson Murray",
+  "license": "MIT",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "dev": "bun run index.ts"
+  },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/jquery": "^3.5.30"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "gsap": "^3.12.5",
+    "jquery": "^3.7.1"
   }
 }
