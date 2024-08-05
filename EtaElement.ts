@@ -1,6 +1,7 @@
 interface EtaElement {
     element: HTMLElement
 
+    /* -- METADATA -- */
     id: (value: string) => EtaElement
     class: (value: string) => EtaElement
     style: (value: CSSStyleDeclaration) => EtaElement
@@ -9,7 +10,138 @@ interface EtaElement {
     data: (value: string) => EtaElement
     alt: (value: string) => EtaElement
     title: (value: string) => EtaElement
-    // CSS properties
+
+    /* -- EVENTS -- */
+
+    // Clipboard Events
+    onCopy: (callback: (event: ClipboardEvent) => void) => EtaElement
+    onCut: (callback: (event: ClipboardEvent) => void) => EtaElement
+    onPaste: (callback: (event: ClipboardEvent) => void) => EtaElement
+
+    // Composition Events
+    onCompositionStart: (
+        callback: (event: CompositionEvent) => void
+    ) => EtaElement
+    onCompositionUpdate: (
+        callback: (event: CompositionEvent) => void
+    ) => EtaElement
+    onCompositionEnd: (
+        callback: (event: CompositionEvent) => void
+    ) => EtaElement
+
+    // Form Events
+    onChange: (callback: (event: Event) => void) => EtaElement
+    onInput: (callback: (event: Event) => void) => EtaElement
+    onSubmit: (callback: (event: Event) => void) => EtaElement
+    onInvalid: (callback: (event: Event) => void) => EtaElement
+    onReset: (callback: (event: Event) => void) => EtaElement
+
+    // Keyboard Events
+    onKeyDown: (callback: (event: KeyboardEvent) => void) => EtaElement
+    onKeyPress: (callback: (event: KeyboardEvent) => void) => EtaElement
+    onKeyUp: (callback: (event: KeyboardEvent) => void) => EtaElement
+
+    // Focus Events
+    onFocus: (callback: (event: FocusEvent) => void) => EtaElement
+    onBlur: (callback: (event: FocusEvent) => void) => EtaElement
+
+    // Mouse Events
+    onClick: (callback: (event: MouseEvent) => void) => EtaElement
+    onDoubleClick: (callback: (event: MouseEvent) => void) => EtaElement
+    onMouseDown: (callback: (event: MouseEvent) => void) => EtaElement
+    onMouseUp: (callback: (event: MouseEvent) => void) => EtaElement
+    onMouseEnter: (callback: (event: MouseEvent) => void) => EtaElement
+    onMouseLeave: (callback: (event: MouseEvent) => void) => EtaElement
+    onMouseMove: (callback: (event: MouseEvent) => void) => EtaElement
+    onMouseOut: (callback: (event: MouseEvent) => void) => EtaElement
+    onMouseOver: (callback: (event: MouseEvent) => void) => EtaElement
+
+    // Pointer Events
+    onPointerOver: (callback: (event: PointerEvent) => void) => EtaElement
+    onPointerEnter: (callback: (event: PointerEvent) => void) => EtaElement
+    onPointerDown: (callback: (event: PointerEvent) => void) => EtaElement
+    onPointerMove: (callback: (event: PointerEvent) => void) => EtaElement
+    onPointerUp: (callback: (event: PointerEvent) => void) => EtaElement
+    onPointerCancel: (callback: (event: PointerEvent) => void) => EtaElement
+    onPointerOut: (callback: (event: PointerEvent) => void) => EtaElement
+    onPointerLeave: (callback: (event: PointerEvent) => void) => EtaElement
+    onGotPointerCapture: (callback: (event: PointerEvent) => void) => EtaElement
+    onLostPointerCapture: (
+        callback: (event: PointerEvent) => void
+    ) => EtaElement
+
+    // Touch Events
+    onTouchStart: (callback: (event: TouchEvent) => void) => EtaElement
+    onTouchMove: (callback: (event: TouchEvent) => void) => EtaElement
+    onTouchEnd: (callback: (event: TouchEvent) => void) => EtaElement
+    onTouchCancel: (callback: (event: TouchEvent) => void) => EtaElement
+
+    // UI Events
+    onScroll: (callback: (event: Event) => void) => EtaElement
+    onResize: (callback: (event: UIEvent) => void) => EtaElement
+
+    // Wheel Events
+    onWheel: (callback: (event: WheelEvent) => void) => EtaElement
+
+    // Drag Events
+    onDrag: (callback: (event: DragEvent) => void) => EtaElement
+    onDragEnd: (callback: (event: DragEvent) => void) => EtaElement
+    onDragEnter: (callback: (event: DragEvent) => void) => EtaElement
+    onDragExit: (callback: (event: DragEvent) => void) => EtaElement
+    onDragLeave: (callback: (event: DragEvent) => void) => EtaElement
+    onDragOver: (callback: (event: DragEvent) => void) => EtaElement
+    onDragStart: (callback: (event: DragEvent) => void) => EtaElement
+    onDrop: (callback: (event: DragEvent) => void) => EtaElement
+
+    // Media Events
+    onAbort: (callback: (event: Event) => void) => EtaElement
+    onCanPlay: (callback: (event: Event) => void) => EtaElement
+    onCanPlayThrough: (callback: (event: Event) => void) => EtaElement
+    onDurationChange: (callback: (event: Event) => void) => EtaElement
+    onEmptied: (callback: (event: Event) => void) => EtaElement
+    onEncrypted: (callback: (event: Event) => void) => EtaElement
+    onEnded: (callback: (event: Event) => void) => EtaElement
+    onLoadedData: (callback: (event: Event) => void) => EtaElement
+    onLoadedMetadata: (callback: (event: Event) => void) => EtaElement
+    onLoadStart: (callback: (event: Event) => void) => EtaElement
+    onPause: (callback: (event: Event) => void) => EtaElement
+    onPlay: (callback: (event: Event) => void) => EtaElement
+    onPlaying: (callback: (event: Event) => void) => EtaElement
+    onProgress: (callback: (event: Event) => void) => EtaElement
+    onRateChange: (callback: (event: Event) => void) => EtaElement
+    onSeeked: (callback: (event: Event) => void) => EtaElement
+    onSeeking: (callback: (event: Event) => void) => EtaElement
+    onStalled: (callback: (event: Event) => void) => EtaElement
+    onSuspend: (callback: (event: Event) => void) => EtaElement
+    onTimeUpdate: (callback: (event: Event) => void) => EtaElement
+    onVolumeChange: (callback: (event: Event) => void) => EtaElement
+    onWaiting: (callback: (event: Event) => void) => EtaElement
+
+    // Image Events
+    onLoad: (callback: (event: Event) => void) => EtaElement
+    onError: (callback: (event: Event) => void) => EtaElement
+
+    // Animation Events
+    onAnimationStart: (callback: (event: AnimationEvent) => void) => EtaElement
+    onAnimationEnd: (callback: (event: AnimationEvent) => void) => EtaElement
+    onAnimationIteration: (
+        callback: (event: AnimationEvent) => void
+    ) => EtaElement
+
+    // Transition Events
+    onTransitionEnd: (callback: (event: TransitionEvent) => void) => EtaElement
+
+    // Other Events
+    onMessage: (callback: (event: MessageEvent) => void) => EtaElement
+    onStorage: (callback: (event: StorageEvent) => void) => EtaElement
+    onHashChange: (callback: (event: Event) => void) => EtaElement
+    onPopState: (callback: (event: PopStateEvent) => void) => EtaElement
+    onPageShow: (callback: (event: PageTransitionEvent) => void) => EtaElement
+    onPageHide: (callback: (event: PageTransitionEvent) => void) => EtaElement
+    onOffline: (callback: (event: Event) => void) => EtaElement
+    onOnline: (callback: (event: Event) => void) => EtaElement
+
+    /* -- CSS PROPERTIES -- */
     accentColor: (value: Color | string) => EtaElement
     alignContent: (value: AlignContent) => EtaElement
     alignItems: (value: AlignItems) => EtaElement
@@ -110,22 +242,22 @@ interface EtaElement {
     clipPath: (value: string) => EtaElement
     color: (value: Color | string) => EtaElement
     columnCount: (value: number | ColumnCount) => EtaElement
-    columnFill: (value: "auto" | "balance" | "balance-all") => EtaElement
+    columnFill: (value: ColumnFill) => EtaElement
     columnGap: (value: string | number) => EtaElement
     columnRule: (value: string) => EtaElement
     columnRuleColor: (value: Color | string) => EtaElement
     columnRuleStyle: (value: BorderStyle) => EtaElement
     columnRuleWidth: (value: string | number) => EtaElement
-    columnSpan: (value: "none" | "all") => EtaElement
+    columnSpan: (value: ColumnSpan) => EtaElement
     columnWidth: (value: string | number) => EtaElement
     columns: (value: string) => EtaElement
     content: (value: string) => EtaElement
     counterIncrement: (value: string) => EtaElement
     counterReset: (value: string) => EtaElement
     cursor: (value: string) => EtaElement
-    direction: (value: "ltr" | "rtl" | "initial" | "inherit") => EtaElement
+    direction: (value: Direction) => EtaElement
     display: (value: string) => EtaElement
-    emptyCells: (value: "show" | "hide" | "initial" | "inherit") => EtaElement
+    emptyCells: (value: EmptyCells) => EtaElement
     filter: (value: string) => EtaElement
     flex: (value: string) => EtaElement
     flexBasis: (value: string | number) => EtaElement
@@ -134,46 +266,29 @@ interface EtaElement {
     flexGrow: (value: number) => EtaElement
     flexShrink: (value: number) => EtaElement
     flexWrap: (value: FlexWrap) => EtaElement
-    float: (
-        value: "none" | "left" | "right" | "initial" | "inherit"
-    ) => EtaElement
+    float: (value: Float) => EtaElement
     font: (value: string) => EtaElement
     fontFamily: (value: string) => EtaElement
     fontFeatureSettings: (value: string) => EtaElement
-    fontKerning: (value: "auto" | "normal" | "none") => EtaElement
+    fontKerning: (value: FontKerning) => EtaElement
     fontLanguageOverride: (value: string) => EtaElement
     fontSize: (value: string | number | FontSize) => EtaElement
     fontSizeAdjust: (value: number | "none") => EtaElement
     fontStretch: (value: string) => EtaElement
-    fontStyle: (
-        value: "normal" | "italic" | "oblique" | "initial" | "inherit"
-    ) => EtaElement
+    fontStyle: (value: FontStyle) => EtaElement
     fontSynthesis: (value: string) => EtaElement
     fontVariant: (value: string) => EtaElement
-    fontVariantCaps: (
-        value:
-            | "normal"
-            | "small-caps"
-            | "all-small-caps"
-            | "petite-caps"
-            | "all-petite-caps"
-            | "unicase"
-            | "titling-caps"
-    ) => EtaElement
+    fontVariantCaps: (value: FontVariantCaps) => EtaElement
     fontVariantEastAsian: (value: string) => EtaElement
     fontVariantLigatures: (value: string) => EtaElement
     fontVariantNumeric: (value: string) => EtaElement
-    fontVariantPosition: (
-        value: "normal" | "sub" | "super" | "initial" | "inherit"
-    ) => EtaElement
+    fontVariantPosition: (value: FontVariantPosition) => EtaElement
     fontWeight: (value: string | number) => EtaElement
     gap: (value: string | number) => EtaElement
     grid: (value: string) => EtaElement
     gridArea: (value: string) => EtaElement
     gridAutoColumns: (value: string) => EtaElement
-    gridAutoFlow: (
-        value: "row" | "column" | "dense" | "row dense" | "column dense"
-    ) => EtaElement
+    gridAutoFlow: (value: GridAutoFlow) => EtaElement
     gridAutoRows: (value: string) => EtaElement
     gridColumn: (value: string) => EtaElement
     gridColumnEnd: (value: string) => EtaElement
@@ -190,11 +305,9 @@ interface EtaElement {
     gridTemplateRows: (value: string) => EtaElement
     hangingPunctuation: (value: string) => EtaElement
     height: (value: string | number) => EtaElement
-    hyphens: (
-        value: "none" | "manual" | "auto" | "initial" | "inherit"
-    ) => EtaElement
+    hyphens: (value: Hyphens) => EtaElement
     imageOrientation: (value: string) => EtaElement
-    imageRendering: (value: "auto" | "crisp-edges" | "pixelated") => EtaElement
+    imageRendering: (value: ImageRendering) => EtaElement
     imageResolution: (value: string) => EtaElement
     initialLetter: (value: string) => EtaElement
     inlineSize: (value: string | number) => EtaElement
@@ -205,65 +318,17 @@ interface EtaElement {
     insetInline: (value: string | number) => EtaElement
     insetInlineEnd: (value: string | number) => EtaElement
     insetInlineStart: (value: string | number) => EtaElement
-    isolation: (value: "auto" | "isolate" | "initial" | "inherit") => EtaElement
-    justifyContent: (
-        value:
-            | "flex-start"
-            | "flex-end"
-            | "center"
-            | "space-between"
-            | "space-around"
-            | "space-evenly"
-            | "initial"
-            | "inherit"
-    ) => EtaElement
-    justifyItems: (
-        value:
-            | "auto"
-            | "normal"
-            | "stretch"
-            | "center"
-            | "start"
-            | "end"
-            | "flex-start"
-            | "flex-end"
-            | "self-start"
-            | "self-end"
-            | "left"
-            | "right"
-            | "baseline"
-            | "initial"
-            | "inherit"
-    ) => EtaElement
-    justifySelf: (
-        value:
-            | "auto"
-            | "normal"
-            | "stretch"
-            | "center"
-            | "start"
-            | "end"
-            | "flex-start"
-            | "flex-end"
-            | "self-start"
-            | "self-end"
-            | "left"
-            | "right"
-            | "baseline"
-            | "initial"
-            | "inherit"
-    ) => EtaElement
+    isolation: (value: Isolation) => EtaElement
+    justifyContent: (value: JustifyContent) => EtaElement
+    justifyItems: (value: JustifyItems) => EtaElement
+    justifySelf: (value: JustifySelf) => EtaElement
     left: (value: string | number) => EtaElement
     letterSpacing: (value: string | number) => EtaElement
-    lineBreak: (
-        value: "auto" | "loose" | "normal" | "strict" | "anywhere"
-    ) => EtaElement
+    lineBreak: (value: LineBreak) => EtaElement
     lineHeight: (value: string | number) => EtaElement
     listStyle: (value: string) => EtaElement
     listStyleImage: (value: string) => EtaElement
-    listStylePosition: (
-        value: "inside" | "outside" | "initial" | "inherit"
-    ) => EtaElement
+    listStylePosition: (value: ListStylePosition) => EtaElement
     listStyleType: (value: string) => EtaElement
     margin: (value: string | number) => EtaElement
     marginBlock: (value: string | number) => EtaElement
@@ -278,7 +343,7 @@ interface EtaElement {
     marginTop: (value: string | number) => EtaElement
     mask: (value: string) => EtaElement
     maskBorder: (value: string) => EtaElement
-    maskBorderMode: (value: "luminance" | "alpha") => EtaElement
+    maskBorderMode: (value: MaskBorderMode) => EtaElement
     maskBorderOutset: (value: string | number) => EtaElement
     maskBorderRepeat: (value: string) => EtaElement
     maskBorderSlice: (value: string | number) => EtaElement
@@ -317,7 +382,7 @@ interface EtaElement {
     outlineStyle: (value: OutlineStyle) => EtaElement
     outlineWidth: (value: string | number) => EtaElement
     overflow: (value: Overflow) => EtaElement
-    overflowAnchor: (value: "auto" | "none") => EtaElement
+    overflowAnchor: (value: OverflowAnchor) => EtaElement
     overflowWrap: (value: OverflowWrap) => EtaElement
     overflowX: (value: OverflowX) => EtaElement
     overflowY: (value: OverflowY) => EtaElement
@@ -378,7 +443,7 @@ interface EtaElement {
     scrollPaddingRight: (value: string | number) => EtaElement
     scrollPaddingTop: (value: string | number) => EtaElement
     scrollSnapAlign: (value: string) => EtaElement
-    scrollSnapStop: (value: "normal" | "always") => EtaElement
+    scrollSnapStop: (value: ScrollSnapStop) => EtaElement
     scrollSnapType: (value: string) => EtaElement
     shapeImageThreshold: (value: number) => EtaElement
     shapeMargin: (value: string | number) => EtaElement
@@ -409,14 +474,7 @@ interface EtaElement {
     top: (value: string | number) => EtaElement
     touchAction: (value: TouchAction) => EtaElement
     transform: (value: string) => EtaElement
-    transformBox: (
-        value:
-            | "content-box"
-            | "border-box"
-            | "fill-box"
-            | "stroke-box"
-            | "view-box"
-    ) => EtaElement
+    transformBox: (value: TransformBox) => EtaElement
     transformOrigin: (value: string) => EtaElement
     transformStyle: (value: TransformStyle) => EtaElement
     transition: (value: string) => EtaElement
@@ -626,7 +684,20 @@ type FlexDirection =
     | "initial"
     | "inherit"
 type FlexWrap = "nowrap" | "wrap" | "wrap-reverse" | "initial" | "inherit"
-
+type Float = "none" | "left" | "right" | "initial" | "inherit"
+type FontStyle = "normal" | "italic" | "oblique" | "initial" | "inherit"
+type FontVariantCaps =
+    | "normal"
+    | "small-caps"
+    | "all-small-caps"
+    | "petite-caps"
+    | "all-petite-caps"
+    | "unicase"
+    | "titling-caps"
+    | "initial"
+    | "inherit"
+    | "unset"
+type FontVariantPosition = "normal" | "sub" | "super" | "initial" | "inherit"
 type Filter =
     | "blur"
     | "brightness"
@@ -640,10 +711,10 @@ type Filter =
     | "sepia"
     | "initial"
     | "inherit"
-
+type GridAutoFlow = "row" | "column" | "dense" | "row dense" | "column dense"
+type Hyphens = "none" | "manual" | "auto" | "initial" | "inherit"
 type PositionValue = "left" | "right" | "top" | "bottom" | "center"
 type URL = string
-
 type FontSize =
     | "xx-small"
     | "x-small"
@@ -671,3 +742,191 @@ type TextTransform =
     | "lowercase"
     | "initial"
     | "inherit"
+type TextUnderlinePosition =
+    | "auto"
+    | "under"
+    | "left"
+    | "right"
+    | "initial"
+    | "inherit"
+type WhiteSpace =
+    | "normal"
+    | "nowrap"
+    | "pre"
+    | "pre-line"
+    | "pre-wrap"
+    | "initial"
+    | "inherit"
+type WordBreak =
+    | "normal"
+    | "break-all"
+    | "keep-all"
+    | "break-word"
+    | "initial"
+    | "inherit"
+type WordWrap = "normal" | "break-word" | "initial" | "inherit"
+type WritingMode =
+    | "horizontal-tb"
+    | "vertical-rl"
+    | "vertical-lr"
+    | "sideways-rl"
+    | "sideways-lr"
+type ColumnFill = "balance" | "auto"
+type ColumnSpan = "none" | "all"
+type Direction = "ltr" | "rtl" | "initial" | "inherit"
+type EmptyCells = "show" | "hide" | "initial" | "inherit"
+type Isolation = "auto" | "isolate" | "initial" | "inherit"
+type JustifyContent =
+    | "flex-start"
+    | "flex-end"
+    | "center"
+    | "space-between"
+    | "space-around"
+    | "space-evenly"
+    | "initial"
+    | "inherit"
+type JustifyItems =
+    | "auto"
+    | "normal"
+    | "stretch"
+    | "center"
+    | "start"
+    | "end"
+    | "flex-start"
+    | "flex-end"
+    | "self-start"
+    | "self-end"
+    | "left"
+    | "right"
+    | "baseline"
+    | "first baseline"
+    | "last baseline"
+    | "safe center"
+    | "unsafe center"
+    | "legacy right"
+    | "legacy left"
+    | "legacy center"
+    | "legacy stretch"
+    | "initial"
+    | "inherit"
+type JustifySelf = JustifyItems
+type LineBreak = "auto" | "loose" | "normal" | "strict" | "anywhere"
+type ImageRendering = "auto" | "crisp-edges" | "pixelated"
+type ListStylePosition = "inside" | "outside" | "initial" | "inherit"
+type MaskBorderMode = "alpha" | "luminance"
+type ObjectFit = "fill" | "contain" | "cover" | "none" | "scale-down"
+type MixBlendMode =
+    | "normal"
+    | "multiply"
+    | "screen"
+    | "overlay"
+    | "darken"
+    | "lighten"
+    | "color-dodge"
+    | "color-burn"
+    | "hard-light"
+    | "soft-light"
+    | "difference"
+    | "exclusion"
+    | "hue"
+    | "saturation"
+    | "color"
+    | "luminosity"
+type Overflow = "visible" | "hidden" | "scroll" | "auto" | "initial" | "inherit"
+type OverflowAnchor = "none" | "auto"
+type OverflowWrap = "normal" | "break-word" | "anywhere"
+type OverflowX =
+    | "visible"
+    | "hidden"
+    | "scroll"
+    | "auto"
+    | "initial"
+    | "inherit"
+type OverflowY =
+    | "visible"
+    | "hidden"
+    | "scroll"
+    | "auto"
+    | "initial"
+    | "inherit"
+type OverscrollBehavior = "auto" | "contain" | "none"
+type PageBreakAfter = BreakAfter
+type PageBreakBefore = BreakBefore
+type PageBreakInside = BreakInside
+type PointerEvents = "auto" | "none" | "initial" | "inherit"
+type Position = "static" | "relative" | "absolute" | "fixed" | "sticky"
+type Resize =
+    | "none"
+    | "both"
+    | "horizontal"
+    | "vertical"
+    | "initial"
+    | "inherit"
+type ScrollBehavior = "auto" | "smooth"
+type ScrollSnapStop = "normal" | "always"
+type TableLayout = "auto" | "fixed" | "initial" | "inherit"
+type TextAlignLast =
+    | "auto"
+    | "left"
+    | "right"
+    | "center"
+    | "justify"
+    | "start"
+    | "end"
+type TextCombineUpright = "none" | "all" | "digits" | "initial" | "inherit"
+type TextJustify =
+    | "auto"
+    | "inter-word"
+    | "inter-ideograph"
+    | "inter-cluster"
+    | "distribute"
+type TextOrientation =
+    | "mixed"
+    | "upright"
+    | "sideways"
+    | "sideways-right"
+    | "use-glyph-orientation"
+type TextRendering =
+    | "auto"
+    | "optimizeSpeed"
+    | "optimizeLegibility"
+    | "geometricPrecision"
+type UnicodeBidi =
+    | "normal"
+    | "embed"
+    | "isolate"
+    | "bidi-override"
+    | "isolate-override"
+    | "plaintext"
+type UserSelect = "auto" | "text" | "none" | "contain" | "all"
+type VerticalAlign =
+    | "baseline"
+    | "length"
+    | "sub"
+    | "super"
+    | "top"
+    | "text-top"
+    | "middle"
+    | "bottom"
+    | "text-bottom"
+    | "initial"
+    | "inherit"
+type Visibility = "visible" | "hidden" | "collapse" | "initial" | "inherit"
+type OutlineStyle =
+    | "none"
+    | "hidden"
+    | "dotted"
+    | "dashed"
+    | "solid"
+    | "double"
+    | "groove"
+    | "ridge"
+    | "inset"
+    | "outset"
+    | "initial"
+    | "inherit"
+type TextOverflow = "clip" | "ellipsis" | "initial" | "inherit"
+type TouchAction = "auto" | "none" | "pan-x" | "pan-y" | "manipulation"
+type TransformBox = "border-box" | "fill-box" | "view-box"
+type TransformStyle = "flat" | "preserve-3d"
+type FontKerning = "auto" | "normal" | "none"
