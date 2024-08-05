@@ -9,14 +9,12 @@
     "dev": "bun run index.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest",
-    "@types/jquery": "^3.5.30"
+    "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "gsap": "^3.12.5",
-    "jquery": "^3.7.1"
+    "gsap": "^3.12.5"
   }
 }

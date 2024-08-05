@@ -1,22 +1,16 @@
-import render, { div } from "../../index"
+import render from "../../index"
+import { div } from "../../elements"
 
 const newDiv = div(
-    ".test.test2",
     {
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        width: "100vw",
+        width: "100px",
+        height: "100px",
         backgroundColor: "red",
     },
     {
         onclick: () => {
-            console.log("clicked")
+            newDiv.moveTo(500, 500)
         },
-        onmouseenter: () => {
-            console.log("hovered")
-        }
     }
 )
 
