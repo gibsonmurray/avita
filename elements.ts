@@ -1,244 +1,172 @@
-import createElement from "./createElement"
-import type { Option } from "./eta-types"
+import type EtaElement from "./eta-types"
+import etaCreate from "./EtaElement"
 
-export function div(...options: Option[]): HTMLDivElement {
-    return createElement("div", ...options) as HTMLDivElement
+export function div(): EtaElement<HTMLDivElement> {
+    return etaCreate("div") as EtaElement<HTMLDivElement>
 }
 
-export function span(...options: Option[]): HTMLSpanElement {
-    return createElement("span", ...options) as HTMLSpanElement
+export function span(): EtaElement<HTMLSpanElement> {
+    return etaCreate("span") as EtaElement<HTMLSpanElement>
 }
 
-export function button(...options: Option[]): HTMLButtonElement {
-    return createElement("button", ...options) as HTMLButtonElement
+export function button(): EtaElement<HTMLButtonElement> {
+    return etaCreate("button") as EtaElement<HTMLButtonElement>
 }
 
-export function input(...options: Option[]): HTMLInputElement {
-    return createElement("input", ...options) as HTMLInputElement
+export function input(): EtaElement<HTMLInputElement> {
+    return etaCreate("input") as EtaElement<HTMLInputElement>
 }
 
-export function h1(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLHeadingElement {
-    return createElement("h1", ...options) as HTMLHeadingElement
+export function h1(): EtaElement<HTMLHeadingElement> {
+    return etaCreate("h1") as EtaElement<HTMLHeadingElement>
 }
 
-export function h2(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLHeadingElement {
-    return createElement("h2", ...options) as HTMLHeadingElement
+export function h2(): EtaElement<HTMLHeadingElement> {
+    return etaCreate("h2") as EtaElement<HTMLHeadingElement>
 }
 
-export function h3(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLHeadingElement {
-    return createElement("h3", ...options) as HTMLHeadingElement
+export function h3(): EtaElement<HTMLHeadingElement> {
+    return etaCreate("h3") as EtaElement<HTMLHeadingElement>
 }
 
-export function h4(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLHeadingElement {
-    return createElement("h4", ...options) as HTMLHeadingElement
+export function h4(): EtaElement<HTMLHeadingElement> {
+    return etaCreate("h4") as EtaElement<HTMLHeadingElement>
 }
 
-export function h5(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLHeadingElement {
-    return createElement("h5", ...options) as HTMLHeadingElement
+export function h5(): EtaElement<HTMLHeadingElement> {
+    return etaCreate("h5") as EtaElement<HTMLHeadingElement>
 }
 
-export function h6(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLHeadingElement {
-    return createElement("h6", ...options) as HTMLHeadingElement
+export function h6(): EtaElement<HTMLHeadingElement> {
+    return etaCreate("h6") as EtaElement<HTMLHeadingElement>
 }
 
-export function p(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLParagraphElement {
-    return createElement("p", ...options) as HTMLParagraphElement
+export function p(): EtaElement<HTMLParagraphElement> {
+    return etaCreate("p") as EtaElement<HTMLParagraphElement>
 }
 
-export function ul(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLUListElement {
-    return createElement("ul", ...options) as HTMLUListElement
+export function ul(): EtaElement<HTMLUListElement> {
+    return etaCreate("ul") as EtaElement<HTMLUListElement>
 }
 
-export function ol(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLOListElement {
-    return createElement("ol", ...options) as HTMLOListElement
+export function ol(): EtaElement<HTMLOListElement> {
+    return etaCreate("ol") as EtaElement<HTMLOListElement>
 }
 
-export function li(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLLIElement {
-    return createElement("li", ...options) as HTMLLIElement
+export function li(): EtaElement<HTMLLIElement> {
+    return etaCreate("li") as EtaElement<HTMLLIElement>
 }
 
-export function img(...options: Option[]): HTMLImageElement {
-    return createElement("img", ...options) as HTMLImageElement
+export function img(): EtaElement<HTMLImageElement> {
+    return etaCreate("img") as EtaElement<HTMLImageElement>
 }
 
-export function iframe(...options: Option[]): HTMLIFrameElement {
-    return createElement("iframe", ...options) as HTMLIFrameElement
+export function iframe(): EtaElement<HTMLIFrameElement> {
+    return etaCreate("iframe") as EtaElement<HTMLIFrameElement>
 }
 
-export function a(...options: Option[]): HTMLAnchorElement {
-    return createElement("a", ...options) as HTMLAnchorElement
+export function a(): EtaElement<HTMLAnchorElement> {
+    return etaCreate("a") as EtaElement<HTMLAnchorElement>
 }
 
-export function form(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLFormElement {
-    return createElement("form", ...options) as HTMLFormElement
+export function form(): EtaElement<HTMLFormElement> {
+    return etaCreate("form") as EtaElement<HTMLFormElement>
 }
 
-export function label(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLLabelElement {
-    return createElement("label", ...options) as HTMLLabelElement
+export function label(): EtaElement<HTMLLabelElement> {
+    return etaCreate("label") as EtaElement<HTMLLabelElement>
 }
 
-export function textarea(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLTextAreaElement {
-    return createElement("textarea", ...options) as HTMLTextAreaElement
+export function textarea(): EtaElement<HTMLTextAreaElement> {
+    return etaCreate("textarea") as EtaElement<HTMLTextAreaElement>
 }
 
-export function select(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLSelectElement {
-    return createElement("select", ...options) as HTMLSelectElement
+export function select(): EtaElement<HTMLSelectElement> {
+    return etaCreate("select") as EtaElement<HTMLSelectElement>
 }
 
-export function option(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLOptionElement {
-    return createElement("option", ...options) as HTMLOptionElement
+export function option(): EtaElement<HTMLOptionElement> {
+    return etaCreate("option") as EtaElement<HTMLOptionElement>
 }
 
-export function table(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLTableElement {
-    return createElement("table", ...options) as HTMLTableElement
+export function table(): EtaElement<HTMLTableElement> {
+    return etaCreate("table") as EtaElement<HTMLTableElement>
 }
 
-export function thead(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLTableSectionElement {
-    return createElement("thead", ...options) as HTMLTableSectionElement
+export function thead(): EtaElement<HTMLTableSectionElement> {
+    return etaCreate("thead") as EtaElement<HTMLTableSectionElement>
 }
 
-export function tbody(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLTableSectionElement {
-    return createElement("tbody", ...options) as HTMLTableSectionElement
+export function tbody(): EtaElement<HTMLTableSectionElement> {
+    return etaCreate("tbody") as EtaElement<HTMLTableSectionElement>
 }
 
-export function tr(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLTableRowElement {
-    return createElement("tr", ...options) as HTMLTableRowElement
+export function tr(): EtaElement<HTMLTableRowElement> {
+    return etaCreate("tr") as EtaElement<HTMLTableRowElement>
 }
 
-export function th(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLTableCellElement {
-    return createElement("th", ...options) as HTMLTableCellElement
+export function th(): EtaElement<HTMLTableCellElement> {
+    return etaCreate("th") as EtaElement<HTMLTableCellElement>
 }
 
-export function td(
-    ...options: Array<string | HTMLElement | Object>
-): HTMLTableCellElement {
-    return createElement("td", ...options) as HTMLTableCellElement
+export function td(): EtaElement<HTMLTableCellElement> {
+    return etaCreate("td") as EtaElement<HTMLTableCellElement>
 }
 
-export function nav(...options: Option[]): HTMLElement {
-    return createElement("nav", ...options) as HTMLElement
+export function nav(): EtaElement<HTMLElement> {
+    return etaCreate("nav") as EtaElement<HTMLElement>
 }
 
-export function header(...options: Option[]): HTMLElement {
-    return createElement("header", ...options) as HTMLElement
+export function header(): EtaElement<HTMLElement> {
+    return etaCreate("header") as EtaElement<HTMLElement>
 }
 
-export function footer(...options: Option[]): HTMLElement {
-    return createElement("footer", ...options) as HTMLElement
+export function footer(): EtaElement<HTMLElement> {
+    return etaCreate("footer") as EtaElement<HTMLElement>
 }
 
-export function section(...options: Option[]): HTMLElement {
-    return createElement("section", ...options) as HTMLElement
+export function section(): EtaElement<HTMLElement> {
+    return etaCreate("section") as EtaElement<HTMLElement>
 }
 
-export function article(...options: Option[]): HTMLElement {
-    return createElement("article", ...options) as HTMLElement
+export function article(): EtaElement<HTMLElement> {
+    return etaCreate("article") as EtaElement<HTMLElement>
 }
 
-export function aside(...options: Option[]): HTMLElement {
-    return createElement("aside", ...options) as HTMLElement
+export function aside(): EtaElement<HTMLElement> {
+    return etaCreate("aside") as EtaElement<HTMLElement>
 }
 
-export function main(...options: Option[]): HTMLElement {
-    return createElement("main", ...options) as HTMLElement
+export function main(): EtaElement<HTMLElement> {
+    return etaCreate("main") as EtaElement<HTMLElement>
 }
 
-export function figure(...options: Option[]): HTMLElement {
-    return createElement("figure", ...options) as HTMLElement
+export function figure(): EtaElement<HTMLElement> {
+    return etaCreate("figure") as EtaElement<HTMLElement>
 }
 
-export function figcaption(...options: Option[]): HTMLElement {
-    return createElement("figcaption", ...options) as HTMLElement
+export function figcaption(): EtaElement<HTMLElement> {
+    return etaCreate("figcaption") as EtaElement<HTMLElement>
 }
 
-export function video(...options: Option[]): HTMLVideoElement {
-    return createElement("video", ...options) as HTMLVideoElement
+export function video(): EtaElement<HTMLVideoElement> {
+    return etaCreate("video") as EtaElement<HTMLVideoElement>
 }
 
-export function audio(...options: Option[]): HTMLAudioElement {
-    return createElement("audio", ...options) as HTMLAudioElement
+export function audio(): EtaElement<HTMLAudioElement> {
+    return etaCreate("audio") as EtaElement<HTMLAudioElement>
 }
 
-export function source(...options: Option[]): HTMLSourceElement {
-    return createElement("source", ...options) as HTMLSourceElement
+export function source(): EtaElement<HTMLSourceElement> {
+    return etaCreate("source") as EtaElement<HTMLSourceElement>
 }
 
-export function embed(...options: Option[]): HTMLEmbedElement {
-    return createElement("embed", ...options) as HTMLEmbedElement
+export function embed(): EtaElement<HTMLEmbedElement> {
+    return etaCreate("embed") as EtaElement<HTMLEmbedElement>
 }
 
-export function object(...options: Option[]): HTMLObjectElement {
-    return createElement("object", ...options) as HTMLObjectElement
+export function object(): EtaElement<HTMLObjectElement> {
+    return etaCreate("object") as EtaElement<HTMLObjectElement>
 }
 
-export function svg(...options: Option[]): SVGSVGElement {
-    return createElement("svg", ...options) as SVGSVGElement
-}
-
-export function path(...options: Option[]): SVGPathElement {
-    return createElement("path", ...options) as SVGPathElement
-}
-
-export function circle(...options: Option[]): SVGCircleElement {
-    return createElement("circle", ...options) as SVGCircleElement
-}
-
-export function rect(...options: Option[]): SVGRectElement {
-    return createElement("rect", ...options) as SVGRectElement
-}
-
-export function line(...options: Option[]): SVGLineElement {
-    return createElement("line", ...options) as SVGLineElement
-}
-
-export function polygon(...options: Option[]): SVGPolygonElement {
-    return createElement("polygon", ...options) as SVGPolygonElement
-}
-
-export function polyline(...options: Option[]): SVGPolylineElement {
-    return createElement("polyline", ...options) as SVGPolylineElement
-}
-
-export function ellipse(...options: Option[]): SVGEllipseElement {
-    return createElement("ellipse", ...options) as SVGEllipseElement
-}
+//TODO: SVGs

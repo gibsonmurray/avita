@@ -1,4 +1,4 @@
-import type { Option } from "./eta-types"
+type Option = string | HTMLElement | Object | Function
 
 export default function createElement(
     tagName: string,

@@ -17,6 +17,7 @@ export default interface EtaElement<T extends HTMLElement> {
     append: (element: EtaElement) => EtaElement
     prepend: (element: EtaElement) => EtaElement
     remove: () => EtaElement
+    parent: () => HTMLElement | null
     children: (elements: EtaElement[]) => EtaElement
     replace: (element: EtaElement) => EtaElement
 

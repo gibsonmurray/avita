@@ -72,6 +72,9 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.remove()
             return this
         },
+        parent(): HTMLElement | null {
+            return this.element.parentElement
+        },
         children(elements: EtaElement<HTMLElement>[]) {
             elements.forEach((element) => {
                 this.element.appendChild(element.element)
