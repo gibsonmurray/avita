@@ -1,5 +1,5 @@
 import createElement from "./createElement"
-import type { Option } from "./types"
+import type { Option } from "./eta-types"
 
 export function div(...options: Option[]): HTMLDivElement {
     return createElement("div", ...options) as HTMLDivElement

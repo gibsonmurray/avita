@@ -1,4 +1,4 @@
-import "./types"
+import "./eta-types"
 
 export default function render(children: HTMLElement) {
     const root = document.querySelector("#root")
