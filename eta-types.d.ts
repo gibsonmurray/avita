@@ -1,5 +1,5 @@
-interface EtaElement {
-    element: HTMLElement
+export default interface EtaElement<T extends HTMLElement> {
+    element: T
 
     /* -- METADATA -- */
     id: (value: string) => EtaElement
@@ -7,9 +7,18 @@ interface EtaElement {
     style: (value: CSSStyleDeclaration) => EtaElement
     src: (value: URL) => EtaElement
     href: (value: URL) => EtaElement
-    data: (value: string) => EtaElement
+    data: (key: string, value: string) => EtaElement
     alt: (value: string) => EtaElement
     title: (value: string) => EtaElement
+    text: (value: string) => EtaElement
+    html: (value: string) => EtaElement
+
+    /* -- DOM CHANGES -- */
+    append: (element: EtaElement) => EtaElement
+    prepend: (element: EtaElement) => EtaElement
+    remove: () => EtaElement
+    children: (elements: EtaElement[]) => EtaElement
+    replace: (element: EtaElement) => EtaElement
 
     /* -- EVENTS -- */
 
@@ -43,6 +52,8 @@ interface EtaElement {
 
     // Focus Events
     onFocus: (callback: (event: FocusEvent) => void) => EtaElement
+    onFocusIn: (callback: (event: FocusEvent) => void) => EtaElement
+    onFocusOut: (callback: (event: FocusEvent) => void) => EtaElement
     onBlur: (callback: (event: FocusEvent) => void) => EtaElement
 
     // Mouse Events
@@ -55,6 +66,7 @@ interface EtaElement {
     onMouseMove: (callback: (event: MouseEvent) => void) => EtaElement
     onMouseOut: (callback: (event: MouseEvent) => void) => EtaElement
     onMouseOver: (callback: (event: MouseEvent) => void) => EtaElement
+    onContextMenu: (callback: (event: MouseEvent) => void) => EtaElement
 
     // Pointer Events
     onPointerOver: (callback: (event: PointerEvent) => void) => EtaElement
@@ -87,7 +99,6 @@ interface EtaElement {
     onDrag: (callback: (event: DragEvent) => void) => EtaElement
     onDragEnd: (callback: (event: DragEvent) => void) => EtaElement
     onDragEnter: (callback: (event: DragEvent) => void) => EtaElement
-    onDragExit: (callback: (event: DragEvent) => void) => EtaElement
     onDragLeave: (callback: (event: DragEvent) => void) => EtaElement
     onDragOver: (callback: (event: DragEvent) => void) => EtaElement
     onDragStart: (callback: (event: DragEvent) => void) => EtaElement
@@ -131,16 +142,6 @@ interface EtaElement {
     // Transition Events
     onTransitionEnd: (callback: (event: TransitionEvent) => void) => EtaElement
 
-    // Other Events
-    onMessage: (callback: (event: MessageEvent) => void) => EtaElement
-    onStorage: (callback: (event: StorageEvent) => void) => EtaElement
-    onHashChange: (callback: (event: Event) => void) => EtaElement
-    onPopState: (callback: (event: PopStateEvent) => void) => EtaElement
-    onPageShow: (callback: (event: PageTransitionEvent) => void) => EtaElement
-    onPageHide: (callback: (event: PageTransitionEvent) => void) => EtaElement
-    onOffline: (callback: (event: Event) => void) => EtaElement
-    onOnline: (callback: (event: Event) => void) => EtaElement
-
     /* -- CSS PROPERTIES -- */
     accentColor: (value: Color | string) => EtaElement
     alignContent: (value: AlignContent) => EtaElement
@@ -156,6 +157,7 @@ interface EtaElement {
     animationName: (value: string) => EtaElement
     animationPlayState: (value: AnimationPlayState) => EtaElement
     animationTimingFunction: (value: AnimationTimingFunction) => EtaElement
+    appearance: (value: Appearance) => EtaElement
     aspectRatio: (value: string | number) => EtaElement
     backdropFilter: (value: BackdropFilter) => EtaElement
     backfaceVisibility: (value: BackfaceVisibility) => EtaElement
@@ -230,7 +232,6 @@ interface EtaElement {
     borderTopWidth: (value: string | number) => EtaElement
     borderWidth: (value: string | number) => EtaElement
     bottom: (value: string | number) => EtaElement
-    boxDecorationBreak: (value: BoxDecorationBreak) => EtaElement
     boxShadow: (value: string) => EtaElement
     boxSizing: (value: BoxSizing) => EtaElement
     breakAfter: (value: BreakAfter) => EtaElement
@@ -254,29 +255,27 @@ interface EtaElement {
     content: (value: string) => EtaElement
     counterIncrement: (value: string) => EtaElement
     counterReset: (value: string) => EtaElement
-    cursor: (value: string) => EtaElement
+    cursor: (value: Cursor) => EtaElement
     direction: (value: Direction) => EtaElement
-    display: (value: string) => EtaElement
+    display: (value: Display) => EtaElement
     emptyCells: (value: EmptyCells) => EtaElement
     filter: (value: string) => EtaElement
-    flex: (value: string) => EtaElement
+    flex: (value: string | Flex) => EtaElement
     flexBasis: (value: string | number) => EtaElement
     flexDirection: (value: FlexDirection) => EtaElement
     flexFlow: (value: string) => EtaElement
-    flexGrow: (value: number) => EtaElement
-    flexShrink: (value: number) => EtaElement
+    flexGrow: (value: string | number) => EtaElement
+    flexShrink: (value: string | number) => EtaElement
     flexWrap: (value: FlexWrap) => EtaElement
     float: (value: Float) => EtaElement
     font: (value: string) => EtaElement
     fontFamily: (value: string) => EtaElement
     fontFeatureSettings: (value: string) => EtaElement
     fontKerning: (value: FontKerning) => EtaElement
-    fontLanguageOverride: (value: string) => EtaElement
     fontSize: (value: string | number | FontSize) => EtaElement
     fontSizeAdjust: (value: number | "none") => EtaElement
     fontStretch: (value: string) => EtaElement
     fontStyle: (value: FontStyle) => EtaElement
-    fontSynthesis: (value: string) => EtaElement
     fontVariant: (value: string) => EtaElement
     fontVariantCaps: (value: FontVariantCaps) => EtaElement
     fontVariantEastAsian: (value: string) => EtaElement
@@ -292,24 +291,17 @@ interface EtaElement {
     gridAutoRows: (value: string) => EtaElement
     gridColumn: (value: string) => EtaElement
     gridColumnEnd: (value: string) => EtaElement
-    gridColumnGap: (value: string | number) => EtaElement
     gridColumnStart: (value: string) => EtaElement
-    gridGap: (value: string | number) => EtaElement
     gridRow: (value: string) => EtaElement
     gridRowEnd: (value: string) => EtaElement
-    gridRowGap: (value: string | number) => EtaElement
     gridRowStart: (value: string) => EtaElement
     gridTemplate: (value: string) => EtaElement
     gridTemplateAreas: (value: string) => EtaElement
     gridTemplateColumns: (value: string) => EtaElement
     gridTemplateRows: (value: string) => EtaElement
-    hangingPunctuation: (value: string) => EtaElement
     height: (value: string | number) => EtaElement
     hyphens: (value: Hyphens) => EtaElement
-    imageOrientation: (value: string) => EtaElement
     imageRendering: (value: ImageRendering) => EtaElement
-    imageResolution: (value: string) => EtaElement
-    initialLetter: (value: string) => EtaElement
     inlineSize: (value: string | number) => EtaElement
     inset: (value: string | number) => EtaElement
     insetBlock: (value: string | number) => EtaElement
@@ -329,7 +321,7 @@ interface EtaElement {
     listStyle: (value: string) => EtaElement
     listStyleImage: (value: string) => EtaElement
     listStylePosition: (value: ListStylePosition) => EtaElement
-    listStyleType: (value: string) => EtaElement
+    listStyleType: (value: ListStyleType) => EtaElement
     margin: (value: string | number) => EtaElement
     marginBlock: (value: string | number) => EtaElement
     marginBlockEnd: (value: string | number) => EtaElement
@@ -342,21 +334,12 @@ interface EtaElement {
     marginRight: (value: string | number) => EtaElement
     marginTop: (value: string | number) => EtaElement
     mask: (value: string) => EtaElement
-    maskBorder: (value: string) => EtaElement
-    maskBorderMode: (value: MaskBorderMode) => EtaElement
-    maskBorderOutset: (value: string | number) => EtaElement
-    maskBorderRepeat: (value: string) => EtaElement
-    maskBorderSlice: (value: string | number) => EtaElement
-    maskBorderSource: (value: string) => EtaElement
-    maskBorderWidth: (value: string | number) => EtaElement
-    maskClip: (value: string) => EtaElement
-    maskComposite: (value: string) => EtaElement
     maskImage: (value: string) => EtaElement
-    maskMode: (value: string) => EtaElement
-    maskOrigin: (value: string) => EtaElement
-    maskPosition: (value: string) => EtaElement
-    maskRepeat: (value: string) => EtaElement
-    maskSize: (value: string) => EtaElement
+    maskMode: (value: MaskMode) => EtaElement
+    maskOrigin: (value: MaskOrigin) => EtaElement
+    maskPosition: (value: MaskPosition) => EtaElement
+    maskRepeat: (value: MaskRepeat) => EtaElement
+    maskSize: (value: MaskSize) => EtaElement
     maxBlockSize: (value: string | number) => EtaElement
     maxHeight: (value: string | number) => EtaElement
     maxInlineSize: (value: string | number) => EtaElement
@@ -373,8 +356,8 @@ interface EtaElement {
     offsetDistance: (value: string | number) => EtaElement
     offsetPath: (value: string) => EtaElement
     offsetRotate: (value: string) => EtaElement
-    opacity: (value: number) => EtaElement
-    order: (value: number) => EtaElement
+    opacity: (value: number | string) => EtaElement
+    order: (value: number | string) => EtaElement
     orphans: (value: number) => EtaElement
     outline: (value: string) => EtaElement
     outlineColor: (value: Color | string) => EtaElement
@@ -402,23 +385,22 @@ interface EtaElement {
     paddingLeft: (value: string | number) => EtaElement
     paddingRight: (value: string | number) => EtaElement
     paddingTop: (value: string | number) => EtaElement
-    pageBreakAfter: (value: PageBreakAfter) => EtaElement
-    pageBreakBefore: (value: PageBreakBefore) => EtaElement
-    pageBreakInside: (value: PageBreakInside) => EtaElement
+    pageBreakAfter: (value: PageBreak) => EtaElement
+    pageBreakBefore: (value: PageBreak) => EtaElement
+    pageBreakInside: (value: PageBreak) => EtaElement
     paintOrder: (value: string) => EtaElement
     perspective: (value: string | number) => EtaElement
     perspectiveOrigin: (value: string) => EtaElement
-    placeContent: (value: string) => EtaElement
-    placeItems: (value: string) => EtaElement
-    placeSelf: (value: string) => EtaElement
+    placeContent: (value: PlaceContent) => EtaElement
+    placeItems: (value: PlaceItems) => EtaElement
+    placeSelf: (value: PlaceSelf) => EtaElement
     pointerEvents: (value: PointerEvents) => EtaElement
     position: (value: Position) => EtaElement
     quotes: (value: string) => EtaElement
     resize: (value: Resize) => EtaElement
     right: (value: string | number) => EtaElement
     rotate: (value: string) => EtaElement
-    rowGap: (value: string | number) => EtaElement
-    scale: (value: string) => EtaElement
+    scale: (value: string | number) => EtaElement
     scrollBehavior: (value: ScrollBehavior) => EtaElement
     scrollMargin: (value: string | number) => EtaElement
     scrollMarginBlock: (value: string | number) => EtaElement
@@ -463,7 +445,6 @@ interface EtaElement {
     textEmphasisPosition: (value: string) => EtaElement
     textEmphasisStyle: (value: string) => EtaElement
     textIndent: (value: string | number) => EtaElement
-    textJustify: (value: TextJustify) => EtaElement
     textOrientation: (value: TextOrientation) => EtaElement
     textOverflow: (value: TextOverflow) => EtaElement
     textRendering: (value: TextRendering) => EtaElement
@@ -478,8 +459,8 @@ interface EtaElement {
     transformOrigin: (value: string) => EtaElement
     transformStyle: (value: TransformStyle) => EtaElement
     transition: (value: string) => EtaElement
-    transitionDelay: (value: string) => EtaElement
-    transitionDuration: (value: string) => EtaElement
+    transitionDelay: (value: string | number) => EtaElement
+    transitionDuration: (value: string | number) => EtaElement
     transitionProperty: (value: string) => EtaElement
     transitionTimingFunction: (value: string) => EtaElement
     translate: (value: string) => EtaElement
@@ -488,7 +469,7 @@ interface EtaElement {
     verticalAlign: (value: VerticalAlign) => EtaElement
     visibility: (value: Visibility) => EtaElement
     whiteSpace: (value: WhiteSpace) => EtaElement
-    widows: (value: number) => EtaElement
+    widows: (value: string | number) => EtaElement
     width: (value: string | number) => EtaElement
     willChange: (value: string) => EtaElement
     wordBreak: (value: WordBreak) => EtaElement
@@ -535,6 +516,7 @@ const Color = {
 
 type Color = keyof typeof Color
 
+type Appearance = "auto" | "none"
 type AlignContent =
     | "flex-start"
     | "flex-end"
@@ -589,7 +571,12 @@ type AnimationTimingFunction =
     | "step-end"
     | "initial"
     | "inherit"
-type BackdropFilter = "none" | "initial" | "inherit" | [Filter, string | number]
+type BackdropFilter =
+    | "none"
+    | "initial"
+    | "inherit"
+    | string
+    | [Filter, string | number]
 type BackfaceVisibility = "visible" | "hidden" | "initial" | "inherit"
 type BackgroundAttachment = "scroll" | "fixed" | "local" | "initial" | "inherit"
 type BackgroundBlendMode =
@@ -653,7 +640,6 @@ type BorderStyle =
     | "outset"
     | "initial"
     | "inherit"
-type BoxDecorationBreak = "slice" | "clone" | "initial" | "inherit"
 type BoxSizing = "content-box" | "border-box" | "initial" | "inherit"
 type BreakBefore =
     | "auto"
@@ -850,9 +836,6 @@ type OverflowY =
     | "initial"
     | "inherit"
 type OverscrollBehavior = "auto" | "contain" | "none"
-type PageBreakAfter = BreakAfter
-type PageBreakBefore = BreakBefore
-type PageBreakInside = BreakInside
 type PointerEvents = "auto" | "none" | "initial" | "inherit"
 type Position = "static" | "relative" | "absolute" | "fixed" | "sticky"
 type Resize =
@@ -930,3 +913,165 @@ type TouchAction = "auto" | "none" | "pan-x" | "pan-y" | "manipulation"
 type TransformBox = "border-box" | "fill-box" | "view-box"
 type TransformStyle = "flat" | "preserve-3d"
 type FontKerning = "auto" | "normal" | "none"
+type Display =
+    | "inline"
+    | "block"
+    | "contents"
+    | "flex"
+    | "grid"
+    | "inline-block"
+    | "inline-flex"
+    | "inline-grid"
+    | "inline-table"
+    | "list-item"
+    | "run-in"
+    | "table"
+    | "table-caption"
+    | "table-column-group"
+    | "table-header-group"
+    | "table-footer-group"
+    | "table-row-group"
+    | "table-cell"
+    | "table-column"
+    | "table-row"
+    | "none"
+    | "initial"
+    | "inherit"
+type Cursor =
+    | "auto"
+    | "default"
+    | "none"
+    | "context-menu"
+    | "help"
+    | "pointer"
+    | "progress"
+    | "wait"
+    | "cell"
+    | "crosshair"
+    | "text"
+    | "vertical-text"
+    | "alias"
+    | "copy"
+    | "move"
+    | "no-drop"
+    | "not-allowed"
+    | "e-resize"
+    | "n-resize"
+    | "ne-resize"
+    | "nw-resize"
+    | "s-resize"
+    | "se-resize"
+    | "sw-resize"
+    | "w-resize"
+    | "ew-resize"
+    | "ns-resize"
+    | "nesw-resize"
+    | "nwse-resize"
+    | "col-resize"
+    | "row-resize"
+    | "all-scroll"
+    | "zoom-in"
+    | "zoom-out"
+    | "grab"
+    | "grabbing"
+    | "initial"
+    | "inherit"
+type Flex =
+    | "none"
+    | "initial"
+    | "inherit"
+    | "auto"
+    | FlexGrow
+    | FlexShrink
+    | FlexBasis
+    | [FlexGrow, FlexShrink, FlexBasis]
+type FlexGrow = string
+type FlexShrink = string
+type FlexBasis = "auto" | "initial" | "inherit" | "content" | string
+type ListStyleType =
+    | "none"
+    | "disc"
+    | "circle"
+    | "square"
+    | "decimal"
+    | "decimal-leading-zero"
+    | "lower-roman"
+    | "upper-roman"
+    | "lower-greek"
+    | "lower-latin"
+    | "upper-latin"
+    | "armenian"
+    | "georgian"
+    | "lower-alpha"
+    | "upper-alpha"
+    | "none"
+    | "initial"
+    | "inherit"
+type MaskMode = "alpha" | "luminance" | "match-source" | "initial" | "inherit"
+type MaskOrigin =
+    | "border-box"
+    | "padding-box"
+    | "content-box"
+    | "margin-box"
+    | "fill-box"
+    | "stroke-box"
+    | "view-box"
+    | "initial"
+    | "inherit"
+type MaskPosition = CSSTuple | "initial" | "inherit"
+type MaskRepeat =
+    | "repeat"
+    | "no-repeat"
+    | "repeat-x"
+    | "repeat-y"
+    | "initial"
+    | "inherit"
+    | "round"
+    | "space"
+type MaskSize = "auto" | "cover" | "contain" | "initial" | "inherit" | string
+type PageBreak =
+    | "auto"
+    | "avoid"
+    | "always"
+    | "left"
+    | "right"
+    | "initial"
+    | "inherit"
+type PlaceContent =
+    | "normal"
+    | "stretch"
+    | "center"
+    | "start"
+    | "end"
+    | "space-between"
+    | "space-around"
+    | "space-evenly"
+    | "safe"
+    | "unsafe"
+    | "initial"
+    | "inherit"
+type PlaceItems =
+    | "normal legacy"
+    | "baseline"
+    | "center"
+    | "end"
+    | "start"
+    | "stretch"
+    | "initial"
+    | "inherit"
+type PlaceSelf =
+    | "auto"
+    | "normal"
+    | "center"
+    | "end"
+    | "start"
+    | "stretch"
+    | "initial"
+    | "inherit"
+    | "right"
+    | "left"
+    | "safe"
+    | "unsafe"
+    | "initial"
+    | "inherit"
+type TextAlignLast = (TextAlign & "start") | "end" | "auto"
