@@ -1,7 +1,6 @@
-import "./eta-types"
 import type EtaElement from "./eta-types"
 
-export default function render(children: EtaElement<HTMLElement>) {
+export default function render<T extends HTMLElement>(children: EtaElement<T>) {
     const root = document.querySelector("#root")
     if (root) {
         defaultStyles(document.body)

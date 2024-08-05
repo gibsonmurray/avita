@@ -1097,6 +1097,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
         height(value: string | number) {
             const unit = typeof value === "string" ? "" : "px"
             this.element.style.height = String(value) + unit
+            return this
         },
         hyphens(value: EtaTypes.Hyphens) {
             this.element.style.hyphens = value
