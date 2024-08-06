@@ -1,1 +1,1 @@
-# Vita - A simpler JS framework for building user interfaces
+# Avita - A simpler JS framework for building user interfaces

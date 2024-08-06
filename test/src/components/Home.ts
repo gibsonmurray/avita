@@ -1,4 +1,4 @@
-import { h1, p, div, button, Color } from "avita"
+import { h1, p, div, button, AvitaColor as Color } from "avita"
 
 const Home = () => {
     let count = 0

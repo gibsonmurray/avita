@@ -1,11 +1,5 @@
 {
     "compilerOptions": {
-        "outDir": "./dist",
-        "rootDir": "./src",
-        "baseUrl": ".",
-        "paths": {
-            "avita": ["types/avita.d.ts"]
-        },
 
         // Enable latest features
         "lib": ["ESNext", "DOM"],
@@ -31,5 +25,5 @@
         "noPropertyAccessFromIndexSignature": false
     },
     "include": ["src/**/*", "types/**/*"],
-    "exclude": ["deprecated/**/*", "example/**/*"]
+    "exclude": ["deprecated/**/*", "test/**/*"]
 }
