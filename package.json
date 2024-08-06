@@ -1,20 +1,26 @@
 {
   "name": "avita",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "author": "Gibson Murray",
   "license": "MIT",
   "module": "index.ts",
   "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./colors": "./dist/colors.js"
+  },
   "scripts": {
+    "build": "tsc",
     "dev": "bun run index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.5.4"
   },
   "dependencies": {
-    "gsap": "^3.12.5"
+    "gsap": "^3.12.5",
+    "avita": "link:avita"
   }
 }

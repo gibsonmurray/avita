@@ -1,4 +1,6 @@
-const Color = {
+import type { AvitaColorType } from "avita"
+
+const AvitaColor: AvitaColorType = {
     red: "#ff0000",
     redOrange: "#ff4500",
     orange: "#ff8700",
@@ -32,10 +34,10 @@ const Color = {
     white: "#ffffff",
     transparent: "transparent",
     random(): string {
-        const keys = Object.keys(Color) as Array<keyof typeof Color>
+        const keys = Object.keys(AvitaColor) as Array<keyof typeof AvitaColor>
         const randomKey = keys[Math.floor(Math.random() * keys.length - 2)]
-        return Color[randomKey] as string
+        return AvitaColor[randomKey] as string
     },
 }
 
-export default Color
+export default AvitaColor

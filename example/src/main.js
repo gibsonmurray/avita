@@ -1,4 +1,4 @@
-import render from "../../src/index"
+import { render } from "avita"
 import Home from "./components/Home"
 
 render(Home())

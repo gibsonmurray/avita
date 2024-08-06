@@ -1,5 +1,5 @@
-import type AvitaElement from "./avita-types"
-import * as AvitaTypes from "./avita-types"
+import type AvitaElement from "avita"
+import type * as AvitaTypes from "avita"
 
 export default function avitaCreate<T extends HTMLElement>(
     tag: string
@@ -413,8 +413,8 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.style.all = value
             return this
         },
-        accentColor(color: AvitaTypes.Color | string) {
-            this.element.style.accentColor = color
+        accentColor(color: AvitaTypes.AvitaColorType | string) {
+            this.element.style.accentColor = String(color)
             return this
         },
         appearance(value: AvitaTypes.Appearance) {
@@ -502,12 +502,12 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.style.backgroundClip = value
             return this
         },
-        backgroundColor(value: AvitaTypes.Color | string) {
-            this.element.style.backgroundColor = value
+        backgroundColor(value: AvitaTypes.AvitaColorType | string) {
+            this.element.style.backgroundColor = String(value)
             return this
         },
-        backgroundImage(value: string) {
-            this.element.style.backgroundImage = value
+        backgroundImage(value: string | AvitaTypes.AvitaColorType) {
+            this.element.style.backgroundImage = String(value)
             return this
         },
         backgroundOrigin(value: AvitaTypes.BackgroundOrigin) {
@@ -566,16 +566,16 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.style.borderBlock = value
             return this
         },
-        borderBlockColor(value: AvitaTypes.Color | string) {
-            this.element.style.borderBlockColor = value
+        borderBlockColor(value: AvitaTypes.AvitaColorType | string) {
+            this.element.style.borderBlockColor = String(value)
             return this
         },
         borderBlockEnd(value: string) {
             this.element.style.borderBlockEnd = value
             return this
         },
-        borderBlockEndColor(value: AvitaTypes.Color | string) {
-            this.element.style.borderBlockEndColor = value
+        borderBlockEndColor(value: AvitaTypes.AvitaColorType | string) {
+            this.element.style.borderBlockEndColor = String(value)
             return this
         },
         borderBlockEndStyle(value: AvitaTypes.BorderStyle) {
@@ -591,8 +591,8 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.style.borderBlockStart = value
             return this
         },
-        borderBlockStartColor(value: AvitaTypes.Color | string) {
-            this.element.style.borderBlockStartColor = value
+        borderBlockStartColor(value: AvitaTypes.AvitaColorType | string) {
+            this.element.style.borderBlockStartColor = String(value)
             return this
         },
         borderBlockStartStyle(value: AvitaTypes.BorderStyle) {
@@ -617,8 +617,8 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.style.borderBottom = value
             return this
         },
-        borderBottomColor(value: AvitaTypes.Color | string) {
-            this.element.style.borderBottomColor = value
+        borderBottomColor(value: AvitaTypes.AvitaColorType | string) {
+            this.element.style.borderBottomColor = String(value)
             return this
         },
         borderBottomLeftRadius(value: string | number) {
@@ -654,8 +654,8 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.style.borderCollapse = value
             return this
         },
-        borderColor(value: AvitaTypes.Color | string) {
-            this.element.style.borderColor = value
+        borderColor(value: AvitaTypes.AvitaColorType | string) {
+            this.element.style.borderColor = String(value)
             return this
         },
 
@@ -690,16 +690,16 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.style.borderInline = value
             return this
         },
-        borderInlineColor(value: AvitaTypes.Color | string) {
-            this.element.style.borderInlineColor = value
+        borderInlineColor(value: AvitaTypes.AvitaColorType | string) {
+            this.element.style.borderInlineColor = String(value)
             return this
         },
         borderInlineEnd(value: string) {
             this.element.style.borderInlineEnd = value
             return this
         },
-        borderInlineEndColor(value: AvitaTypes.Color | string) {
-            this.element.style.borderInlineEndColor = value
+        borderInlineEndColor(value: AvitaTypes.AvitaColorType | string) {
+            this.element.style.borderInlineEndColor = String(value)
             return this
         },
         borderInlineEndStyle(value: AvitaTypes.BorderStyle) {
@@ -715,8 +715,8 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.style.borderInlineStart = value
             return this
         },
-        borderInlineStartColor(value: AvitaTypes.Color | string) {
-            this.element.style.borderInlineStartColor = value
+        borderInlineStartColor(value: AvitaTypes.AvitaColorType | string) {
+            this.element.style.borderInlineStartColor = String(value)
             return this
         },
         borderInlineStartStyle(value: AvitaTypes.BorderStyle) {
@@ -741,8 +741,8 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.style.borderLeft = value
             return this
         },
-        borderLeftColor(value: AvitaTypes.Color | string) {
-            this.element.style.borderLeftColor = value
+        borderLeftColor(value: AvitaTypes.AvitaColorType | string) {
+            this.element.style.borderLeftColor = String(value)
             return this
         },
         borderLeftStyle(value: AvitaTypes.BorderStyle) {
@@ -763,8 +763,8 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.style.borderRight = value
             return this
         },
-        borderRightColor(value: AvitaTypes.Color | string) {
-            this.element.style.borderRightColor = value
+        borderRightColor(value: AvitaTypes.AvitaColorType | string) {
+            this.element.style.borderRightColor = String(value)
             return this
         },
         borderRightStyle(value: AvitaTypes.BorderStyle) {
@@ -789,8 +789,8 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.style.borderTop = value
             return this
         },
-        borderTopColor(value: AvitaTypes.Color | string) {
-            this.element.style.borderTopColor = value
+        borderTopColor(value: AvitaTypes.AvitaColorType | string) {
+            this.element.style.borderTopColor = String(value)
             return this
         },
         borderTopStyle(value: AvitaTypes.BorderStyle) {
@@ -836,8 +836,8 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.style.captionSide = value
             return this
         },
-        caretColor(value: AvitaTypes.Color | string) {
-            this.element.style.caretColor = value
+        caretColor(value: AvitaTypes.AvitaColorType | string) {
+            this.element.style.caretColor = String(value)
             return this
         },
         clear(value: AvitaTypes.Clear) {
@@ -849,8 +849,8 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.style.clipPath = value
             return this
         },
-        color(value: AvitaTypes.Color | string) {
-            this.element.style.color = value
+        color(value: AvitaTypes.AvitaColorType | string) {
+            this.element.style.color = String(value)
             return this
         },
         columnCount(value: AvitaTypes.ColumnCount | number) {
@@ -871,8 +871,8 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.style.columnRule = value
             return this
         },
-        columnRuleColor(value: AvitaTypes.Color | string) {
-            this.element.style.columnRuleColor = value
+        columnRuleColor(value: AvitaTypes.AvitaColorType | string) {
+            this.element.style.columnRuleColor = String(value)
             return this
         },
         columnRuleStyle(value: AvitaTypes.BorderStyle) {
@@ -1375,8 +1375,8 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.style.outline = value
             return this
         },
-        outlineColor(value: AvitaTypes.Color | string) {
-            this.element.style.outlineColor = value
+        outlineColor(value: AvitaTypes.AvitaColorType | string) {
+            this.element.style.outlineColor = String(value)
             return this
         },
         outlineOffset(value: string | number) {
@@ -1719,8 +1719,8 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.style.textDecoration = value
             return this
         },
-        textDecorationColor(value: string) {
-            this.element.style.textDecorationColor = value
+        textDecorationColor(value: string | AvitaTypes.AvitaColorType) {
+            this.element.style.textDecorationColor = value.toString()
             return this
         },
         textDecorationLine(value: string) {
@@ -1740,8 +1740,8 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.style.textEmphasis = value
             return this
         },
-        textEmphasisColor(value: string) {
-            this.element.style.textEmphasisColor = value
+        textEmphasisColor(value: string | AvitaTypes.AvitaColorType) {
+            this.element.style.textEmphasisColor = value.toString()
             return this
         },
         textEmphasisPosition(value: string) {
