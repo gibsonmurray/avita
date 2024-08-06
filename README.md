@@ -1,1 +1,1 @@
-# Shway - A simpler JS framework for building user interfaces
+# Vita - A simpler JS framework for building user interfaces

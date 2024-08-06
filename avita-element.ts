@@ -1,25 +1,13 @@
-import type ShwayElement from "./shway-types"
-import * as ShwayTypes from "./shway-types"
+import type AvitaElement from "./avita-types"
+import * as AvitaTypes from "./avita-types"
 
-export default function shwayCreate<T extends HTMLElement>(
+export default function avitaCreate<T extends HTMLElement>(
     tag: string
-): ShwayElement<T> {
+): AvitaElement<T> {
     const element = document.createElement(tag) as T
-    const selector = tag
 
     return {
         element,
-
-        // State
-        bindState(stateName: string, propertyToUpdate: string) {
-            addStateChangeListener(element, stateName, propertyToUpdate)
-            return this
-        },
-
-        updateState(stateName: string, newValue: any) {
-            dispatchStateChange(element, stateName, newValue)
-            return this
-        },
 
         // Element Properties
         id(id: string) {
@@ -75,11 +63,11 @@ export default function shwayCreate<T extends HTMLElement>(
             element.innerHTML = value
             return this
         },
-        append(element: ShwayElement<T>) {
+        append(element: AvitaElement<T>) {
             element.element.appendChild(this.element)
             return this
         },
-        prepend(element: ShwayElement<T>) {
+        prepend(element: AvitaElement<T>) {
             element.element.prepend(this.element)
             return this
         },
@@ -87,13 +75,13 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.remove()
             return this
         },
-        children(...elements: ShwayElement<T>[]) {
+        children(...elements: AvitaElement<T>[]) {
             elements.forEach((element) => {
                 this.element.appendChild(element.element)
             })
             return this
         },
-        replace(element: ShwayElement<T>) {
+        replace(element: AvitaElement<T>) {
             element.element.replaceWith(this.element)
             return this
         },
@@ -425,23 +413,23 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.all = value
             return this
         },
-        accentColor(color: ShwayTypes.Color | string) {
+        accentColor(color: AvitaTypes.Color | string) {
             this.element.style.accentColor = color
             return this
         },
-        appearance(value: ShwayTypes.Appearance) {
+        appearance(value: AvitaTypes.Appearance) {
             this.element.style.appearance = value
             return this
         },
-        alignContent(value: ShwayTypes.AlignContent) {
+        alignContent(value: AvitaTypes.AlignContent) {
             this.element.style.alignContent = value
             return this
         },
-        alignItems(value: ShwayTypes.AlignItems) {
+        alignItems(value: AvitaTypes.AlignItems) {
             this.element.style.alignItems = value
             return this
         },
-        alignSelf(value: ShwayTypes.AlignSelf) {
+        alignSelf(value: AvitaTypes.AlignSelf) {
             this.element.style.alignSelf = value
             return this
         },
@@ -453,7 +441,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.animationDelay = numberToSeconds(value)
             return this
         },
-        animationDirection(value: ShwayTypes.AnimationDirection) {
+        animationDirection(value: AvitaTypes.AnimationDirection) {
             this.element.style.animationDirection = value
             return this
         },
@@ -461,11 +449,11 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.animationDuration = numberToSeconds(value)
             return this
         },
-        animationFillMode(value: ShwayTypes.AnimationFillMode) {
+        animationFillMode(value: AvitaTypes.AnimationFillMode) {
             this.element.style.animationFillMode = value
             return this
         },
-        animationIterationCount(value: ShwayTypes.AnimationIterationCount) {
+        animationIterationCount(value: AvitaTypes.AnimationIterationCount) {
             this.element.style.animationIterationCount = value
             return this
         },
@@ -473,11 +461,11 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.animationName = value
             return this
         },
-        animationPlayState(value: ShwayTypes.AnimationPlayState) {
+        animationPlayState(value: AvitaTypes.AnimationPlayState) {
             this.element.style.animationPlayState = value
             return this
         },
-        animationTimingFunction(value: ShwayTypes.AnimationTimingFunction) {
+        animationTimingFunction(value: AvitaTypes.AnimationTimingFunction) {
             this.element.style.animationTimingFunction = value
             return this
         },
@@ -485,7 +473,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.aspectRatio = String(value)
             return this
         },
-        backdropFilter(value: ShwayTypes.BackdropFilter) {
+        backdropFilter(value: AvitaTypes.BackdropFilter) {
             if (typeof value === "string") {
                 this.element.style.backdropFilter = value
                 return this
@@ -494,7 +482,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.backdropFilter = `${filter}(${val})`
             return this
         },
-        backfaceVisibility(value: ShwayTypes.BackfaceVisibility) {
+        backfaceVisibility(value: AvitaTypes.BackfaceVisibility) {
             this.element.style.backfaceVisibility = value
             return this
         },
@@ -502,19 +490,19 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.background = value
             return this
         },
-        backgroundAttachment(value: ShwayTypes.BackgroundAttachment) {
+        backgroundAttachment(value: AvitaTypes.BackgroundAttachment) {
             this.element.style.backgroundAttachment = value
             return this
         },
-        backgroundBlendMode(value: ShwayTypes.BackgroundBlendMode) {
+        backgroundBlendMode(value: AvitaTypes.BackgroundBlendMode) {
             this.element.style.backgroundBlendMode = value
             return this
         },
-        backgroundClip(value: ShwayTypes.BackgroundClip) {
+        backgroundClip(value: AvitaTypes.BackgroundClip) {
             this.element.style.backgroundClip = value
             return this
         },
-        backgroundColor(value: ShwayTypes.Color | string) {
+        backgroundColor(value: AvitaTypes.Color | string) {
             this.element.style.backgroundColor = value
             return this
         },
@@ -522,11 +510,11 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.backgroundImage = value
             return this
         },
-        backgroundOrigin(value: ShwayTypes.BackgroundOrigin) {
+        backgroundOrigin(value: AvitaTypes.BackgroundOrigin) {
             this.element.style.backgroundOrigin = value
             return this
         },
-        backgroundPosition(value: ShwayTypes.BackgroundPosition) {
+        backgroundPosition(value: AvitaTypes.BackgroundPosition) {
             if (typeof value === "string") {
                 this.element.style.backgroundPosition = value
                 return this
@@ -535,7 +523,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.backgroundPosition = `${pos} ${val}`
             return this
         },
-        backgroundPositionX(value: ShwayTypes.BackgroundPosition) {
+        backgroundPositionX(value: AvitaTypes.BackgroundPosition) {
             if (typeof value === "string") {
                 this.element.style.backgroundPositionX = value
                 return this
@@ -544,7 +532,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.backgroundPositionX = `${pos} ${val}`
             return this
         },
-        backgroundPositionY(value: ShwayTypes.BackgroundPosition) {
+        backgroundPositionY(value: AvitaTypes.BackgroundPosition) {
             if (typeof value === "string") {
                 this.element.style.backgroundPositionX = value
                 return this
@@ -553,11 +541,11 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.backgroundPositionX = `${pos} ${val}`
             return this
         },
-        backgroundRepeat(value: ShwayTypes.BackgroundRepeat) {
+        backgroundRepeat(value: AvitaTypes.BackgroundRepeat) {
             this.element.style.backgroundRepeat = value
             return this
         },
-        backgroundSize(value: ShwayTypes.BackgroundSize) {
+        backgroundSize(value: AvitaTypes.BackgroundSize) {
             if (typeof value === "string") {
                 this.element.style.backgroundSize = value
                 return this
@@ -578,7 +566,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.borderBlock = value
             return this
         },
-        borderBlockColor(value: ShwayTypes.Color | string) {
+        borderBlockColor(value: AvitaTypes.Color | string) {
             this.element.style.borderBlockColor = value
             return this
         },
@@ -586,11 +574,11 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.borderBlockEnd = value
             return this
         },
-        borderBlockEndColor(value: ShwayTypes.Color | string) {
+        borderBlockEndColor(value: AvitaTypes.Color | string) {
             this.element.style.borderBlockEndColor = value
             return this
         },
-        borderBlockEndStyle(value: ShwayTypes.BorderStyle) {
+        borderBlockEndStyle(value: AvitaTypes.BorderStyle) {
             this.element.style.borderBlockEndStyle = value
             return this
         },
@@ -603,11 +591,11 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.borderBlockStart = value
             return this
         },
-        borderBlockStartColor(value: ShwayTypes.Color | string) {
+        borderBlockStartColor(value: AvitaTypes.Color | string) {
             this.element.style.borderBlockStartColor = value
             return this
         },
-        borderBlockStartStyle(value: ShwayTypes.BorderStyle) {
+        borderBlockStartStyle(value: AvitaTypes.BorderStyle) {
             this.element.style.borderBlockStartStyle = value
             return this
         },
@@ -616,7 +604,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.borderBlockStartWidth = String(value) + unit
             return this
         },
-        borderBlockStyle(value: ShwayTypes.BorderStyle) {
+        borderBlockStyle(value: AvitaTypes.BorderStyle) {
             this.element.style.borderBlockStyle = value
             return this
         },
@@ -629,7 +617,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.borderBottom = value
             return this
         },
-        borderBottomColor(value: ShwayTypes.Color | string) {
+        borderBottomColor(value: AvitaTypes.Color | string) {
             this.element.style.borderBottomColor = value
             return this
         },
@@ -653,7 +641,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.borderTopRightRadius = String(value) + unit
             return this
         },
-        borderBottomStyle(value: ShwayTypes.BorderStyle) {
+        borderBottomStyle(value: AvitaTypes.BorderStyle) {
             this.element.style.borderBottomStyle = value
             return this
         },
@@ -662,11 +650,11 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.borderBottomWidth = String(value) + unit
             return this
         },
-        borderCollapse(value: ShwayTypes.BorderCollapse) {
+        borderCollapse(value: AvitaTypes.BorderCollapse) {
             this.element.style.borderCollapse = value
             return this
         },
-        borderColor(value: ShwayTypes.Color | string) {
+        borderColor(value: AvitaTypes.Color | string) {
             this.element.style.borderColor = value
             return this
         },
@@ -680,7 +668,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.borderImageOutset = String(value) + unit
             return this
         },
-        borderImageRepeat(value: ShwayTypes.BorderImageRepeat) {
+        borderImageRepeat(value: AvitaTypes.BorderImageRepeat) {
             this.element.style.borderImageRepeat = value
             return this
         },
@@ -702,7 +690,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.borderInline = value
             return this
         },
-        borderInlineColor(value: ShwayTypes.Color | string) {
+        borderInlineColor(value: AvitaTypes.Color | string) {
             this.element.style.borderInlineColor = value
             return this
         },
@@ -710,11 +698,11 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.borderInlineEnd = value
             return this
         },
-        borderInlineEndColor(value: ShwayTypes.Color | string) {
+        borderInlineEndColor(value: AvitaTypes.Color | string) {
             this.element.style.borderInlineEndColor = value
             return this
         },
-        borderInlineEndStyle(value: ShwayTypes.BorderStyle) {
+        borderInlineEndStyle(value: AvitaTypes.BorderStyle) {
             this.element.style.borderInlineEndStyle = value
             return this
         },
@@ -727,11 +715,11 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.borderInlineStart = value
             return this
         },
-        borderInlineStartColor(value: ShwayTypes.Color | string) {
+        borderInlineStartColor(value: AvitaTypes.Color | string) {
             this.element.style.borderInlineStartColor = value
             return this
         },
-        borderInlineStartStyle(value: ShwayTypes.BorderStyle) {
+        borderInlineStartStyle(value: AvitaTypes.BorderStyle) {
             this.element.style.borderInlineStartStyle = value
             return this
         },
@@ -740,7 +728,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.borderInlineStartWidth = String(value) + unit
             return this
         },
-        borderInlineStyle(value: ShwayTypes.BorderStyle) {
+        borderInlineStyle(value: AvitaTypes.BorderStyle) {
             this.element.style.borderInlineStyle = value
             return this
         },
@@ -753,11 +741,11 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.borderLeft = value
             return this
         },
-        borderLeftColor(value: ShwayTypes.Color | string) {
+        borderLeftColor(value: AvitaTypes.Color | string) {
             this.element.style.borderLeftColor = value
             return this
         },
-        borderLeftStyle(value: ShwayTypes.BorderStyle) {
+        borderLeftStyle(value: AvitaTypes.BorderStyle) {
             this.element.style.borderLeftStyle = value
             return this
         },
@@ -775,11 +763,11 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.borderRight = value
             return this
         },
-        borderRightColor(value: ShwayTypes.Color | string) {
+        borderRightColor(value: AvitaTypes.Color | string) {
             this.element.style.borderRightColor = value
             return this
         },
-        borderRightStyle(value: ShwayTypes.BorderStyle) {
+        borderRightStyle(value: AvitaTypes.BorderStyle) {
             this.element.style.borderRightStyle = value
             return this
         },
@@ -793,7 +781,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.borderSpacing = String(value) + unit
             return this
         },
-        borderStyle(value: ShwayTypes.BorderStyle) {
+        borderStyle(value: AvitaTypes.BorderStyle) {
             this.element.style.borderStyle = value
             return this
         },
@@ -801,11 +789,11 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.borderTop = value
             return this
         },
-        borderTopColor(value: ShwayTypes.Color | string) {
+        borderTopColor(value: AvitaTypes.Color | string) {
             this.element.style.borderTopColor = value
             return this
         },
-        borderTopStyle(value: ShwayTypes.BorderStyle) {
+        borderTopStyle(value: AvitaTypes.BorderStyle) {
             this.element.style.borderTopStyle = value
             return this
         },
@@ -828,31 +816,31 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.boxShadow = value
             return this
         },
-        boxSizing(value: ShwayTypes.BoxSizing) {
+        boxSizing(value: AvitaTypes.BoxSizing) {
             this.element.style.boxSizing = value
             return this
         },
-        breakAfter(value: ShwayTypes.BreakAfter) {
+        breakAfter(value: AvitaTypes.BreakAfter) {
             this.element.style.breakAfter = value
             return this
         },
-        breakBefore(value: ShwayTypes.BreakBefore) {
+        breakBefore(value: AvitaTypes.BreakBefore) {
             this.element.style.breakBefore = value
             return this
         },
-        breakInside(value: ShwayTypes.BreakInside) {
+        breakInside(value: AvitaTypes.BreakInside) {
             this.element.style.breakInside = value
             return this
         },
-        captionSide(value: ShwayTypes.CaptionSide) {
+        captionSide(value: AvitaTypes.CaptionSide) {
             this.element.style.captionSide = value
             return this
         },
-        caretColor(value: ShwayTypes.Color | string) {
+        caretColor(value: AvitaTypes.Color | string) {
             this.element.style.caretColor = value
             return this
         },
-        clear(value: ShwayTypes.Clear) {
+        clear(value: AvitaTypes.Clear) {
             this.element.style.clear = value
             return this
         },
@@ -861,16 +849,16 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.clipPath = value
             return this
         },
-        color(value: ShwayTypes.Color | string) {
+        color(value: AvitaTypes.Color | string) {
             this.element.style.color = value
             return this
         },
-        columnCount(value: ShwayTypes.ColumnCount | number) {
+        columnCount(value: AvitaTypes.ColumnCount | number) {
             const unit = typeof value === "string" ? "" : "px"
             this.element.style.columnCount = String(value) + unit
             return this
         },
-        columnFill(value: ShwayTypes.ColumnFill) {
+        columnFill(value: AvitaTypes.ColumnFill) {
             this.element.style.columnFill = value
             return this
         },
@@ -883,11 +871,11 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.columnRule = value
             return this
         },
-        columnRuleColor(value: ShwayTypes.Color | string) {
+        columnRuleColor(value: AvitaTypes.Color | string) {
             this.element.style.columnRuleColor = value
             return this
         },
-        columnRuleStyle(value: ShwayTypes.BorderStyle) {
+        columnRuleStyle(value: AvitaTypes.BorderStyle) {
             this.element.style.columnRuleStyle = value
             return this
         },
@@ -896,7 +884,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.columnRuleWidth = String(value) + unit
             return this
         },
-        columnSpan(value: ShwayTypes.ColumnSpan) {
+        columnSpan(value: AvitaTypes.ColumnSpan) {
             this.element.style.columnSpan = value
             return this
         },
@@ -922,19 +910,19 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.counterReset = value
             return this
         },
-        cursor(value: ShwayTypes.Cursor) {
+        cursor(value: AvitaTypes.Cursor) {
             this.element.style.cursor = value
             return this
         },
-        direction(value: ShwayTypes.Direction) {
+        direction(value: AvitaTypes.Direction) {
             this.element.style.direction = value
             return this
         },
-        display(value: ShwayTypes.Display) {
+        display(value: AvitaTypes.Display) {
             this.element.style.display = value
             return this
         },
-        emptyCells(value: ShwayTypes.EmptyCells) {
+        emptyCells(value: AvitaTypes.EmptyCells) {
             this.element.style.emptyCells = value
             return this
         },
@@ -943,7 +931,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.filter = value
             return this
         },
-        flex(value: ShwayTypes.Flex) {
+        flex(value: AvitaTypes.Flex) {
             if (Array.isArray(value)) {
                 this.element.style.flex = value.join(" ")
                 return this
@@ -956,7 +944,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.flexBasis = String(value) + unit
             return this
         },
-        flexDirection(value: ShwayTypes.FlexDirection) {
+        flexDirection(value: AvitaTypes.FlexDirection) {
             this.element.style.flexDirection = value
             return this
         },
@@ -972,11 +960,11 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.flexShrink = String(value)
             return this
         },
-        flexWrap(value: ShwayTypes.FlexWrap) {
+        flexWrap(value: AvitaTypes.FlexWrap) {
             this.element.style.flexWrap = value
             return this
         },
-        float(value: ShwayTypes.Float) {
+        float(value: AvitaTypes.Float) {
             this.element.style.float = value
             return this
         },
@@ -992,7 +980,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.fontFeatureSettings = value
             return this
         },
-        fontKerning(value: ShwayTypes.FontKerning) {
+        fontKerning(value: AvitaTypes.FontKerning) {
             this.element.style.fontKerning = value
             return this
         },
@@ -1009,7 +997,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.fontStretch = value
             return this
         },
-        fontStyle(value: ShwayTypes.FontStyle) {
+        fontStyle(value: AvitaTypes.FontStyle) {
             this.element.style.fontStyle = value
             return this
         },
@@ -1058,7 +1046,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.gridAutoColumns = value
             return this
         },
-        gridAutoFlow(value: ShwayTypes.GridAutoFlow) {
+        gridAutoFlow(value: AvitaTypes.GridAutoFlow) {
             this.element.style.gridAutoFlow = value
             return this
         },
@@ -1111,11 +1099,11 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.height = String(value) + unit
             return this
         },
-        hyphens(value: ShwayTypes.Hyphens) {
+        hyphens(value: AvitaTypes.Hyphens) {
             this.element.style.hyphens = value
             return this
         },
-        imageRendering(value: ShwayTypes.ImageRendering) {
+        imageRendering(value: AvitaTypes.ImageRendering) {
             this.element.style.imageRendering = value
             return this
         },
@@ -1159,19 +1147,19 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.insetInlineStart = String(value) + unit
             return this
         },
-        isolation(value: ShwayTypes.Isolation) {
+        isolation(value: AvitaTypes.Isolation) {
             this.element.style.isolation = value
             return this
         },
-        justifyContent(value: ShwayTypes.JustifyContent) {
+        justifyContent(value: AvitaTypes.JustifyContent) {
             this.element.style.justifyContent = value
             return this
         },
-        justifyItems(value: ShwayTypes.JustifyItems) {
+        justifyItems(value: AvitaTypes.JustifyItems) {
             this.element.style.justifyItems = value
             return this
         },
-        justifySelf(value: ShwayTypes.JustifySelf) {
+        justifySelf(value: AvitaTypes.JustifySelf) {
             this.element.style.justifySelf = value
             return this
         },
@@ -1190,7 +1178,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.lineHeight = String(value) + unit
             return this
         },
-        lineBreak(value: ShwayTypes.LineBreak) {
+        lineBreak(value: AvitaTypes.LineBreak) {
             this.element.style.lineBreak = value
             return this
         },
@@ -1202,11 +1190,11 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.listStyleImage = value
             return this
         },
-        listStylePosition(value: ShwayTypes.ListStylePosition) {
+        listStylePosition(value: AvitaTypes.ListStylePosition) {
             this.element.style.listStylePosition = value
             return this
         },
-        listStyleType(value: ShwayTypes.ListStyleType) {
+        listStyleType(value: AvitaTypes.ListStyleType) {
             this.element.style.listStyleType = value
             return this
         },
@@ -1273,15 +1261,15 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.maskImage = value
             return this
         },
-        maskMode(value: ShwayTypes.MaskMode) {
+        maskMode(value: AvitaTypes.MaskMode) {
             this.element.style.maskMode = value
             return this
         },
-        maskOrigin(value: ShwayTypes.MaskOrigin) {
+        maskOrigin(value: AvitaTypes.MaskOrigin) {
             this.element.style.maskOrigin = value
             return this
         },
-        maskPosition(value: ShwayTypes.MaskPosition) {
+        maskPosition(value: AvitaTypes.MaskPosition) {
             if (Array.isArray(value)) {
                 this.element.style.maskPosition = value.join(" ")
                 return this
@@ -1289,11 +1277,11 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.maskPosition = value
             return this
         },
-        maskRepeat(value: ShwayTypes.MaskRepeat) {
+        maskRepeat(value: AvitaTypes.MaskRepeat) {
             this.element.style.maskRepeat = value
             return this
         },
-        maskSize(value: ShwayTypes.MaskSize) {
+        maskSize(value: AvitaTypes.MaskSize) {
             this.element.style.maskSize = value
             return this
         },
@@ -1337,11 +1325,11 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.minWidth = String(value) + unit
             return this
         },
-        mixBlendMode(value: ShwayTypes.MixBlendMode) {
+        mixBlendMode(value: AvitaTypes.MixBlendMode) {
             this.element.style.mixBlendMode = value
             return this
         },
-        objectFit(value: ShwayTypes.ObjectFit) {
+        objectFit(value: AvitaTypes.ObjectFit) {
             this.element.style.objectFit = value
             return this
         },
@@ -1387,7 +1375,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.outline = value
             return this
         },
-        outlineColor(value: ShwayTypes.Color | string) {
+        outlineColor(value: AvitaTypes.Color | string) {
             this.element.style.outlineColor = value
             return this
         },
@@ -1396,7 +1384,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.outlineOffset = String(value) + unit
             return this
         },
-        outlineStyle(value: ShwayTypes.OutlineStyle) {
+        outlineStyle(value: AvitaTypes.OutlineStyle) {
             this.element.style.outlineStyle = value
             return this
         },
@@ -1405,43 +1393,43 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.outlineWidth = String(value) + unit
             return this
         },
-        overflow(value: ShwayTypes.Overflow) {
+        overflow(value: AvitaTypes.Overflow) {
             this.element.style.overflow = value
             return this
         },
-        overflowAnchor(value: ShwayTypes.OverflowAnchor) {
+        overflowAnchor(value: AvitaTypes.OverflowAnchor) {
             this.element.style.overflowAnchor = value
             return this
         },
-        overflowWrap(value: ShwayTypes.OverflowWrap) {
+        overflowWrap(value: AvitaTypes.OverflowWrap) {
             this.element.style.overflowWrap = value
             return this
         },
-        overflowX(value: ShwayTypes.Overflow) {
+        overflowX(value: AvitaTypes.Overflow) {
             this.element.style.overflowX = value
             return this
         },
-        overflowY(value: ShwayTypes.Overflow) {
+        overflowY(value: AvitaTypes.Overflow) {
             this.element.style.overflowY = value
             return this
         },
-        overscrollBehavior(value: ShwayTypes.OverscrollBehavior) {
+        overscrollBehavior(value: AvitaTypes.OverscrollBehavior) {
             this.element.style.overscrollBehavior = value
             return this
         },
-        overscrollBehaviorBlock(value: ShwayTypes.OverscrollBehavior) {
+        overscrollBehaviorBlock(value: AvitaTypes.OverscrollBehavior) {
             this.element.style.overscrollBehaviorBlock = value
             return this
         },
-        overscrollBehaviorInline(value: ShwayTypes.OverscrollBehavior) {
+        overscrollBehaviorInline(value: AvitaTypes.OverscrollBehavior) {
             this.element.style.overscrollBehaviorInline = value
             return this
         },
-        overscrollBehaviorX(value: ShwayTypes.OverscrollBehavior) {
+        overscrollBehaviorX(value: AvitaTypes.OverscrollBehavior) {
             this.element.style.overscrollBehaviorX = value
             return this
         },
-        overscrollBehaviorY(value: ShwayTypes.OverscrollBehavior) {
+        overscrollBehaviorY(value: AvitaTypes.OverscrollBehavior) {
             this.element.style.overscrollBehaviorY = value
             return this
         },
@@ -1500,15 +1488,15 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.paddingTop = String(value) + unit
             return this
         },
-        pageBreakAfter(value: ShwayTypes.PageBreak) {
+        pageBreakAfter(value: AvitaTypes.PageBreak) {
             this.element.style.pageBreakAfter = value
             return this
         },
-        pageBreakBefore(value: ShwayTypes.PageBreak) {
+        pageBreakBefore(value: AvitaTypes.PageBreak) {
             this.element.style.pageBreakBefore = value
             return this
         },
-        pageBreakInside(value: ShwayTypes.PageBreak) {
+        pageBreakInside(value: AvitaTypes.PageBreak) {
             this.element.style.pageBreakInside = value
             return this
         },
@@ -1525,23 +1513,23 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.perspectiveOrigin = value
             return this
         },
-        placeContent(value: ShwayTypes.PlaceContent) {
+        placeContent(value: AvitaTypes.PlaceContent) {
             this.element.style.placeContent = value
             return this
         },
-        placeItems(value: ShwayTypes.PlaceItems) {
+        placeItems(value: AvitaTypes.PlaceItems) {
             this.element.style.placeItems = value
             return this
         },
-        placeSelf(value: ShwayTypes.PlaceSelf) {
+        placeSelf(value: AvitaTypes.PlaceSelf) {
             this.element.style.placeSelf = value
             return this
         },
-        pointerEvents(value: ShwayTypes.PointerEvents) {
+        pointerEvents(value: AvitaTypes.PointerEvents) {
             this.element.style.pointerEvents = value
             return this
         },
-        position(value: ShwayTypes.Position) {
+        position(value: AvitaTypes.Position) {
             this.element.style.position = value
             return this
         },
@@ -1549,7 +1537,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.quotes = value
             return this
         },
-        resize(value: ShwayTypes.Resize) {
+        resize(value: AvitaTypes.Resize) {
             this.element.style.resize = value
             return this
         },
@@ -1567,7 +1555,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.scale = String(value)
             return this
         },
-        scrollBehavior(value: ShwayTypes.ScrollBehavior) {
+        scrollBehavior(value: AvitaTypes.ScrollBehavior) {
             this.element.style.scrollBehavior = value
             return this
         },
@@ -1711,15 +1699,15 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.tabSize = String(value) + unit
             return this
         },
-        tableLayout(value: ShwayTypes.TableLayout) {
+        tableLayout(value: AvitaTypes.TableLayout) {
             this.element.style.tableLayout = value
             return this
         },
-        textAlign(value: ShwayTypes.TextAlign) {
+        textAlign(value: AvitaTypes.TextAlign) {
             this.element.style.textAlign = value
             return this
         },
-        textAlignLast(value: ShwayTypes.TextAlignLast) {
+        textAlignLast(value: AvitaTypes.TextAlignLast) {
             this.element.style.textAlignLast = value
             return this
         },
@@ -1794,7 +1782,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.textUnderlineOffset = String(value) + unit
             return this
         },
-        textUnderlinePosition(value: ShwayTypes.TextUnderlinePosition) {
+        textUnderlinePosition(value: AvitaTypes.TextUnderlinePosition) {
             this.element.style.textUnderlinePosition = value
             return this
         },
@@ -1893,7 +1881,7 @@ export default function shwayCreate<T extends HTMLElement>(
             this.element.style.willChange = value
             return this
         },
-        wordWrap(value: ShwayTypes.WordWrap) {
+        wordWrap(value: AvitaTypes.WordWrap) {
             this.element.style.wordWrap = value
             return this
         },
@@ -1914,34 +1902,4 @@ function numberToSeconds(n: number | string): string {
         return `${n}s`
     }
     return n
-}
-
-function createStateChangeEvent(stateName: string, newValue: any): CustomEvent {
-    return new CustomEvent("stateChange", {
-        detail: { stateName, newValue },
-        bubbles: true,
-        cancelable: true,
-    })
-}
-
-function dispatchStateChange(
-    element: HTMLElement,
-    stateName: string,
-    newValue: any
-) {
-    const event = createStateChangeEvent(stateName, newValue)
-    element.dispatchEvent(event)
-}
-
-function addStateChangeListener(
-    element: HTMLElement,
-    stateName: string,
-    propertyToUpdate: string
-) {
-    element.addEventListener("stateChange", (event: Event) => {
-        const { detail } = event as CustomEvent
-        if (detail.stateName === stateName) {
-            ;(element as any)[propertyToUpdate] = detail.newValue
-        }
-    })
 }

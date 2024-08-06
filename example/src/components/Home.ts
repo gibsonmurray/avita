@@ -5,18 +5,24 @@ const Home = () => {
     let count = 0
 
     const btn = button()
-        .text(`Clicked ${count} times`)
+        .text(`Count is: ${count}`)
         .padding("10px 20px")
         .backgroundColor(Color.magentaPink)
         .color(Color.white)
         .border("none")
         .borderRadius("5px")
         .cursor("pointer")
-        .bindState("count", "textContent")
+        .transition("background-color 0.3s")
 
     btn.onClick(() => {
-        count++
-        btn.updateState("count", `Clicked ${count} times`)
+        btn.text(`Count is: ${++count}`)
+        const randomColor = Color.random()
+        btn.backgroundColor(randomColor)
+        if (randomColor === Color.white || randomColor === Color.transparent) {
+            btn.color(Color.black)
+        } else {
+            btn.color(Color.white)
+        }
     })
 
     return div()
@@ -32,7 +38,7 @@ const Home = () => {
             h1()
                 .fontSize("3rem")
                 .color(Color.black)
-                .text("Welcome to Shway.js"),
+                .text("Welcome to Avita.js"),
             p()
                 .text("A simpler JS framework for building user interfaces")
                 .fontSize("1.2rem")

@@ -1,172 +1,172 @@
-import type ShwayElement from "./shway-types"
-import shwayCreate from "./ShwayElement"
+import type AvitaElement from "./avita-types"
+import avitaCreate from "./avita-element"
 
-export function div(): ShwayElement<HTMLElement> {
-    return shwayCreate("div")
+export function div(): AvitaElement<HTMLElement> {
+    return avitaCreate("div")
 }
 
-export function span(): ShwayElement<HTMLElement> {
-    return shwayCreate("span")
+export function span(): AvitaElement<HTMLElement> {
+    return avitaCreate("span")
 }
 
-export function button(): ShwayElement<HTMLElement> {
-    return shwayCreate("button")
+export function button(): AvitaElement<HTMLElement> {
+    return avitaCreate("button")
 }
 
-export function input(): ShwayElement<HTMLElement> {
-    return shwayCreate("input")
+export function input(): AvitaElement<HTMLElement> {
+    return avitaCreate("input")
 }
 
-export function h1(): ShwayElement<HTMLElement> {
-    return shwayCreate("h1")
+export function h1(): AvitaElement<HTMLElement> {
+    return avitaCreate("h1")
 }
 
-export function h2(): ShwayElement<HTMLElement> {
-    return shwayCreate("h2")
+export function h2(): AvitaElement<HTMLElement> {
+    return avitaCreate("h2")
 }
 
-export function h3(): ShwayElement<HTMLElement> {
-    return shwayCreate("h3")
+export function h3(): AvitaElement<HTMLElement> {
+    return avitaCreate("h3")
 }
 
-export function h4(): ShwayElement<HTMLElement> {
-    return shwayCreate("h4")
+export function h4(): AvitaElement<HTMLElement> {
+    return avitaCreate("h4")
 }
 
-export function h5(): ShwayElement<HTMLElement> {
-    return shwayCreate("h5")
+export function h5(): AvitaElement<HTMLElement> {
+    return avitaCreate("h5")
 }
 
-export function h6(): ShwayElement<HTMLElement> {
-    return shwayCreate("h6")
+export function h6(): AvitaElement<HTMLElement> {
+    return avitaCreate("h6")
 }
 
-export function p(): ShwayElement<HTMLElement> {
-    return shwayCreate("p")
+export function p(): AvitaElement<HTMLElement> {
+    return avitaCreate("p")
 }
 
-export function ul(): ShwayElement<HTMLElement> {
-    return shwayCreate("ul")
+export function ul(): AvitaElement<HTMLElement> {
+    return avitaCreate("ul")
 }
 
-export function ol(): ShwayElement<HTMLElement> {
-    return shwayCreate("ol")
+export function ol(): AvitaElement<HTMLElement> {
+    return avitaCreate("ol")
 }
 
-export function li(): ShwayElement<HTMLElement> {
-    return shwayCreate("li")
+export function li(): AvitaElement<HTMLElement> {
+    return avitaCreate("li")
 }
 
-export function img(): ShwayElement<HTMLElement> {
-    return shwayCreate("img")
+export function img(): AvitaElement<HTMLElement> {
+    return avitaCreate("img")
 }
 
-export function iframe(): ShwayElement<HTMLElement> {
-    return shwayCreate("iframe")
+export function iframe(): AvitaElement<HTMLElement> {
+    return avitaCreate("iframe")
 }
 
-export function a(): ShwayElement<HTMLElement> {
-    return shwayCreate("a")
+export function a(): AvitaElement<HTMLElement> {
+    return avitaCreate("a")
 }
 
-export function form(): ShwayElement<HTMLElement> {
-    return shwayCreate("form")
+export function form(): AvitaElement<HTMLElement> {
+    return avitaCreate("form")
 }
 
-export function label(): ShwayElement<HTMLElement> {
-    return shwayCreate("label")
+export function label(): AvitaElement<HTMLElement> {
+    return avitaCreate("label")
 }
 
-export function textarea(): ShwayElement<HTMLElement> {
-    return shwayCreate("textarea")
+export function textarea(): AvitaElement<HTMLElement> {
+    return avitaCreate("textarea")
 }
 
-export function select(): ShwayElement<HTMLElement> {
-    return shwayCreate("select")
+export function select(): AvitaElement<HTMLElement> {
+    return avitaCreate("select")
 }
 
-export function option(): ShwayElement<HTMLElement> {
-    return shwayCreate("option")
+export function option(): AvitaElement<HTMLElement> {
+    return avitaCreate("option")
 }
 
-export function table(): ShwayElement<HTMLElement> {
-    return shwayCreate("table")
+export function table(): AvitaElement<HTMLElement> {
+    return avitaCreate("table")
 }
 
-export function thead(): ShwayElement<HTMLElement> {
-    return shwayCreate("thead")
+export function thead(): AvitaElement<HTMLElement> {
+    return avitaCreate("thead")
 }
 
-export function tbody(): ShwayElement<HTMLElement> {
-    return shwayCreate("tbody")
+export function tbody(): AvitaElement<HTMLElement> {
+    return avitaCreate("tbody")
 }
 
-export function tr(): ShwayElement<HTMLElement> {
-    return shwayCreate("tr")
+export function tr(): AvitaElement<HTMLElement> {
+    return avitaCreate("tr")
 }
 
-export function th(): ShwayElement<HTMLElement> {
-    return shwayCreate("th")
+export function th(): AvitaElement<HTMLElement> {
+    return avitaCreate("th")
 }
 
-export function td(): ShwayElement<HTMLElement> {
-    return shwayCreate("td")
+export function td(): AvitaElement<HTMLElement> {
+    return avitaCreate("td")
 }
 
-export function nav(): ShwayElement<HTMLElement> {
-    return shwayCreate("nav")
+export function nav(): AvitaElement<HTMLElement> {
+    return avitaCreate("nav")
 }
 
-export function header(): ShwayElement<HTMLElement> {
-    return shwayCreate("header")
+export function header(): AvitaElement<HTMLElement> {
+    return avitaCreate("header")
 }
 
-export function footer(): ShwayElement<HTMLElement> {
-    return shwayCreate("footer")
+export function footer(): AvitaElement<HTMLElement> {
+    return avitaCreate("footer")
 }
 
-export function section(): ShwayElement<HTMLElement> {
-    return shwayCreate("section")
+export function section(): AvitaElement<HTMLElement> {
+    return avitaCreate("section")
 }
 
-export function article(): ShwayElement<HTMLElement> {
-    return shwayCreate("article")
+export function article(): AvitaElement<HTMLElement> {
+    return avitaCreate("article")
 }
 
-export function aside(): ShwayElement<HTMLElement> {
-    return shwayCreate("aside")
+export function aside(): AvitaElement<HTMLElement> {
+    return avitaCreate("aside")
 }
 
-export function main(): ShwayElement<HTMLElement> {
-    return shwayCreate("main")
+export function main(): AvitaElement<HTMLElement> {
+    return avitaCreate("main")
 }
 
-export function figure(): ShwayElement<HTMLElement> {
-    return shwayCreate("figure")
+export function figure(): AvitaElement<HTMLElement> {
+    return avitaCreate("figure")
 }
 
-export function figcaption(): ShwayElement<HTMLElement> {
-    return shwayCreate("figcaption")
+export function figcaption(): AvitaElement<HTMLElement> {
+    return avitaCreate("figcaption")
 }
 
-export function video(): ShwayElement<HTMLElement> {
-    return shwayCreate("video")
+export function video(): AvitaElement<HTMLElement> {
+    return avitaCreate("video")
 }
 
-export function audio(): ShwayElement<HTMLElement> {
-    return shwayCreate("audio")
+export function audio(): AvitaElement<HTMLElement> {
+    return avitaCreate("audio")
 }
 
-export function source(): ShwayElement<HTMLElement> {
-    return shwayCreate("source")
+export function source(): AvitaElement<HTMLElement> {
+    return avitaCreate("source")
 }
 
-export function embed(): ShwayElement<HTMLElement> {
-    return shwayCreate("embed")
+export function embed(): AvitaElement<HTMLElement> {
+    return avitaCreate("embed")
 }
 
-export function object(): ShwayElement<HTMLElement> {
-    return shwayCreate("object")
+export function object(): AvitaElement<HTMLElement> {
+    return avitaCreate("object")
 }
 
 //TODO: SVGs

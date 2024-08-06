@@ -31,6 +31,11 @@ const Color = {
     black: "#000000",
     white: "#ffffff",
     transparent: "transparent",
+    random(): string {
+        const keys = Object.keys(Color) as Array<keyof typeof Color>
+        const randomKey = keys[Math.floor(Math.random() * keys.length - 2)]
+        return Color[randomKey] as string
+    },
 }
 
 export default Color

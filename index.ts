@@ -1,6 +1,6 @@
-import type ShwayElement from "./shway-types"
+import type AvitaElement from "./avita-types"
 
-export default function render<T extends HTMLElement>(children: ShwayElement<T>) {
+export default function render<T extends HTMLElement>(children: AvitaElement<T>) {
     const root = document.querySelector("#root")
     if (root) {
         defaultStyles(document.body)
