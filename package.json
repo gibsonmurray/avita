@@ -1,11 +1,28 @@
 {
-  "name": "eta",
-  "module": "index.ts",
-  "type": "module",
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  }
+    "name": "avita",
+    "version": "1.0.0",
+    "author": "Gibson Murray",
+    "main": "dist/index.js",
+    "module": "dist/index.mjs",
+    "devDependencies": {
+        "@types/bun": "latest",
+        "tsup": "^8.2.4"
+    },
+    "peerDependencies": {
+        "typescript": "^5.5.4"
+    },
+    "keywords": [
+        "avita",
+        "user interface",
+        "ui",
+        "component library",
+        "component"
+    ],
+    "license": "MIT",
+    "scripts": {
+        "build": "tsup",
+        "dev": "bun run index.ts"
+    },
+    "type": "module",
+    "types": "dist/index.d.ts"
 }
