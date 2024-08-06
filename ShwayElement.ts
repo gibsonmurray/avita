@@ -1,13 +1,28 @@
-import type EtaElement from "./eta-types"
-import * as EtaTypes from "./eta-types"
+import type ShwayElement from "./shway-types"
+import * as ShwayTypes from "./shway-types"
 
-export default function etaCreate(tag: string): EtaElement<HTMLElement> {
-    const element = document.createElement(tag)
+export default function shwayCreate<T extends HTMLElement>(
+    tag: string
+): ShwayElement<T> {
+    const element = document.createElement(tag) as T
+    const selector = tag
+
     return {
         element,
 
+        // State
+        bindState(stateName: string, propertyToUpdate: string) {
+            addStateChangeListener(element, stateName, propertyToUpdate)
+            return this
+        },
+
+        updateState(stateName: string, newValue: any) {
+            dispatchStateChange(element, stateName, newValue)
+            return this
+        },
+
         // Element Properties
-        id(id: string): EtaElement<HTMLElement> {
+        id(id: string) {
             element.id = id
             return this
         },
@@ -60,11 +75,11 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             element.innerHTML = value
             return this
         },
-        append(element: EtaElement<HTMLElement>) {
+        append(element: ShwayElement<T>) {
             element.element.appendChild(this.element)
             return this
         },
-        prepend(element: EtaElement<HTMLElement>) {
+        prepend(element: ShwayElement<T>) {
             element.element.prepend(this.element)
             return this
         },
@@ -72,16 +87,13 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.remove()
             return this
         },
-        parent(): HTMLElement | null {
-            return this.element.parentElement
-        },
-        children(elements: EtaElement<HTMLElement>[]) {
+        children(...elements: ShwayElement<T>[]) {
             elements.forEach((element) => {
                 this.element.appendChild(element.element)
             })
             return this
         },
-        replace(element: EtaElement<HTMLElement>) {
+        replace(element: ShwayElement<T>) {
             element.element.replaceWith(this.element)
             return this
         },
@@ -413,23 +425,23 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.all = value
             return this
         },
-        accentColor(color: EtaTypes.Color | string) {
+        accentColor(color: ShwayTypes.Color | string) {
             this.element.style.accentColor = color
             return this
         },
-        appearance(value: EtaTypes.Appearance) {
+        appearance(value: ShwayTypes.Appearance) {
             this.element.style.appearance = value
             return this
         },
-        alignContent(value: EtaTypes.AlignContent) {
+        alignContent(value: ShwayTypes.AlignContent) {
             this.element.style.alignContent = value
             return this
         },
-        alignItems(value: EtaTypes.AlignItems) {
+        alignItems(value: ShwayTypes.AlignItems) {
             this.element.style.alignItems = value
             return this
         },
-        alignSelf(value: EtaTypes.AlignSelf) {
+        alignSelf(value: ShwayTypes.AlignSelf) {
             this.element.style.alignSelf = value
             return this
         },
@@ -441,7 +453,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.animationDelay = numberToSeconds(value)
             return this
         },
-        animationDirection(value: EtaTypes.AnimationDirection) {
+        animationDirection(value: ShwayTypes.AnimationDirection) {
             this.element.style.animationDirection = value
             return this
         },
@@ -449,11 +461,11 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.animationDuration = numberToSeconds(value)
             return this
         },
-        animationFillMode(value: EtaTypes.AnimationFillMode) {
+        animationFillMode(value: ShwayTypes.AnimationFillMode) {
             this.element.style.animationFillMode = value
             return this
         },
-        animationIterationCount(value: EtaTypes.AnimationIterationCount) {
+        animationIterationCount(value: ShwayTypes.AnimationIterationCount) {
             this.element.style.animationIterationCount = value
             return this
         },
@@ -461,11 +473,11 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.animationName = value
             return this
         },
-        animationPlayState(value: EtaTypes.AnimationPlayState) {
+        animationPlayState(value: ShwayTypes.AnimationPlayState) {
             this.element.style.animationPlayState = value
             return this
         },
-        animationTimingFunction(value: EtaTypes.AnimationTimingFunction) {
+        animationTimingFunction(value: ShwayTypes.AnimationTimingFunction) {
             this.element.style.animationTimingFunction = value
             return this
         },
@@ -473,7 +485,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.aspectRatio = String(value)
             return this
         },
-        backdropFilter(value: EtaTypes.BackdropFilter) {
+        backdropFilter(value: ShwayTypes.BackdropFilter) {
             if (typeof value === "string") {
                 this.element.style.backdropFilter = value
                 return this
@@ -482,7 +494,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.backdropFilter = `${filter}(${val})`
             return this
         },
-        backfaceVisibility(value: EtaTypes.BackfaceVisibility) {
+        backfaceVisibility(value: ShwayTypes.BackfaceVisibility) {
             this.element.style.backfaceVisibility = value
             return this
         },
@@ -490,19 +502,19 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.background = value
             return this
         },
-        backgroundAttachment(value: EtaTypes.BackgroundAttachment) {
+        backgroundAttachment(value: ShwayTypes.BackgroundAttachment) {
             this.element.style.backgroundAttachment = value
             return this
         },
-        backgroundBlendMode(value: EtaTypes.BackgroundBlendMode) {
+        backgroundBlendMode(value: ShwayTypes.BackgroundBlendMode) {
             this.element.style.backgroundBlendMode = value
             return this
         },
-        backgroundClip(value: EtaTypes.BackgroundClip) {
+        backgroundClip(value: ShwayTypes.BackgroundClip) {
             this.element.style.backgroundClip = value
             return this
         },
-        backgroundColor(value: EtaTypes.Color | string) {
+        backgroundColor(value: ShwayTypes.Color | string) {
             this.element.style.backgroundColor = value
             return this
         },
@@ -510,11 +522,11 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.backgroundImage = value
             return this
         },
-        backgroundOrigin(value: EtaTypes.BackgroundOrigin) {
+        backgroundOrigin(value: ShwayTypes.BackgroundOrigin) {
             this.element.style.backgroundOrigin = value
             return this
         },
-        backgroundPosition(value: EtaTypes.BackgroundPosition) {
+        backgroundPosition(value: ShwayTypes.BackgroundPosition) {
             if (typeof value === "string") {
                 this.element.style.backgroundPosition = value
                 return this
@@ -523,7 +535,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.backgroundPosition = `${pos} ${val}`
             return this
         },
-        backgroundPositionX(value: EtaTypes.BackgroundPosition) {
+        backgroundPositionX(value: ShwayTypes.BackgroundPosition) {
             if (typeof value === "string") {
                 this.element.style.backgroundPositionX = value
                 return this
@@ -532,7 +544,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.backgroundPositionX = `${pos} ${val}`
             return this
         },
-        backgroundPositionY(value: EtaTypes.BackgroundPosition) {
+        backgroundPositionY(value: ShwayTypes.BackgroundPosition) {
             if (typeof value === "string") {
                 this.element.style.backgroundPositionX = value
                 return this
@@ -541,11 +553,11 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.backgroundPositionX = `${pos} ${val}`
             return this
         },
-        backgroundRepeat(value: EtaTypes.BackgroundRepeat) {
+        backgroundRepeat(value: ShwayTypes.BackgroundRepeat) {
             this.element.style.backgroundRepeat = value
             return this
         },
-        backgroundSize(value: EtaTypes.BackgroundSize) {
+        backgroundSize(value: ShwayTypes.BackgroundSize) {
             if (typeof value === "string") {
                 this.element.style.backgroundSize = value
                 return this
@@ -566,7 +578,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.borderBlock = value
             return this
         },
-        borderBlockColor(value: EtaTypes.Color | string) {
+        borderBlockColor(value: ShwayTypes.Color | string) {
             this.element.style.borderBlockColor = value
             return this
         },
@@ -574,11 +586,11 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.borderBlockEnd = value
             return this
         },
-        borderBlockEndColor(value: EtaTypes.Color | string) {
+        borderBlockEndColor(value: ShwayTypes.Color | string) {
             this.element.style.borderBlockEndColor = value
             return this
         },
-        borderBlockEndStyle(value: EtaTypes.BorderStyle) {
+        borderBlockEndStyle(value: ShwayTypes.BorderStyle) {
             this.element.style.borderBlockEndStyle = value
             return this
         },
@@ -591,11 +603,11 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.borderBlockStart = value
             return this
         },
-        borderBlockStartColor(value: EtaTypes.Color | string) {
+        borderBlockStartColor(value: ShwayTypes.Color | string) {
             this.element.style.borderBlockStartColor = value
             return this
         },
-        borderBlockStartStyle(value: EtaTypes.BorderStyle) {
+        borderBlockStartStyle(value: ShwayTypes.BorderStyle) {
             this.element.style.borderBlockStartStyle = value
             return this
         },
@@ -604,7 +616,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.borderBlockStartWidth = String(value) + unit
             return this
         },
-        borderBlockStyle(value: EtaTypes.BorderStyle) {
+        borderBlockStyle(value: ShwayTypes.BorderStyle) {
             this.element.style.borderBlockStyle = value
             return this
         },
@@ -617,7 +629,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.borderBottom = value
             return this
         },
-        borderBottomColor(value: EtaTypes.Color | string) {
+        borderBottomColor(value: ShwayTypes.Color | string) {
             this.element.style.borderBottomColor = value
             return this
         },
@@ -641,7 +653,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.borderTopRightRadius = String(value) + unit
             return this
         },
-        borderBottomStyle(value: EtaTypes.BorderStyle) {
+        borderBottomStyle(value: ShwayTypes.BorderStyle) {
             this.element.style.borderBottomStyle = value
             return this
         },
@@ -650,11 +662,11 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.borderBottomWidth = String(value) + unit
             return this
         },
-        borderCollapse(value: EtaTypes.BorderCollapse) {
+        borderCollapse(value: ShwayTypes.BorderCollapse) {
             this.element.style.borderCollapse = value
             return this
         },
-        borderColor(value: EtaTypes.Color | string) {
+        borderColor(value: ShwayTypes.Color | string) {
             this.element.style.borderColor = value
             return this
         },
@@ -668,7 +680,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.borderImageOutset = String(value) + unit
             return this
         },
-        borderImageRepeat(value: EtaTypes.BorderImageRepeat) {
+        borderImageRepeat(value: ShwayTypes.BorderImageRepeat) {
             this.element.style.borderImageRepeat = value
             return this
         },
@@ -690,7 +702,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.borderInline = value
             return this
         },
-        borderInlineColor(value: EtaTypes.Color | string) {
+        borderInlineColor(value: ShwayTypes.Color | string) {
             this.element.style.borderInlineColor = value
             return this
         },
@@ -698,11 +710,11 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.borderInlineEnd = value
             return this
         },
-        borderInlineEndColor(value: EtaTypes.Color | string) {
+        borderInlineEndColor(value: ShwayTypes.Color | string) {
             this.element.style.borderInlineEndColor = value
             return this
         },
-        borderInlineEndStyle(value: EtaTypes.BorderStyle) {
+        borderInlineEndStyle(value: ShwayTypes.BorderStyle) {
             this.element.style.borderInlineEndStyle = value
             return this
         },
@@ -715,11 +727,11 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.borderInlineStart = value
             return this
         },
-        borderInlineStartColor(value: EtaTypes.Color | string) {
+        borderInlineStartColor(value: ShwayTypes.Color | string) {
             this.element.style.borderInlineStartColor = value
             return this
         },
-        borderInlineStartStyle(value: EtaTypes.BorderStyle) {
+        borderInlineStartStyle(value: ShwayTypes.BorderStyle) {
             this.element.style.borderInlineStartStyle = value
             return this
         },
@@ -728,7 +740,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.borderInlineStartWidth = String(value) + unit
             return this
         },
-        borderInlineStyle(value: EtaTypes.BorderStyle) {
+        borderInlineStyle(value: ShwayTypes.BorderStyle) {
             this.element.style.borderInlineStyle = value
             return this
         },
@@ -741,11 +753,11 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.borderLeft = value
             return this
         },
-        borderLeftColor(value: EtaTypes.Color | string) {
+        borderLeftColor(value: ShwayTypes.Color | string) {
             this.element.style.borderLeftColor = value
             return this
         },
-        borderLeftStyle(value: EtaTypes.BorderStyle) {
+        borderLeftStyle(value: ShwayTypes.BorderStyle) {
             this.element.style.borderLeftStyle = value
             return this
         },
@@ -763,11 +775,11 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.borderRight = value
             return this
         },
-        borderRightColor(value: EtaTypes.Color | string) {
+        borderRightColor(value: ShwayTypes.Color | string) {
             this.element.style.borderRightColor = value
             return this
         },
-        borderRightStyle(value: EtaTypes.BorderStyle) {
+        borderRightStyle(value: ShwayTypes.BorderStyle) {
             this.element.style.borderRightStyle = value
             return this
         },
@@ -781,7 +793,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.borderSpacing = String(value) + unit
             return this
         },
-        borderStyle(value: EtaTypes.BorderStyle) {
+        borderStyle(value: ShwayTypes.BorderStyle) {
             this.element.style.borderStyle = value
             return this
         },
@@ -789,11 +801,11 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.borderTop = value
             return this
         },
-        borderTopColor(value: EtaTypes.Color | string) {
+        borderTopColor(value: ShwayTypes.Color | string) {
             this.element.style.borderTopColor = value
             return this
         },
-        borderTopStyle(value: EtaTypes.BorderStyle) {
+        borderTopStyle(value: ShwayTypes.BorderStyle) {
             this.element.style.borderTopStyle = value
             return this
         },
@@ -816,31 +828,31 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.boxShadow = value
             return this
         },
-        boxSizing(value: EtaTypes.BoxSizing) {
+        boxSizing(value: ShwayTypes.BoxSizing) {
             this.element.style.boxSizing = value
             return this
         },
-        breakAfter(value: EtaTypes.BreakAfter) {
+        breakAfter(value: ShwayTypes.BreakAfter) {
             this.element.style.breakAfter = value
             return this
         },
-        breakBefore(value: EtaTypes.BreakBefore) {
+        breakBefore(value: ShwayTypes.BreakBefore) {
             this.element.style.breakBefore = value
             return this
         },
-        breakInside(value: EtaTypes.BreakInside) {
+        breakInside(value: ShwayTypes.BreakInside) {
             this.element.style.breakInside = value
             return this
         },
-        captionSide(value: EtaTypes.CaptionSide) {
+        captionSide(value: ShwayTypes.CaptionSide) {
             this.element.style.captionSide = value
             return this
         },
-        caretColor(value: EtaTypes.Color | string) {
+        caretColor(value: ShwayTypes.Color | string) {
             this.element.style.caretColor = value
             return this
         },
-        clear(value: EtaTypes.Clear) {
+        clear(value: ShwayTypes.Clear) {
             this.element.style.clear = value
             return this
         },
@@ -849,16 +861,16 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.clipPath = value
             return this
         },
-        color(value: EtaTypes.Color | string) {
+        color(value: ShwayTypes.Color | string) {
             this.element.style.color = value
             return this
         },
-        columnCount(value: EtaTypes.ColumnCount | number) {
+        columnCount(value: ShwayTypes.ColumnCount | number) {
             const unit = typeof value === "string" ? "" : "px"
             this.element.style.columnCount = String(value) + unit
             return this
         },
-        columnFill(value: EtaTypes.ColumnFill) {
+        columnFill(value: ShwayTypes.ColumnFill) {
             this.element.style.columnFill = value
             return this
         },
@@ -871,11 +883,11 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.columnRule = value
             return this
         },
-        columnRuleColor(value: EtaTypes.Color | string) {
+        columnRuleColor(value: ShwayTypes.Color | string) {
             this.element.style.columnRuleColor = value
             return this
         },
-        columnRuleStyle(value: EtaTypes.BorderStyle) {
+        columnRuleStyle(value: ShwayTypes.BorderStyle) {
             this.element.style.columnRuleStyle = value
             return this
         },
@@ -884,7 +896,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.columnRuleWidth = String(value) + unit
             return this
         },
-        columnSpan(value: EtaTypes.ColumnSpan) {
+        columnSpan(value: ShwayTypes.ColumnSpan) {
             this.element.style.columnSpan = value
             return this
         },
@@ -910,19 +922,19 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.counterReset = value
             return this
         },
-        cursor(value: EtaTypes.Cursor) {
+        cursor(value: ShwayTypes.Cursor) {
             this.element.style.cursor = value
             return this
         },
-        direction(value: EtaTypes.Direction) {
+        direction(value: ShwayTypes.Direction) {
             this.element.style.direction = value
             return this
         },
-        display(value: EtaTypes.Display) {
+        display(value: ShwayTypes.Display) {
             this.element.style.display = value
             return this
         },
-        emptyCells(value: EtaTypes.EmptyCells) {
+        emptyCells(value: ShwayTypes.EmptyCells) {
             this.element.style.emptyCells = value
             return this
         },
@@ -931,7 +943,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.filter = value
             return this
         },
-        flex(value: EtaTypes.Flex) {
+        flex(value: ShwayTypes.Flex) {
             if (Array.isArray(value)) {
                 this.element.style.flex = value.join(" ")
                 return this
@@ -944,7 +956,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.flexBasis = String(value) + unit
             return this
         },
-        flexDirection(value: EtaTypes.FlexDirection) {
+        flexDirection(value: ShwayTypes.FlexDirection) {
             this.element.style.flexDirection = value
             return this
         },
@@ -960,11 +972,11 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.flexShrink = String(value)
             return this
         },
-        flexWrap(value: EtaTypes.FlexWrap) {
+        flexWrap(value: ShwayTypes.FlexWrap) {
             this.element.style.flexWrap = value
             return this
         },
-        float(value: EtaTypes.Float) {
+        float(value: ShwayTypes.Float) {
             this.element.style.float = value
             return this
         },
@@ -980,7 +992,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.fontFeatureSettings = value
             return this
         },
-        fontKerning(value: EtaTypes.FontKerning) {
+        fontKerning(value: ShwayTypes.FontKerning) {
             this.element.style.fontKerning = value
             return this
         },
@@ -997,7 +1009,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.fontStretch = value
             return this
         },
-        fontStyle(value: EtaTypes.FontStyle) {
+        fontStyle(value: ShwayTypes.FontStyle) {
             this.element.style.fontStyle = value
             return this
         },
@@ -1046,7 +1058,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.gridAutoColumns = value
             return this
         },
-        gridAutoFlow(value: EtaTypes.GridAutoFlow) {
+        gridAutoFlow(value: ShwayTypes.GridAutoFlow) {
             this.element.style.gridAutoFlow = value
             return this
         },
@@ -1099,11 +1111,11 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.height = String(value) + unit
             return this
         },
-        hyphens(value: EtaTypes.Hyphens) {
+        hyphens(value: ShwayTypes.Hyphens) {
             this.element.style.hyphens = value
             return this
         },
-        imageRendering(value: EtaTypes.ImageRendering) {
+        imageRendering(value: ShwayTypes.ImageRendering) {
             this.element.style.imageRendering = value
             return this
         },
@@ -1147,19 +1159,19 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.insetInlineStart = String(value) + unit
             return this
         },
-        isolation(value: EtaTypes.Isolation) {
+        isolation(value: ShwayTypes.Isolation) {
             this.element.style.isolation = value
             return this
         },
-        justifyContent(value: EtaTypes.JustifyContent) {
+        justifyContent(value: ShwayTypes.JustifyContent) {
             this.element.style.justifyContent = value
             return this
         },
-        justifyItems(value: EtaTypes.JustifyItems) {
+        justifyItems(value: ShwayTypes.JustifyItems) {
             this.element.style.justifyItems = value
             return this
         },
-        justifySelf(value: EtaTypes.JustifySelf) {
+        justifySelf(value: ShwayTypes.JustifySelf) {
             this.element.style.justifySelf = value
             return this
         },
@@ -1178,7 +1190,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.lineHeight = String(value) + unit
             return this
         },
-        lineBreak(value: EtaTypes.LineBreak) {
+        lineBreak(value: ShwayTypes.LineBreak) {
             this.element.style.lineBreak = value
             return this
         },
@@ -1190,11 +1202,11 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.listStyleImage = value
             return this
         },
-        listStylePosition(value: EtaTypes.ListStylePosition) {
+        listStylePosition(value: ShwayTypes.ListStylePosition) {
             this.element.style.listStylePosition = value
             return this
         },
-        listStyleType(value: EtaTypes.ListStyleType) {
+        listStyleType(value: ShwayTypes.ListStyleType) {
             this.element.style.listStyleType = value
             return this
         },
@@ -1261,15 +1273,15 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.maskImage = value
             return this
         },
-        maskMode(value: EtaTypes.MaskMode) {
+        maskMode(value: ShwayTypes.MaskMode) {
             this.element.style.maskMode = value
             return this
         },
-        maskOrigin(value: EtaTypes.MaskOrigin) {
+        maskOrigin(value: ShwayTypes.MaskOrigin) {
             this.element.style.maskOrigin = value
             return this
         },
-        maskPosition(value: EtaTypes.MaskPosition) {
+        maskPosition(value: ShwayTypes.MaskPosition) {
             if (Array.isArray(value)) {
                 this.element.style.maskPosition = value.join(" ")
                 return this
@@ -1277,11 +1289,11 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.maskPosition = value
             return this
         },
-        maskRepeat(value: EtaTypes.MaskRepeat) {
+        maskRepeat(value: ShwayTypes.MaskRepeat) {
             this.element.style.maskRepeat = value
             return this
         },
-        maskSize(value: EtaTypes.MaskSize) {
+        maskSize(value: ShwayTypes.MaskSize) {
             this.element.style.maskSize = value
             return this
         },
@@ -1325,11 +1337,11 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.minWidth = String(value) + unit
             return this
         },
-        mixBlendMode(value: EtaTypes.MixBlendMode) {
+        mixBlendMode(value: ShwayTypes.MixBlendMode) {
             this.element.style.mixBlendMode = value
             return this
         },
-        objectFit(value: EtaTypes.ObjectFit) {
+        objectFit(value: ShwayTypes.ObjectFit) {
             this.element.style.objectFit = value
             return this
         },
@@ -1375,7 +1387,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.outline = value
             return this
         },
-        outlineColor(value: EtaTypes.Color | string) {
+        outlineColor(value: ShwayTypes.Color | string) {
             this.element.style.outlineColor = value
             return this
         },
@@ -1384,7 +1396,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.outlineOffset = String(value) + unit
             return this
         },
-        outlineStyle(value: EtaTypes.OutlineStyle) {
+        outlineStyle(value: ShwayTypes.OutlineStyle) {
             this.element.style.outlineStyle = value
             return this
         },
@@ -1393,43 +1405,43 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.outlineWidth = String(value) + unit
             return this
         },
-        overflow(value: EtaTypes.Overflow) {
+        overflow(value: ShwayTypes.Overflow) {
             this.element.style.overflow = value
             return this
         },
-        overflowAnchor(value: EtaTypes.OverflowAnchor) {
+        overflowAnchor(value: ShwayTypes.OverflowAnchor) {
             this.element.style.overflowAnchor = value
             return this
         },
-        overflowWrap(value: EtaTypes.OverflowWrap) {
+        overflowWrap(value: ShwayTypes.OverflowWrap) {
             this.element.style.overflowWrap = value
             return this
         },
-        overflowX(value: EtaTypes.Overflow) {
+        overflowX(value: ShwayTypes.Overflow) {
             this.element.style.overflowX = value
             return this
         },
-        overflowY(value: EtaTypes.Overflow) {
+        overflowY(value: ShwayTypes.Overflow) {
             this.element.style.overflowY = value
             return this
         },
-        overscrollBehavior(value: EtaTypes.OverscrollBehavior) {
+        overscrollBehavior(value: ShwayTypes.OverscrollBehavior) {
             this.element.style.overscrollBehavior = value
             return this
         },
-        overscrollBehaviorBlock(value: EtaTypes.OverscrollBehavior) {
+        overscrollBehaviorBlock(value: ShwayTypes.OverscrollBehavior) {
             this.element.style.overscrollBehaviorBlock = value
             return this
         },
-        overscrollBehaviorInline(value: EtaTypes.OverscrollBehavior) {
+        overscrollBehaviorInline(value: ShwayTypes.OverscrollBehavior) {
             this.element.style.overscrollBehaviorInline = value
             return this
         },
-        overscrollBehaviorX(value: EtaTypes.OverscrollBehavior) {
+        overscrollBehaviorX(value: ShwayTypes.OverscrollBehavior) {
             this.element.style.overscrollBehaviorX = value
             return this
         },
-        overscrollBehaviorY(value: EtaTypes.OverscrollBehavior) {
+        overscrollBehaviorY(value: ShwayTypes.OverscrollBehavior) {
             this.element.style.overscrollBehaviorY = value
             return this
         },
@@ -1488,15 +1500,15 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.paddingTop = String(value) + unit
             return this
         },
-        pageBreakAfter(value: EtaTypes.PageBreak) {
+        pageBreakAfter(value: ShwayTypes.PageBreak) {
             this.element.style.pageBreakAfter = value
             return this
         },
-        pageBreakBefore(value: EtaTypes.PageBreak) {
+        pageBreakBefore(value: ShwayTypes.PageBreak) {
             this.element.style.pageBreakBefore = value
             return this
         },
-        pageBreakInside(value: EtaTypes.PageBreak) {
+        pageBreakInside(value: ShwayTypes.PageBreak) {
             this.element.style.pageBreakInside = value
             return this
         },
@@ -1513,23 +1525,23 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.perspectiveOrigin = value
             return this
         },
-        placeContent(value: EtaTypes.PlaceContent) {
+        placeContent(value: ShwayTypes.PlaceContent) {
             this.element.style.placeContent = value
             return this
         },
-        placeItems(value: EtaTypes.PlaceItems) {
+        placeItems(value: ShwayTypes.PlaceItems) {
             this.element.style.placeItems = value
             return this
         },
-        placeSelf(value: EtaTypes.PlaceSelf) {
+        placeSelf(value: ShwayTypes.PlaceSelf) {
             this.element.style.placeSelf = value
             return this
         },
-        pointerEvents(value: EtaTypes.PointerEvents) {
+        pointerEvents(value: ShwayTypes.PointerEvents) {
             this.element.style.pointerEvents = value
             return this
         },
-        position(value: EtaTypes.Position) {
+        position(value: ShwayTypes.Position) {
             this.element.style.position = value
             return this
         },
@@ -1537,7 +1549,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.quotes = value
             return this
         },
-        resize(value: EtaTypes.Resize) {
+        resize(value: ShwayTypes.Resize) {
             this.element.style.resize = value
             return this
         },
@@ -1555,7 +1567,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.scale = String(value)
             return this
         },
-        scrollBehavior(value: EtaTypes.ScrollBehavior) {
+        scrollBehavior(value: ShwayTypes.ScrollBehavior) {
             this.element.style.scrollBehavior = value
             return this
         },
@@ -1699,15 +1711,15 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.tabSize = String(value) + unit
             return this
         },
-        tableLayout(value: EtaTypes.TableLayout) {
+        tableLayout(value: ShwayTypes.TableLayout) {
             this.element.style.tableLayout = value
             return this
         },
-        textAlign(value: EtaTypes.TextAlign) {
+        textAlign(value: ShwayTypes.TextAlign) {
             this.element.style.textAlign = value
             return this
         },
-        textAlignLast(value: EtaTypes.TextAlignLast) {
+        textAlignLast(value: ShwayTypes.TextAlignLast) {
             this.element.style.textAlignLast = value
             return this
         },
@@ -1782,7 +1794,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.textUnderlineOffset = String(value) + unit
             return this
         },
-        textUnderlinePosition(value: EtaTypes.TextUnderlinePosition) {
+        textUnderlinePosition(value: ShwayTypes.TextUnderlinePosition) {
             this.element.style.textUnderlinePosition = value
             return this
         },
@@ -1881,7 +1893,7 @@ export default function etaCreate(tag: string): EtaElement<HTMLElement> {
             this.element.style.willChange = value
             return this
         },
-        wordWrap(value: EtaTypes.WordWrap) {
+        wordWrap(value: ShwayTypes.WordWrap) {
             this.element.style.wordWrap = value
             return this
         },
@@ -1902,4 +1914,34 @@ function numberToSeconds(n: number | string): string {
         return `${n}s`
     }
     return n
+}
+
+function createStateChangeEvent(stateName: string, newValue: any): CustomEvent {
+    return new CustomEvent("stateChange", {
+        detail: { stateName, newValue },
+        bubbles: true,
+        cancelable: true,
+    })
+}
+
+function dispatchStateChange(
+    element: HTMLElement,
+    stateName: string,
+    newValue: any
+) {
+    const event = createStateChangeEvent(stateName, newValue)
+    element.dispatchEvent(event)
+}
+
+function addStateChangeListener(
+    element: HTMLElement,
+    stateName: string,
+    propertyToUpdate: string
+) {
+    element.addEventListener("stateChange", (event: Event) => {
+        const { detail } = event as CustomEvent
+        if (detail.stateName === stateName) {
+            ;(element as any)[propertyToUpdate] = detail.newValue
+        }
+    })
 }

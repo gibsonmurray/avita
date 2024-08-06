@@ -1,11 +1,4 @@
-import Color from "../../Color"
-import { div } from "../../elements"
 import render from "../../index"
+import Home from "./components/Home"
 
-const myDiv = div()
-    .text("Hello World!")
-    .color(Color.red)
-    .width("100px")
-    .height("100px")
-
-render(myDiv)
+render(Home())

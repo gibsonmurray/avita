@@ -1,6 +1,6 @@
-import type EtaElement from "./eta-types"
+import type ShwayElement from "./shway-types"
 
-export default function render<T extends HTMLElement>(children: EtaElement<T>) {
+export default function render<T extends HTMLElement>(children: ShwayElement<T>) {
     const root = document.querySelector("#root")
     if (root) {
         defaultStyles(document.body)
