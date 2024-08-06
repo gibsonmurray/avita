@@ -1,5 +1,5 @@
-import type AvitaElement from "./avita-types"
-import avitaCreate from "./avita-element"
+import type AvitaElement from "../avita-types"
+import avitaCreate from "../avita-element"
 
 export function div(): AvitaElement<HTMLElement> {
     return avitaCreate("div")

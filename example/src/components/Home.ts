@@ -1,5 +1,5 @@
-import Color from "../../../Color"
-import { div, h1, p, button } from "../../../elements"
+import Color from "../../../src/Color"
+import { div, h1, p, button } from "../../../src/elements"
 
 const Home = () => {
     let count = 0
