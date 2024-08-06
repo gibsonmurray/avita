@@ -2,8 +2,9 @@
     "name": "avita",
     "version": "1.0.0",
     "author": "Gibson Murray",
-    "main": "dist/index.js",
-    "module": "dist/index.mjs",
+    "main": "dist/index.cjs",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
     "devDependencies": {
         "@types/bun": "latest",
         "tsup": "^8.2.4"
@@ -23,6 +24,5 @@
         "build": "tsup",
         "dev": "bun run index.ts"
     },
-    "type": "module",
-    "types": "dist/index.d.ts"
+    "type": "module"
 }

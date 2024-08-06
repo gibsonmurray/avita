@@ -1,6 +1,7 @@
 /src
 /node_modules
 /test
+/deprecated
 
 .env
 .DS_Store
