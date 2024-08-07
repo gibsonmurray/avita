@@ -1,5 +1,5 @@
 declare module "avita" {
-    export default interface AvitaElement<T extends HTMLElement> {
+    export interface AvitaElement<T extends HTMLElement> {
         element: T
 
         /* -- METADATA -- */
@@ -13,6 +13,10 @@ declare module "avita" {
         title: (value: string) => AvitaElement<T>
         text: (value: string) => AvitaElement<T>
         html: (value: string) => AvitaElement<T>
+        setValue: (value: string) => AvitaElement<T>
+        value(): string
+        setPlaceholder: (value: string) => AvitaElement<T>
+        placeholder(): string
 
         /* -- DOM CHANGES -- */
         append: (element: AvitaElement<T>) => AvitaElement<T>

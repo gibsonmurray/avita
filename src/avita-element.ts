@@ -1,4 +1,4 @@
-import type AvitaElement from "avita"
+import type { AvitaElement } from "avita"
 import type * as AvitaTypes from "avita"
 
 /**
@@ -179,6 +179,52 @@ export default function avitaCreate<T extends HTMLElement>(
         replace(element: AvitaElement<T>) {
             element.element.replaceWith(this.element)
             return this
+        },
+
+        /**
+         * Sets the value of the current `AvitaElement` instance if it is an `HTMLInputElement`.
+         * @param value - The value to set for the input element.
+         * @returns The current `AvitaElement` instance for chaining.
+         */
+        setValue(value: string) {
+            if (element instanceof HTMLInputElement) {
+                element.value = value
+            }
+            return this
+        },
+
+        /**
+         * Gets the value of the current `AvitaElement` instance if it is an `HTMLInputElement`.
+         * @returns The value of the input element, or an empty string if the element is not an `HTMLInputElement`.
+         */
+        value(): string {
+            if (element instanceof HTMLInputElement) {
+                return element.value
+            }
+            return ""
+        },
+
+        /**
+         * Sets the placeholder text of the current `AvitaElement` instance if it is an `HTMLInputElement`.
+         * @param value - The placeholder text to set for the input element.
+         * @returns The current `AvitaElement` instance for chaining.
+         */
+        setPlaceholder(value: string) {
+            if (element instanceof HTMLInputElement) {
+                element.placeholder = value
+            }
+            return this
+        },
+
+        /**
+         * Gets the placeholder value of the current `AvitaElement` instance if it is an `HTMLInputElement`.
+         * @returns The placeholder value of the input element, or an empty string if the element is not an `HTMLInputElement`.
+         */
+        placeholder(): string {
+            if (element instanceof HTMLInputElement) {
+                return element.placeholder
+            }
+            return ""
         },
 
         // Events
@@ -712,7 +758,7 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.addEventListener("abort", callback)
             return this
         },
-        
+
         /**
          * Attaches a canplay event listener to the current `AvitaElement` instance.
          * @param callback - The callback function to be executed when the element is able to start playing.
@@ -992,7 +1038,6 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.addEventListener("transitionend", callback)
             return this
         },
-
 
         // CSS Properties
         /**
@@ -1567,7 +1612,6 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.style.borderColor = String(value)
             return this
         },
-
 
         /**
          * Sets the 'borderImage' CSS property on the current `AvitaElement` instance.
@@ -3191,7 +3235,6 @@ export default function avitaCreate<T extends HTMLElement>(
             return this
         },
 
-
         /**
          * Sets the 'offsetDistance' CSS property on the current `AvitaElement` instance.
          * @param value - The value to set for the 'offsetDistance' CSS property. Must be a valid CSS `offset-distance` value.
@@ -4488,7 +4531,6 @@ export default function avitaCreate<T extends HTMLElement>(
             this.element.style.zIndex = String(value) + unit
             return this
         },
-
     }
 }
 

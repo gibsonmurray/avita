@@ -43,7 +43,7 @@ import {
     object,
 } from "./elements"
 import AvitaColor from "./avita-color"
-import type AvitaElement from "avita"
+import type { AvitaElement } from "avita"
 
 /**
  * Renders the provided Avita element to the root element in the DOM.
@@ -128,5 +128,5 @@ export {
     source,
     embed,
     object,
-    AvitaColor
+    AvitaColor,
 }

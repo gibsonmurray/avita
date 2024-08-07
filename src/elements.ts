@@ -1,8 +1,8 @@
-import type AvitaElement from "avita"
+import type { AvitaElement } from "avita"
 import avitaCreate from "./avita-element"
 
 /**
- * Creates a new `div` element. Has properties of AvitaElement 
+ * Creates a new `div` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
  * @returns {AvitaElement<HTMLElement>} A new `div` element.
  */
@@ -11,7 +11,7 @@ export function div(): AvitaElement<HTMLElement> {
 }
 
 /**
- * Creates a new `span` element. Has properties of AvitaElement 
+ * Creates a new `span` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
  * @returns {AvitaElement<HTMLElement>} A new `span` element.
  */
@@ -20,7 +20,7 @@ export function span(): AvitaElement<HTMLElement> {
 }
 
 /**
- * Creates a new `buttom` element. Has properties of AvitaElement 
+ * Creates a new `buttom` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
  * @returns {AvitaElement<HTMLElement>} A new `buttom` element.
  */
