@@ -1,13 +1,24 @@
 import { div, h1, AvitaColor } from "avita"
+import AddTodo from "./components/AddTodos"
+import Todos from "./components/Todos"
 
-export function App() {
-    const myDiv = div().setChildren(
-        h1().text("Hello World").color(AvitaColor.RED)
-    )
+export default function App() {
+    const app = div()
+        .width("100vw")
+        .height("100vh")
+        .backgroundColor(AvitaColor.white)
+        .display("flex")
+        .justifyContent("center")
+        .alignItems("center")
+        .flexDirection("column")
+        .children(
+            h1()
+                .color(AvitaColor.black)
+                .fontSize("2rem")
+                .text("TODO"),
+            AddTodo(),
+            Todos()
+        )
 
-    myDiv.onClick(() => {
-        myDiv.children[0].text("Hello World 2")
-    })
-
-    return myDiv
+    return app
 }

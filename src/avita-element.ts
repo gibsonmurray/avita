@@ -1,13 +1,93 @@
 import type * as AvitaTypes from "avita"
 import { span } from "./elements"
+import { defaultStyles, numberToSeconds } from "./utils"
 
-export default class AvitaElement<T extends HTMLElement> {
-    element: T
-    children: AvitaElement<T>[]
+export default class Avita<T extends HTMLElement> {
+    private element: T
+    private avitaChildren: Avita<T>[]
 
-    constructor(tag: string) {
-        this.element = document.createElement(tag) as T
-        this.children = []
+    /**
+     * Creates a new instance of the AvitaElement class.
+     * @param tag - (optional) The tag name of the HTML element to create.
+     * @param el - (optional) The HTML element to wrap in an AvitaElement instance.
+     * @throws {Error} If both tag and el are provided, or if neither tag nor el are provided.
+     */
+    constructor(tag?: string, el?: T) {
+        if ((tag && el) || (!tag && !el)) {
+            throw new Error(
+                "Either tag or HTML element must be provided, but not both."
+            )
+        }
+        if (el) {
+            this.element = el
+        } else if (tag) {
+            this.element = document.createElement(tag) as T
+        } else {
+            throw new Error("Either tag or HTML element must be provided.")
+        }
+        this.avitaChildren = []
+    }
+
+    /**
+     * Renders the provided Avita element to the root element in the DOM.
+     *
+     * @param children - The Avita element to be rendered.
+     * @param selector - (optional) The CSS selector for the root element in the DOM. Default is '#root'.
+     * @throws {Error} If the root element with the ID 'root' is not found in the HTML.
+     */
+    static render<T extends HTMLElement>(
+        children: Avita<T>,
+        selector: string = "#root"
+    ) {
+        const root = document.querySelector(selector)
+        if (root) {
+            defaultStyles()
+            root.innerHTML = ""
+            root.appendChild(children.element)
+        } else {
+            throw new Error(
+                "Root element not found: please add a div with id='root' to your HTML file"
+            )
+        }
+    }
+
+    static find<T extends HTMLElement>(selector: string): Avita<T> | Avita<T>[] {
+        const elements = document.querySelectorAll(selector) as NodeListOf<T>
+        if (elements.length > 1) {
+            return Array.from(elements).map((element) => {
+                return new Avita<T>(undefined, element)
+            })
+        }
+        if (elements.length === 1) {
+            return new Avita<T>(undefined, elements[0])
+        }
+        throw new Error(
+            `Element with selector: '${selector}' not found in DOM tree`
+        )
+    }
+
+    find(selector: string) {
+        const element = this.element.querySelector(selector) as T
+        if (element) {
+            return new Avita<T>(undefined, element)
+        }
+        throw new Error(
+            `Element with selector: '${selector}' not found in local DOM subtree`
+        )
+    }
+
+    findAll(selector: string) {
+        const elements = this.element.querySelectorAll(
+            selector
+        ) as unknown as T[]
+        if (elements.length > 0) {
+            return elements.map((element) => {
+                return new Avita<T>(undefined, element)
+            })
+        }
+        throw new Error(
+            `Elements with selector: '${selector}' not found in local DOM subtree`
+        )
     }
 
     // Element Properties
@@ -130,7 +210,7 @@ export default class AvitaElement<T extends HTMLElement> {
      * @param element - The `AvitaElement` instance to append the current instance to.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    append(element: AvitaElement<T>) {
+    append(element: Avita<T>) {
         this.element.appendChild(element.element)
         return this
     }
@@ -140,7 +220,7 @@ export default class AvitaElement<T extends HTMLElement> {
      * @param element - The `AvitaElement` instance to prepend the current instance to.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    prepend(element: AvitaElement<T>) {
+    prepend(element: Avita<T>) {
         this.element.prepend(element.element)
         return this
     }
@@ -155,18 +235,17 @@ export default class AvitaElement<T extends HTMLElement> {
     }
 
     /**
-     * Adds children to the current `AvitaElement` instance. If there are existing children, they will be removed
-     * and the new children will be added.
-     * @param elements - The `AvitaElement` instances to append as children.
+     * Sets the children of the current `AvitaElement` instance.
+     * @param elements - An array of `AvitaElement` instances or strings to set as the children of the current instance.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    setChildren(...elements: AvitaElement<T>[]) {
-        this.children = []
+    children(...elements: Avita<T>[]) {
+        this.avitaChildren = []
         elements.forEach((element) => {
             if (typeof element === "string") {
-                this.children.push(span().text(element) as AvitaElement<T>)
+                this.avitaChildren.push(span().text(element) as Avita<T>)
             } else {
-                this.children.push(element)
+                this.avitaChildren.push(element)
             }
         })
         this.updateDOMChildren()
@@ -174,7 +253,7 @@ export default class AvitaElement<T extends HTMLElement> {
     }
 
     removeChild(index: number) {
-        this.children.splice(index, 1)
+        this.avitaChildren.splice(index, 1)
         this.updateDOMChildren()
         return this
     }
@@ -183,7 +262,7 @@ export default class AvitaElement<T extends HTMLElement> {
         this.element.childNodes.forEach((child) => {
             child.remove()
         })
-        this.children.forEach((child) => {
+        this.avitaChildren.forEach((child) => {
             console.log(child)
             this.element.appendChild(child.element)
         })
@@ -194,7 +273,7 @@ export default class AvitaElement<T extends HTMLElement> {
      * @param element - The `AvitaElement` instance to replace the current instance with.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    replace(element: AvitaElement<T>) {
+    replace(element: Avita<T>) {
         this.element.replaceWith(element.element)
         return this
     }
@@ -227,7 +306,7 @@ export default class AvitaElement<T extends HTMLElement> {
      * @param value - The placeholder text to set for the input element.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    setPlaceholder(value: string) {
+    placeholder(value: string) {
         if (this.element instanceof HTMLInputElement) {
             this.element.placeholder = value
         }
@@ -238,12 +317,12 @@ export default class AvitaElement<T extends HTMLElement> {
      * Gets the placeholder value of the current `AvitaElement` instance if it is an `HTMLInputElement`.
      * @returns The placeholder value of the input element, or an empty string if the element is not an `HTMLInputElement`.
      */
-    placeholder(): string {
-        if (this.element instanceof HTMLInputElement) {
-            return this.element.placeholder
-        }
-        return ""
-    }
+    // placeholder(): string {
+    //     if (this.element instanceof HTMLInputElement) {
+    //         return this.element.placeholder
+    //     }
+    //     return ""
+    // }
 
     // Events
 
@@ -4551,13 +4630,9 @@ export default class AvitaElement<T extends HTMLElement> {
 }
 
 /**
- * Converts a number to a string representation with a 'seconds' unit.
- * @param n - The number to convert to a string with 'seconds' unit.
- * @returns A string representation of the input number with 'seconds' unit.
+ * Like jQuery, this function finds an element in the DOM based on the provided selector. Then
+ * it wraps the element as an `Avita` element and returns it.
+ * @param selector - The selector to use to find the element in the DOM.
+ * @returns An `Avita` element wrapping the found element.
  */
-function numberToSeconds(n: number | string): string {
-    if (typeof n === "number") {
-        return `${n}s`
-    }
-    return n
-}
+export const $ = Avita.find

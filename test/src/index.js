@@ -1,6 +1,6 @@
-import { render } from "avita"
-import { App } from "./App"
+import Avita from "avita"
+import App from "./App"
 
 const app = App()
 
-render(app)
+Avita.render(app)
