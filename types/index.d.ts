@@ -171,6 +171,9 @@ declare module "avita" {
         ) => AvitaElement<T>
 
         // Transition Events
+        onTransitionStart: (
+            callback: (event: TransitionEvent) => void
+        ) => AvitaElement<T>
         onTransitionEnd: (
             callback: (event: TransitionEvent) => void
         ) => AvitaElement<T>

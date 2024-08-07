@@ -45,6 +45,12 @@ import {
 import AvitaColor from "./avita-color"
 import type AvitaElement from "avita"
 
+/**
+ * Renders the provided Avita element to the root element in the DOM.
+ *
+ * @param children - The Avita element to be rendered.
+ * @throws {Error} If the root element with the ID 'root' is not found in the HTML.
+ */
 function render<T extends HTMLElement>(children: AvitaElement<T>) {
     const root = document.querySelector("#root")
     if (root) {
@@ -58,6 +64,19 @@ function render<T extends HTMLElement>(children: AvitaElement<T>) {
     }
 }
 
+/**
+ * Applies a set of default styles to the provided HTML body element.
+ *
+ * This function sets the following styles on the body element:
+ * - `margin: 0`
+ * - `padding: 0`
+ * - `box-sizing: border-box`
+ * - `font-family: sans-serif`
+ *
+ * These styles are commonly used as a starting point for web applications to ensure consistent layout and appearance across different browsers.
+ *
+ * @param body - The HTML body element to apply the default styles to.
+ */
 function defaultStyles(body: HTMLElement) {
     body.style.margin = "0"
     body.style.padding = "0"

@@ -1,5 +1,10 @@
 import type { AvitaColorType } from "avita"
 
+/**
+ * An object containing a set of predefined Avita color values.
+ * The object has properties for various color names, each with a corresponding hex color code.
+ * Additionally, it provides a `random()` method that returns a random color from the available options.
+ */
 const AvitaColor: AvitaColorType = {
     red: "#ff0000",
     redOrange: "#ff4500",
@@ -33,6 +38,11 @@ const AvitaColor: AvitaColorType = {
     black: "#000000",
     white: "#ffffff",
     transparent: "transparent",
+    
+    /**
+     * Returns a random Avita color from the available options.
+     * @returns {string} A random Avita color hex code.
+     */
     random(): string {
         const keys = Object.keys(AvitaColor) as Array<keyof typeof AvitaColor>
         const randomKey = keys[Math.floor(Math.random() * keys.length - 2)]
