@@ -1,6 +1,8 @@
 declare module "avita" {
-    export interface AvitaElement<T extends HTMLElement> {
+    export interface AvitaElementType<T extends HTMLElement> {
         element: T
+        children: AvitaElement<T>[]
+        state: { [key: string]: any }
 
         /* -- METADATA -- */
         id: (value: string) => AvitaElement<T>
@@ -17,12 +19,14 @@ declare module "avita" {
         value(): string
         setPlaceholder: (value: string) => AvitaElement<T>
         placeholder(): string
+        setState: (key: string, value: any) => AvitaElement<T>
 
         /* -- DOM CHANGES -- */
         append: (element: AvitaElement<T>) => AvitaElement<T>
         prepend: (element: AvitaElement<T>) => AvitaElement<T>
         remove: () => AvitaElement<T>
-        children: (...elements: AvitaElement<T>[]) => AvitaElement<T>
+        setChildren: (...elements: AvitaElement<T>[]) => AvitaElement<T>
+        removeChild: (index: number) => AvitaElement<T>
         replace: (element: AvitaElement<T>) => AvitaElement<T>
 
         /* -- EVENTS -- */

@@ -1,4 +1,6 @@
 import { render } from "avita"
 import { App } from "./App"
 
-render(App())
+const app = App()
+
+render(app)

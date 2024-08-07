@@ -1,40 +1,39 @@
-import type { AvitaElement } from "avita"
-import avitaCreate from "./avita-element"
+import AvitaElement from "./avita-element"
 
 /**
  * Creates a new `div` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {AvitaElement<HTMLElement>} A new `div` element.
+ * @returns {AvitaElement<HTMLDivElement>} A new Avita wrapped `div` element.
  */
-export function div(): AvitaElement<HTMLElement> {
-    return avitaCreate("div")
+export function div(): AvitaElement<HTMLDivElement> {
+    return new AvitaElement<HTMLDivElement>("div")
 }
 
 /**
  * Creates a new `span` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {AvitaElement<HTMLElement>} A new `span` element.
+ * @returns {AvitaElement<HTMLSpanElement>} A new `span` element.
  */
-export function span(): AvitaElement<HTMLElement> {
-    return avitaCreate("span")
+export function span(): AvitaElement<HTMLSpanElement> {
+    return new AvitaElement<HTMLSpanElement>("span")
 }
 
 /**
  * Creates a new `buttom` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {AvitaElement<HTMLElement>} A new `buttom` element.
+ * @returns {AvitaElement<HTMLButtonElement>} A new `buttom` element.
  */
-export function button(): AvitaElement<HTMLElement> {
-    return avitaCreate("button")
+export function button(): AvitaElement<HTMLButtonElement> {
+    return new AvitaElement<HTMLButtonElement>("btton")
 }
 
 /**
  * Creates a new `input` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {AvitaElement<HTMLElement>} A new `input` element.
+ * @returns {AvitaElement<HTMLInputElement>} A new `input` element.
  */
-export function input(): AvitaElement<HTMLElement> {
-    return avitaCreate("input")
+export function input(): AvitaElement<HTMLInputElement> {
+    return new AvitaElement<HTMLInputElement>("input")
 }
 
 /**
@@ -43,7 +42,7 @@ export function input(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `h1` element.
  */
 export function h1(): AvitaElement<HTMLElement> {
-    return avitaCreate("h1")
+    return new AvitaElement<HTMLElement>("h1")
 }
 
 /**
@@ -52,7 +51,7 @@ export function h1(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `h2` element.
  */
 export function h2(): AvitaElement<HTMLElement> {
-    return avitaCreate("h2")
+    return new AvitaElement<HTMLElement>("h2")
 }
 
 /**
@@ -61,7 +60,7 @@ export function h2(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `h3` element.
  */
 export function h3(): AvitaElement<HTMLElement> {
-    return avitaCreate("h3")
+    return new AvitaElement<HTMLElement>("h3")
 }
 
 /**
@@ -70,7 +69,7 @@ export function h3(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `h4` element.
  */
 export function h4(): AvitaElement<HTMLElement> {
-    return avitaCreate("h4")
+    return new AvitaElement<HTMLElement>("h4")
 }
 
 /**
@@ -79,7 +78,7 @@ export function h4(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `h5` element.
  */
 export function h5(): AvitaElement<HTMLElement> {
-    return avitaCreate("h5")
+    return new AvitaElement<HTMLElement>("h5")
 }
 
 /**
@@ -88,16 +87,16 @@ export function h5(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `h6` element.
  */
 export function h6(): AvitaElement<HTMLElement> {
-    return avitaCreate("h6")
+    return new AvitaElement<HTMLElement>("h6")
 }
 
 /**
  * Creates a new `p` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {AvitaElement<HTMLElement>} A new `p` element.
+ * @returns {AvitaElement<HTMLParagraphElement>} A new `p` element.
  */
-export function p(): AvitaElement<HTMLElement> {
-    return avitaCreate("p")
+export function p(): AvitaElement<HTMLParagraphElement> {
+    return new AvitaElement<HTMLParagraphElement>("p")
 }
 
 /**
@@ -106,7 +105,7 @@ export function p(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `ul` element.
  */
 export function ul(): AvitaElement<HTMLElement> {
-    return avitaCreate("ul")
+    return new AvitaElement<HTMLElement>("ul")
 }
 
 /**
@@ -115,7 +114,7 @@ export function ul(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `ol` element.
  */
 export function ol(): AvitaElement<HTMLElement> {
-    return avitaCreate("ol")
+    return new AvitaElement<HTMLElement>("ol")
 }
 
 /**
@@ -124,88 +123,88 @@ export function ol(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `li` element.
  */
 export function li(): AvitaElement<HTMLElement> {
-    return avitaCreate("li")
+    return new AvitaElement<HTMLElement>("li")
 }
 
 /**
  * Creates a new `img` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {AvitaElement<HTMLElement>} A new `img` element.
+ * @returns {AvitaElement<HTMLImageElement>} A new `img` element.
  */
-export function img(): AvitaElement<HTMLElement> {
-    return avitaCreate("img")
+export function img(): AvitaElement<HTMLImageElement> {
+    return new AvitaElement<HTMLImageElement>("img")
 }
 
 /**
  * Creates a new `iframe` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {AvitaElement<HTMLElement>} A new `iframe` element.
+ * @returns {AvitaElement<HTMLIFrameElement>} A new `iframe` element.
  */
-export function iframe(): AvitaElement<HTMLElement> {
-    return avitaCreate("iframe")
+export function iframe(): AvitaElement<HTMLIFrameElement> {
+    return new AvitaElement<HTMLIFrameElement>("iframe")
 }
 
 /**
  * Creates a new `a` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {AvitaElement<HTMLElement>} A new `a` element.
+ * @returns {AvitaElement<HTMLAnchorElement>} A new `a` element.
  */
-export function a(): AvitaElement<HTMLElement> {
-    return avitaCreate("a")
+export function a(): AvitaElement<HTMLAnchorElement> {
+    return new AvitaElement<HTMLAnchorElement>("a")
 }
 
 /**
  * Creates a new `form` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {AvitaElement<HTMLElement>} A new `form` element.
+ * @returns {AvitaElement<HTMLFormElement>} A new `form` element.
  */
-export function form(): AvitaElement<HTMLElement> {
-    return avitaCreate("form")
+export function form(): AvitaElement<HTMLFormElement> {
+    return new AvitaElement<HTMLFormElement>("form")
 }
 
 /**
  * Creates a new `input` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {AvitaElement<HTMLElement>} A new `input` element.
+ * @returns {AvitaElement<HTMLLabelElement>} A new `input` element.
  */
-export function label(): AvitaElement<HTMLElement> {
-    return avitaCreate("label")
+export function label(): AvitaElement<HTMLLabelElement> {
+    return new AvitaElement<HTMLLabelElement>("label")
 }
 
 /**
  * Creates a new `textarea` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {AvitaElement<HTMLElement>} A new `textarea` element.
+ * @returns {AvitaElement<HTMLTextAreaElement>} A new `textarea` element.
  */
-export function textarea(): AvitaElement<HTMLElement> {
-    return avitaCreate("textarea")
+export function textarea(): AvitaElement<HTMLTextAreaElement> {
+    return new AvitaElement<HTMLTextAreaElement>("textarea")
 }
 
 /**
  * Creates a new `select` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {AvitaElement<HTMLElement>} A new `select` element.
+ * @returns {AvitaElement<HTMLSelectElement>} A new `select` element.
  */
-export function select(): AvitaElement<HTMLElement> {
-    return avitaCreate("select")
+export function select(): AvitaElement<HTMLSelectElement> {
+    return new AvitaElement<HTMLSelectElement>("select")
 }
 
 /**
  * Creates a new `option` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {AvitaElement<HTMLElement>} A new `option` element.
+ * @returns {AvitaElement<HTMLOptionElement>} A new `option` element.
  */
-export function option(): AvitaElement<HTMLElement> {
-    return avitaCreate("option")
+export function option(): AvitaElement<HTMLOptionElement> {
+    return new AvitaElement<HTMLOptionElement>("option")
 }
 
 /**
  * Creates a new `table` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {AvitaElement<HTMLElement>} A new `table` element.
+ * @returns {AvitaElement<HTMLTableElement>} A new `table` element.
  */
-export function table(): AvitaElement<HTMLElement> {
-    return avitaCreate("table")
+export function table(): AvitaElement<HTMLTableElement> {
+    return new AvitaElement<HTMLTableElement>("table")
 }
 
 /**
@@ -214,7 +213,7 @@ export function table(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `thead` element.
  */
 export function thead(): AvitaElement<HTMLElement> {
-    return avitaCreate("thead")
+    return new AvitaElement<HTMLElement>("thead")
 }
 
 /**
@@ -223,7 +222,7 @@ export function thead(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `tbody` element.
  */
 export function tbody(): AvitaElement<HTMLElement> {
-    return avitaCreate("tbody")
+    return new AvitaElement<HTMLElement>("tbody")
 }
 
 /**
@@ -232,7 +231,7 @@ export function tbody(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `tr` element.
  */
 export function tr(): AvitaElement<HTMLElement> {
-    return avitaCreate("tr")
+    return new AvitaElement<HTMLElement>("tr")
 }
 
 /**
@@ -241,7 +240,7 @@ export function tr(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `th` element.
  */
 export function th(): AvitaElement<HTMLElement> {
-    return avitaCreate("th")
+    return new AvitaElement<HTMLElement>("th")
 }
 
 /**
@@ -250,7 +249,7 @@ export function th(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `td` element.
  */
 export function td(): AvitaElement<HTMLElement> {
-    return avitaCreate("td")
+    return new AvitaElement<HTMLElement>("td")
 }
 
 /**
@@ -259,7 +258,7 @@ export function td(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `nav` element.
  */
 export function nav(): AvitaElement<HTMLElement> {
-    return avitaCreate("nav")
+    return new AvitaElement<HTMLElement>("nav")
 }
 
 /**
@@ -268,7 +267,7 @@ export function nav(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `header` element.
  */
 export function header(): AvitaElement<HTMLElement> {
-    return avitaCreate("header")
+    return new AvitaElement<HTMLElement>("header")
 }
 
 /**
@@ -277,7 +276,7 @@ export function header(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `footer` element.
  */
 export function footer(): AvitaElement<HTMLElement> {
-    return avitaCreate("footer")
+    return new AvitaElement<HTMLElement>("footer")
 }
 
 /**
@@ -286,7 +285,7 @@ export function footer(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `section` element.
  */
 export function section(): AvitaElement<HTMLElement> {
-    return avitaCreate("section")
+    return new AvitaElement<HTMLElement>("section")
 }
 
 /**
@@ -295,7 +294,7 @@ export function section(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `article` element.
  */
 export function article(): AvitaElement<HTMLElement> {
-    return avitaCreate("article")
+    return new AvitaElement<HTMLElement>("article")
 }
 
 /**
@@ -304,7 +303,7 @@ export function article(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `aside` element.
  */
 export function aside(): AvitaElement<HTMLElement> {
-    return avitaCreate("aside")
+    return new AvitaElement<HTMLElement>("aside")
 }
 
 /**
@@ -313,7 +312,7 @@ export function aside(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `main` element.
  */
 export function main(): AvitaElement<HTMLElement> {
-    return avitaCreate("main")
+    return new AvitaElement<HTMLElement>("main")
 }
 
 /**
@@ -322,7 +321,7 @@ export function main(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `figure` element.
  */
 export function figure(): AvitaElement<HTMLElement> {
-    return avitaCreate("figure")
+    return new AvitaElement<HTMLElement>("figure")
 }
 
 /**
@@ -331,52 +330,51 @@ export function figure(): AvitaElement<HTMLElement> {
  * @returns {AvitaElement<HTMLElement>} A new `figcaption` element.
  */
 export function figcaption(): AvitaElement<HTMLElement> {
-    return avitaCreate("figcaption")
+    return new AvitaElement<HTMLElement>("figcaption")
 }
 
 /**
  * Creates a new `video` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {AvitaElement<HTMLElement>} A new `video` element.
+ * @returns {AvitaElement<HTMLVideoElement>} A new `video` element.
  */
-export function video(): AvitaElement<HTMLElement> {
-    return avitaCreate("video")
+export function video(): AvitaElement<HTMLVideoElement> {
+    return new AvitaElement<HTMLVideoElement>("video")
 }
 
 /**
  * Creates a new `audio` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {AvitaElement<HTMLElement>} A new `audio` element.
+ * @returns {AvitaElement<HTMLAudioElement>} A new `audio` element.
  */
-export function audio(): AvitaElement<HTMLElement> {
-    return avitaCreate("audio")
+export function audio(): AvitaElement<HTMLAudioElement> {
+    return new AvitaElement<HTMLAudioElement>("audio")
 }
 
 /**
  * Creates a new `source` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {AvitaElement<HTMLElement>} A new `source` element.
+ * @returns {AvitaElement<HTMLSourceElement>} A new `source` element.
  */
-export function source(): AvitaElement<HTMLElement> {
-    return avitaCreate("source")
+export function source(): AvitaElement<HTMLSourceElement> {
+    return new AvitaElement<HTMLSourceElement>("source")
 }
 
 /**
  * Creates a new `embed` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {AvitaElement<HTMLElement>} A new `embed` element.
+ * @returns {AvitaElement<HTMLEmbedElement>} A new `embed` element.
  */
-export function embed(): AvitaElement<HTMLElement> {
-    return avitaCreate("embed")
+export function embed(): AvitaElement<HTMLEmbedElement> {
+    return new AvitaElement<HTMLEmbedElement>("embed")
 }
 
 /**
  * Creates a new `object` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {AvitaElement<HTMLElement>} A new `object` element.
+ * @returns {AvitaElement<HTMLObjectElement>} A new `object` element.
  */
-export function object(): AvitaElement<HTMLElement> {
-    return avitaCreate("object")
+export function object(): AvitaElement<HTMLObjectElement> {
+    return new AvitaElement<HTMLObjectElement>("object")
 }
-
 //TODO: SVGs

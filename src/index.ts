@@ -43,7 +43,7 @@ import {
     object,
 } from "./elements"
 import AvitaColor from "./avita-color"
-import type { AvitaElement } from "avita"
+import AvitaElement from "./avita-element"
 
 /**
  * Renders the provided Avita element to the root element in the DOM.
@@ -54,7 +54,7 @@ import type { AvitaElement } from "avita"
 function render<T extends HTMLElement>(children: AvitaElement<T>) {
     const root = document.querySelector("#root")
     if (root) {
-        defaultStyles(document.body)
+        defaultStyles()
         root.innerHTML = ""
         root.appendChild(children.element)
     } else {
@@ -77,11 +77,33 @@ function render<T extends HTMLElement>(children: AvitaElement<T>) {
  *
  * @param body - The HTML body element to apply the default styles to.
  */
-function defaultStyles(body: HTMLElement) {
-    body.style.margin = "0"
-    body.style.padding = "0"
-    body.style.boxSizing = "border-box"
-    body.style.fontFamily = "sans-serif"
+function defaultStyles() {
+    const style = document.createElement("style")
+    style.textContent = `
+            * {
+                box-sizing: border-box;
+                padding: 0;
+                margin: 0;
+            }
+
+            body {
+                font-family: sans-serif;
+            }
+
+            a {
+                text-decoration: none;
+                color: inherit;
+            }
+
+            button {
+                border: none;
+                background: none;
+                padding: 0;
+                margin: 0;
+                cursor: pointer;
+            }
+        `
+    document.head.appendChild(style)
 }
 
 export {
