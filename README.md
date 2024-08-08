@@ -64,9 +64,9 @@ Let's build a simple todo app using Avita.
 ```
 src/
   components/
-    TodoList.js
-    TodoItem.js
-    AddTodo.js
+    Todos.js
+    Todo.js
+    AddTodos.js
   App.js
   index.js
 index.html
@@ -81,81 +81,88 @@ index.html
 </body>
 ```
 
-3. In `src/components/TodoItem.js`:
+3. In `src/components/Todo.js`:
 
 ```javascript
-import { li, div, button, AvitaColor } from "avita"
+import { AvitaColor, button, span, li } from "avita"
 
-export function TodoItem({ todo, onDelete }) {
-    return li()
-        .display("flex")
-        .justifyContent("space-between")
-        .alignItems("center")
-        .padding(10)
-        .marginBottom(5)
-        .backgroundColor(AvitaColor.white)
-        .borderRadius(5)
+export default function Todo(todo) {
+    const todoDiv = li()
+        .margin("10px")
+        .padding("10px")
+        .border("1px solid black")
+        .borderRadius("5px")
+        .cursor("pointer")
         .children(
-            div().text(todo),
+            span().text(todo),
             button()
-                .text("Delete")
+                .text("X")
+                .margin("10px")
+                .padding("10px")
+                .border("1px solid black")
                 .backgroundColor(AvitaColor.red)
-                .color(AvitaColor.white)
-                .padding(5)
+                .borderRadius("5px")
                 .cursor("pointer")
-                .onClick(onDelete)
+                .onClick(() => {
+                    todoDiv.remove()
+                })
         )
+
+    return todoDiv
 }
 ```
 
-4. In `src/components/TodoList.js`:
+4. In `src/components/Todos.js`:
 
 ```javascript
 import { ul } from "avita"
-import { TodoItem } from "./TodoItem"
 
-export function TodoList({ todos, onDeleteTodo }) {
+export default function Todos() {
     return ul()
-        .listStyleType("none")
-        .padding(0)
-        .children(
-            ...todos.map((todo, index) =>
-                TodoItem({ todo, onDelete: () => onDeleteTodo(index) })
-            )
-        )
+        .id("todos")
+        .display("flex")
+        .flexDirection("column")
+        .justifyContent("center")
+        .alignItems("center")
 }
 ```
 
 5. In src/components/AddTodo.js:
 
 ```javascript
-import { div, input, button, AvitaColor } from "avita"
+import { div, input, AvitaColor, button, $ } from "avita"
+import Todo from "./Todo"
 
-export function AddTodo({ onAddTodo }) {
-    const inputElement = input()
-        .placeholder("Enter a new todo")
-        .width("70%")
-        .padding(10)
-        .marginRight(10)
-
-    const addButton = button()
-        .text("Add Todo")
-        .backgroundColor(AvitaColor.green)
-        .color(AvitaColor.white)
-        .padding(10)
-        .cursor("pointer")
-        .onClick(() => {
-            const todoText = inputElement.value()
-            if (todoText) {
-                onAddTodo(todoText)
-                inputElement.value("")
-            }
-        })
+export default function AddTodo() {
+    let todo = ""
 
     return div()
+        .width("100%")
         .display("flex")
-        .marginBottom(20)
-        .children(inputElement, addButton)
+        .justifyContent("center")
+        .alignItems("center")
+        .children(
+            input()
+                .width("100%")
+                .height("100%")
+                .border("none")
+                .borderRadius("5px")
+                .padding("10px")
+                .margin("10px")
+                .backgroundColor(AvitaColor.white)
+                .color(AvitaColor.black)
+                .fontSize("1.2rem")
+                .placeholder("Add a todo...")
+                .onChange((e) => {
+                    todo = e.target.value
+                }),
+            button()
+                .text("Add")
+                .onClick(() => {
+                    $("input").value("")
+                    $("#todos").append(Todo(todo))
+                })
+        )
 }
 ```
 
@@ -163,50 +170,41 @@ export function AddTodo({ onAddTodo }) {
 
 ```javascript
 import { div, h1, AvitaColor } from "avita"
-import { TodoList } from "./components/TodoList"
-import { AddTodo } from "./components/AddTodo"
+import AddTodo from "./components/AddTodo"
+import Todos from "./components/Todos"
 
-export function App() {
-    let todos = []
+export default function App() {
+    const app = div()
+        .width("100vw")
+        .height("100vh")
+        .backgroundColor(AvitaColor.white)
+        .display("flex")
+        .justifyContent("center")
+        .alignItems("center")
+        .flexDirection("column")
+        .children(
+            h1().color(AvitaColor.black).fontSize("2rem").text("TODO"),
+            AddTodo(),
+            Todos()
+        )
 
-    function addTodo(todoText) {
-        todos.push(todoText)
-        renderApp()
-    }
-
-    function deleteTodo(index) {
-        todos.splice(index, 1)
-        renderApp()
-    }
-
-    function renderApp() {
-        return div()
-            .backgroundColor(AvitaColor.lightGray)
-            .padding(20)
-            .width("100%")
-            .height("100vh")
-            .children(
-                h1()
-                    .text("Avita Todo List")
-                    .color(AvitaColor.darkBlue)
-                    .fontSize(24)
-                    .marginBottom(20),
-                AddTodo({ onAddTodo: addTodo }),
-                TodoList({ todos, onDeleteTodo: deleteTodo })
-            )
-    }
-
-    return renderApp()
+    return app
 }
 ```
 
 6. Finally, in `src/index.js`:
 
 ```javascript
-import { render } from "avita"
-import { App } from "./App"
+import Avita from "avita"
+import App from "./App"
 
-render(App())
+const app = App()
+
+Avita.render(app)
 ```
 
 Congrats! You've built a simple todo app using Avita.
+
+---
+
+Copyright (c) 2024 Gibson Murray
