@@ -25,11 +25,10 @@ export default function AddTodo() {
                 .onChange((e) => {
                     todo = e.target.value
                 }),
-            input(),
             button()
                 .text("Add")
                 .onClick(() => {
-                    $("input").setValue("")
+                    $("input").value("")
                     $("#todos").append(Todo(todo))
                 })
         )

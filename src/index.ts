@@ -43,7 +43,7 @@ import {
     object,
 } from "./elements"
 import AvitaColor from "./avita-color"
-import Avita, { $ } from "./avita-element"
+import Avita, { $ } from "./avita"
 
 export {
     div,

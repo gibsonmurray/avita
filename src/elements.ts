@@ -1,4 +1,4 @@
-import Avita from "./avita-element"
+import Avita from "./avita"
 
 /**
  * Creates A new `Avita<div>` element. Has properties of AvitaElement

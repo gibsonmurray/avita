@@ -1,4 +1,4 @@
-import Avita from "./avita-element"
+import { $ } from "./avita"
 import { style } from "./elements"
 
 /**
@@ -8,7 +8,7 @@ import { style } from "./elements"
  * @param body - The HTML body element to apply the default styles to.
  */
 export function defaultStyles() {
-    Avita.find("head").append(
+    $("head").append(
         style().text(`
             * {
                 box-sizing: border-box;

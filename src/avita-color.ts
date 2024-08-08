@@ -1,4 +1,4 @@
-import type { AvitaColorType } from "avita"
+import type { AvitaColorType } from "./types"
 
 /**
  * An object containing a set of predefined Avita color values.

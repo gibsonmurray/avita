@@ -1,4 +1,4 @@
-import type * as AvitaTypes from "avita"
+import type * as AvitaTypes from "./types"
 import { span } from "./elements"
 import { defaultStyles, numberToSeconds } from "./utils"
 
@@ -8,22 +8,21 @@ export default class Avita<T extends HTMLElement> {
 
     /**
      * Creates a new instance of the AvitaElement class.
-     * @param tag - (optional) The tag name of the HTML element to create.
-     * @param el - (optional) The HTML element to wrap in an AvitaElement instance.
-     * @throws {Error} If both tag and el are provided, or if neither tag nor el are provided.
+     * @param tag - The tag name of the HTML element to create.
      */
-    constructor(tag?: string, el?: T) {
-        if ((tag && el) || (!tag && !el)) {
-            throw new Error(
-                "Either tag or HTML element must be provided, but not both."
-            )
-        }
-        if (el) {
-            this.element = el
-        } else if (tag) {
-            this.element = document.createElement(tag) as T
+    constructor(tag: string)
+
+    /**
+     * Creates a new instance of the AvitaElement class.
+     * @param element - The HTML element to wrap.
+     */
+    constructor(element: T)
+
+    constructor(tagOrElement: string | T) {
+        if (typeof tagOrElement === "string") {
+            this.element = document.createElement(tagOrElement) as T
         } else {
-            throw new Error("Either tag or HTML element must be provided.")
+            this.element = tagOrElement
         }
         this.avitaChildren = []
     }
@@ -51,42 +50,69 @@ export default class Avita<T extends HTMLElement> {
         }
     }
 
-    static find<T extends HTMLElement>(selector: string): Avita<T> | Avita<T>[] {
+    /**
+     * Finds the first element with the given selector in the DOM tree.
+     * @param selector - The CSS selector to match against.
+     * @returns An AvitaElement instance matching the selector.
+     * @throws {Error} If no element is found with the given selector.
+     */
+    static find<T extends HTMLElement>(selector: string): Avita<T>
+
+    /**
+     * Finds all elements with the given selector in the DOM tree.
+     * @param selector - The CSS selector to match against.
+     * @returns An array of AvitaElement instances matching the selector.
+     * @throws {Error} If no elements are found with the given selector.
+     */
+    static find<T extends HTMLElement>(selector: string): Avita<T>[]
+
+    static find<T extends HTMLElement>(
+        selector: string
+    ): Avita<T> | Avita<T>[] {
         const elements = document.querySelectorAll(selector) as NodeListOf<T>
         if (elements.length > 1) {
             return Array.from(elements).map((element) => {
-                return new Avita<T>(undefined, element)
+                return new Avita<T>(element)
             })
         }
         if (elements.length === 1) {
-            return new Avita<T>(undefined, elements[0])
+            return new Avita<T>(elements[0])
         }
         throw new Error(
-            `Element with selector: '${selector}' not found in DOM tree`
+            `Element(s) with selector: '${selector}' not found in local DOM subtree`
         )
     }
 
-    find(selector: string) {
-        const element = this.element.querySelector(selector) as T
-        if (element) {
-            return new Avita<T>(undefined, element)
-        }
-        throw new Error(
-            `Element with selector: '${selector}' not found in local DOM subtree`
-        )
-    }
+    /**
+     * Finds the first element with the given selector in the Avita element's DOM subtree.
+     * @param selector - The CSS selector to match against.
+     * @returns An AvitaElement instance matching the selector.
+     * @throws {Error} If no element is found with the given selector.
+     */
+    find(selector: string): Avita<T>
 
-    findAll(selector: string) {
+    /**
+     * Finds all elements with the given selector in the Avita element's DOM subtree.
+     * @param selector - The CSS selector to match against.
+     * @returns An array of AvitaElement instances matching the selector.
+     * @throws {Error} If no elements are found with the given selector.
+     */
+    find(selector: string): Avita<T>[]
+
+    find(selector: string): Avita<T> | Avita<T>[] {
         const elements = this.element.querySelectorAll(
             selector
-        ) as unknown as T[]
-        if (elements.length > 0) {
-            return elements.map((element) => {
-                return new Avita<T>(undefined, element)
+        ) as NodeListOf<T>
+        if (elements.length > 1) {
+            return Array.from(elements).map((element) => {
+                return new Avita<T>(element)
             })
         }
+        if (elements.length === 1) {
+            return new Avita<T>(elements[0])
+        }
         throw new Error(
-            `Elements with selector: '${selector}' not found in local DOM subtree`
+            `Element(s) with selector: '${selector}' not found in local DOM subtree`
         )
     }
 
@@ -112,13 +138,110 @@ export default class Avita<T extends HTMLElement> {
     }
 
     /**
+     * Gets the value of the specified css property of the element.
+     * @param property - The CSS property to get the value of.
+     * @returns The value of the specified CSS property.
+     */
+    css(property: string): string | undefined
+
+    /**
+     * Sets the inline styles of the element.
+     * @param property - The CSS property to set.
+     * @param value - The value to set for the CSS property.
+     * @returns The current AvitaElement instance for chaining.
+     */
+    css(property: string, value: string): this
+
+    /**
      * Sets the inline styles of the element.
      * @param value - An object containing the CSS styles to apply to the element.
      * @returns The current AvitaElement instance for chaining.
      */
-    style(value: Partial<CSSStyleDeclaration>) {
-        Object.assign(this.element.style, value)
-        return this
+    css(props: Partial<CSSStyleDeclaration>): this
+
+    css(
+        propertyOrProps: string | Partial<CSSStyleDeclaration>,
+        value?: string
+    ): string | this | undefined {
+        if (typeof propertyOrProps === "string") {
+            if (value === undefined) {
+                // Get the value of a single property
+                const computedStyle = getComputedStyle(this.element)
+                return (
+                    computedStyle.getPropertyValue(propertyOrProps) || undefined
+                )
+            } else {
+                // Set a single property
+                this.element.style[propertyOrProps as any] = value
+                return this
+            }
+        } else {
+            // Set multiple properties
+            for (const [prop, val] of Object.entries(propertyOrProps)) {
+                if (val !== undefined) {
+                    this.element.style[prop as any] = String(val)
+                }
+            }
+            return this
+        }
+    }
+
+    /**
+     * Gets all attributes of the element.
+     * @returns {Object} The values of the specified attributes.
+     */
+    attr(): Record<string, string>
+
+    /**
+     * Gets the specified attribute of the element.
+     * @param name - The name of the attribute to set.
+     * @returns The value of the specified attribute.
+     */
+    attr(name: string): string | undefined
+
+    /**
+     * Sets the specified attribute of the element.
+     * @param name - The name of the attribute to set.
+     * @param value - The value to set for the attribute.
+     * @returns The current AvitaElement instance for chaining.
+     */
+    attr(name: string, value: string): this
+
+    /**
+     * Sets the specified attributes of the element.
+     * @param attributes - An object containing the attributes to set on the element.
+     * @returns The current AvitaElement instance for chaining.
+     */
+    attr(attributes: Record<string, string>): this
+
+    attr(
+        nameOrAttributes?: string | Record<string, string>,
+        value?: string
+    ): string | this | Record<string, string> | undefined {
+        if (nameOrAttributes === undefined) {
+            // Get all attributes
+            const attributes: Record<string, string> = {}
+            for (let i = 0; i < this.element.attributes.length; i++) {
+                const attr = this.element.attributes[i]
+                attributes[attr.name] = attr.value
+            }
+            return attributes
+        } else if (typeof nameOrAttributes === "string") {
+            if (value === undefined) {
+                // Get the value of the specified attribute
+                return this.element.getAttribute(nameOrAttributes) || undefined
+            } else {
+                // Set the value of the specified attribute
+                this.element.setAttribute(nameOrAttributes, value)
+                return this
+            }
+        } else {
+            // Set multiple attributes
+            for (const [key, val] of Object.entries(nameOrAttributes)) {
+                this.element.setAttribute(key, val)
+            }
+            return this
+        }
     }
 
     /**
@@ -151,6 +274,18 @@ export default class Avita<T extends HTMLElement> {
         }
         return this
     }
+    /**
+     * Gets all data attributes of the element.
+     * @returns An object containing all data attributes of the element.
+     */
+    data(): Record<string, string>
+
+    /**
+     * Gets the value of a data attribute on the element.
+     * @param key - The name of the data attribute to get.
+     * @returns The value of the specified data attribute, or `undefined` if the attribute does not exist.
+     */
+    data(key: string): string | undefined
 
     /**
      * Sets a data attribute on the element.
@@ -158,9 +293,42 @@ export default class Avita<T extends HTMLElement> {
      * @param value - The value to set for the data attribute.
      * @returns The current AvitaElement instance for chaining.
      */
-    data(key: string, value: string) {
-        this.element.dataset[key] = value
-        return this
+    data(key: string, value: string): this
+
+    /**
+     * Sets multiple data attributes on the element.
+     * @param dataAttributes - An object containing the data attributes to set on the element.
+     * @returns The current AvitaElement instance for chaining.
+     */
+    data(dataAttributes: Record<string, string>): this
+
+    data(
+        keyOrDataAttributes?: string | Record<string, string>,
+        value?: string
+    ): string | this | Record<string, string> | undefined {
+        if (keyOrDataAttributes === undefined) {
+            // Get all data attributes
+            const dataAttributes: Record<string, string> = {}
+            for (const key in this.element.dataset) {
+                dataAttributes[key] = this.element.dataset[key]!
+            }
+            return dataAttributes
+        } else if (typeof keyOrDataAttributes === "string") {
+            if (value === undefined) {
+                // Get the value of the specified data attribute
+                return this.element.dataset[keyOrDataAttributes] || undefined
+            } else {
+                // Set the value of the specified data attribute
+                this.element.dataset[keyOrDataAttributes] = value
+                return this
+            }
+        } else {
+            // Set multiple data attributes
+            for (const [key, val] of Object.entries(keyOrDataAttributes)) {
+                this.element.dataset[key] = val
+            }
+            return this
+        }
     }
 
     /**
@@ -235,11 +403,29 @@ export default class Avita<T extends HTMLElement> {
     }
 
     /**
-     * Sets the children of the current `AvitaElement` instance.
-     * @param elements - An array of `AvitaElement` instances or strings to set as the children of the current instance.
+     * Empties the child elements of the current `AvitaElement` instance.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    children(...elements: Avita<T>[]) {
+    empty() {
+        this.avitaChildren = []
+        this.updateDOMChildren()
+        return this
+    }
+
+    /**
+     * Gets the child elements of the current `AvitaElement` instance.
+     * @returns An array of `AvitaElement` instances representing the child elements.
+     */
+    children(): Avita<T>[]
+
+    /**
+     * Sets the child elements of the current `AvitaElement` instance. This will remove any existing child elements.
+     * @param elements - An array of `AvitaElement` instances or strings to set as the child elements.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    children(...elements: (Avita<T> | string)[]): this
+
+    children(...elements: (Avita<T> | string)[]): Avita<T>[] | this {
         this.avitaChildren = []
         elements.forEach((element) => {
             if (typeof element === "string") {
@@ -258,12 +444,11 @@ export default class Avita<T extends HTMLElement> {
         return this
     }
 
-    updateDOMChildren() {
+    private updateDOMChildren() {
         this.element.childNodes.forEach((child) => {
             child.remove()
         })
         this.avitaChildren.forEach((child) => {
-            console.log(child)
             this.element.appendChild(child.element)
         })
     }
@@ -279,52 +464,60 @@ export default class Avita<T extends HTMLElement> {
     }
 
     /**
+     * Gets the value of the current `AvitaElement` instance if it is an `HTMLInputElement`.
+     * @returns The value of the current `AvitaElement` instance if it is an `HTMLInputElement`. Otherwise, returns an empty string.
+     */
+    value(): string
+
+    /**
      * Sets the value of the current `AvitaElement` instance if it is an `HTMLInputElement`.
-     * @param value - The value to set for the input element.
+     * @param value - The value to set for the `HTMLInputElement`.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    setValue(value: string) {
-        if (this.element instanceof HTMLInputElement) {
-            this.element.value = value
+    value(value: string): this
+
+    value(value?: string): string | this {
+        if (value === undefined) {
+            if (this.element instanceof HTMLInputElement) {
+                return this.element.value
+            }
+            return ""
+        } else {
+            if (this.element instanceof HTMLInputElement) {
+                this.element.value = value
+            }
+            return this
         }
-        return this
     }
 
     /**
-     * Gets the value of the current `AvitaElement` instance if it is an `HTMLInputElement`.
-     * @returns The value of the input element, or an empty string if the element is not an `HTMLInputElement`.
+     * Gets the placeholder text of the current `AvitaElement` instance if it is an `HTMLInputElement`.
+     * @returns The placeholder text of the input element, or `undefined` if it is not set.
      */
-    value(): string {
-        if (this.element instanceof HTMLInputElement) {
-            return this.element.value
-        }
-        return ""
-    }
+    placeholder(): string | undefined
 
     /**
      * Sets the placeholder text of the current `AvitaElement` instance if it is an `HTMLInputElement`.
      * @param value - The placeholder text to set for the input element.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    placeholder(value: string) {
-        if (this.element instanceof HTMLInputElement) {
-            this.element.placeholder = value
+    placeholder(value: string): this
+
+    placeholder(value?: string): string | this | undefined {
+        if (value === undefined) {
+            // Get the placeholder text
+            if (this.element instanceof HTMLInputElement) {
+                return this.element.placeholder || undefined
+            }
+            return undefined
+        } else {
+            // Set the placeholder text
+            if (this.element instanceof HTMLInputElement) {
+                this.element.placeholder = value
+            }
+            return this
         }
-        return this
     }
-
-    /**
-     * Gets the placeholder value of the current `AvitaElement` instance if it is an `HTMLInputElement`.
-     * @returns The placeholder value of the input element, or an empty string if the element is not an `HTMLInputElement`.
-     */
-    // placeholder(): string {
-    //     if (this.element instanceof HTMLInputElement) {
-    //         return this.element.placeholder
-    //     }
-    //     return ""
-    // }
-
-    // Events
 
     /**
      * Attaches a click event listener to the current `AvitaElement` instance.
@@ -2365,7 +2558,7 @@ export default class Avita<T extends HTMLElement> {
      * @param value - The value to set for the 'flex' CSS property. Can be a valid CSS flex value, or an array of flex-grow, flex-shrink, and flex-basis values.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    flex(value: AvitaTypes.Flex) {
+    flexCSS(value: AvitaTypes.Flex) {
         if (Array.isArray(value)) {
             this.element.style.flex = value.join(" ")
             return this
@@ -2612,7 +2805,7 @@ export default class Avita<T extends HTMLElement> {
      * @param value - The value to set for the 'grid' CSS property. Can be a valid CSS grid value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    grid(value: string) {
+    gridLayout(value: string) {
         this.element.style.grid = value
         return this
     }
@@ -4433,12 +4626,27 @@ export default class Avita<T extends HTMLElement> {
     }
 
     /**
+     * Adds the 'transition' CSS property on the current `AvitaElement` instance.
+     * Defaults to 'all 0.2s ease-in-out'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    transition(): this
+
+    /**
      * Sets the 'transition' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'transition' CSS property. Can be a string value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    transition(value: string) {
-        this.element.style.transition = value
+    transition(value: string): this
+
+    transition(value?: string): this {
+        if (value === undefined) {
+            // Set default transition
+            this.element.style.transition = "all 0.2s ease-in-out"
+        } else {
+            // Set custom transition
+            this.element.style.transition = value
+        }
         return this
     }
 
@@ -4627,12 +4835,179 @@ export default class Avita<T extends HTMLElement> {
         this.element.style.zIndex = String(value) + unit
         return this
     }
+
+    /**
+     * Sets the 'opacity' CSS property on the current `AvitaElement` instance to 0.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    transparent() {
+        this.element.style.opacity = "0"
+        return this
+    }
+
+    /**
+     * Sets the 'opacity' CSS property on the current `AvitaElement` instance to 0.5.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    translucent() {
+        this.element.style.opacity = "0.5"
+        return this
+    }
+
+    /**
+     * Sets the 'opacity' CSS property on the current `AvitaElement` instance to 1.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    opaque() {
+        this.element.style.opacity = "1"
+        return this
+    }
+
+    /**
+     * Shows the element by setting the 'display' CSS property to 'flex'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    show() {
+        this.element.style.display = "flex"
+        return this
+    }
+
+    /**
+     * Hides the element by setting the 'display' CSS property to 'none'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    hide() {
+        this.element.style.display = "none"
+        return this
+    }
+
+    /**
+     * Centers the child elements by setting the 'display' CSS property to 'flex' and setting the 'justifyContent' and 'alignItems' CSS properties to 'center'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    center(): this
+
+    /**
+     * Centers the element itself by setting the 'margin' CSS property to 'auto'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    center(type: "self"): this
+
+    /**
+     * Centers the child elements vertically by setting the 'display' CSS property to 'flex' and setting the 'alignItems' CSS property to 'center'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    center(type: "vertical"): this
+
+    /**
+     * Centers the child elements horizontally by setting the 'display' CSS property to 'flex' and setting the 'justifyContent' CSS property to 'center'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    center(type: "horizontal"): this
+
+    /**
+     * Centers the element itself by setting its position to absolute and transforming its position.
+     * @param type - Type of centering.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    center(type: "absolute"): this
+
+    center(type?: "self" | "vertical" | "horizontal" | "absolute"): this {
+        if (type === undefined) {
+            // Center child elements both vertically and horizontally
+            this.element.style.display = "flex"
+            this.element.style.justifyContent = "center"
+            this.element.style.alignItems = "center"
+        } else if (type === "self") {
+            // Center the element itself using margin auto
+            this.element.style.margin = "auto"
+        } else if (type === "vertical") {
+            // Center child elements vertically
+            this.element.style.display = "flex"
+            this.element.style.alignItems = "center"
+        } else if (type === "horizontal") {
+            // Center child elements horizontally
+            this.element.style.display = "flex"
+            this.element.style.justifyContent = "center"
+        } else if (type === "absolute") {
+            // Center the element itself absolutely
+            this.element.style.position = "absolute"
+            this.element.style.top = "50%"
+            this.element.style.left = "50%"
+            this.element.style.transform = "translate(-50%, -50%)"
+        }
+        return this
+    }
+
+    /**
+     * Sets the 'position' CSS property to 'absolute' on the current `AvitaElement` instance.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    absolute() {
+        this.element.style.position = "absolute"
+        return this
+    }
+
+    /**
+     * Sets the 'position' CSS property to 'relative' on the current `AvitaElement` instance.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    relative() {
+        this.element.style.position = "relative"
+        return this
+    }
+
+    flex() {
+        this.element.style.display = "flex"
+        return this
+    }
+
+    grid() {
+        this.element.style.display = "grid"
+        return this
+    }
+
+    /**
+     * Sets the font weight to 'bold'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    bold(): this {
+        this.element.style.fontWeight = "bold"
+        return this
+    }
+
+    /**
+     * Sets the font weight to 'normal'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    normal(): this {
+        this.element.style.fontWeight = "normal"
+        return this
+    }
+
+    /**
+     * Sets the font weight to 'lighter'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    lighter(): this {
+        this.element.style.fontWeight = "lighter"
+        return this
+    }
+
+    /**
+     * Sets the font weight to 'bolder'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    bolder(): this {
+        this.element.style.fontWeight = "bolder"
+        return this
+    }
 }
 
 /**
- * Like jQuery, this function finds an element in the DOM based on the provided selector. Then
- * it wraps the element as an `Avita` element and returns it.
+ * Like jQuery, this function finds all elements in the DOM based on the provided selector. Then
+ * it wraps the element as an `Avita` element and returns it (or an array of `Avita` elements if multiple elements are found).
  * @param selector - The selector to use to find the element in the DOM.
- * @returns An `Avita` element wrapping the found element.
+ * @returns `Avita` element (list) wrapping the found element(s).
  */
 export const $ = Avita.find

@@ -24,6 +24,6 @@
         "noUnusedParameters": false,
         "noPropertyAccessFromIndexSignature": false
     },
-    "include": ["src/**/*", "types/**/*"],
+    "include": ["src/**/*", "src/types/**/*"],
     "exclude": ["deprecated/**/*", "test/**/*"]
 }
