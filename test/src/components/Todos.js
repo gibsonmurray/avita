@@ -1,7 +1,7 @@
-import { div } from "avita"
+import { ul } from "avita"
 
 export default function Todos() {
-    return div()
+    return ul()
         .id("todos")
         .display("flex")
         .flexDirection("column")

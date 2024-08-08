@@ -1,5 +1,5 @@
 import { div, h1, AvitaColor } from "avita"
-import AddTodo from "./components/AddTodos"
+import AddTodo from "./components/AddTodo"
 import Todos from "./components/Todos"
 
 export default function App() {

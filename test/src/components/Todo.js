@@ -1,7 +1,7 @@
-import { AvitaColor, button, span, div } from "avita"
+import { AvitaColor, button, span, li } from "avita"
 
 export default function Todo(todo) {
-    const todoDiv = div()
+    const todoDiv = li()
         .margin("10px")
         .padding("10px")
         .border("1px solid black")
