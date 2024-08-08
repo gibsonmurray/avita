@@ -2,7 +2,7 @@ import type * as AvitaTypes from "./types"
 import { span } from "./elements"
 import { defaultStyles, numberToSeconds } from "./utils"
 
-export default class Avita<T extends HTMLElement> {
+export default class Avita<T extends HTMLElement | SVGElement> {
     private element: T
     private avitaChildren: Avita<T>[]
 
@@ -20,7 +20,12 @@ export default class Avita<T extends HTMLElement> {
 
     constructor(tagOrElement: string | T) {
         if (typeof tagOrElement === "string") {
-            this.element = document.createElement(tagOrElement) as T
+            this.element = document.createElementNS(
+                tagOrElement.startsWith("svg")
+                    ? "http://www.w3.org/2000/svg"
+                    : "http://www.w3.org/1999/xhtml",
+                tagOrElement
+            ) as T
         } else {
             this.element = tagOrElement
         }
@@ -36,11 +41,16 @@ export default class Avita<T extends HTMLElement> {
      */
     static render<T extends HTMLElement>(
         children: Avita<T>,
-        selector: string = "#root"
+        selector: string = "#root",
+        options?: {
+            defaultStyles?: boolean
+        }
     ) {
         const root = document.querySelector(selector)
         if (root) {
-            defaultStyles()
+            if (options?.defaultStyles) {
+                defaultStyles()
+            }
             root.innerHTML = ""
             root.appendChild(children.element)
         } else {
@@ -133,7 +143,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current AvitaElement instance for chaining.
      */
     class(value: string) {
-        this.element.classList.add(value)
+        value.split(" ").forEach((className) => {
+            this.element.classList.add(className)
+        })
         return this
     }
 
@@ -349,7 +361,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     title(value: string) {
-        this.element.title = value
+        if (this.element instanceof HTMLElement) {
+            this.element.title = value
+        }
         return this
     }
 
@@ -438,12 +452,21 @@ export default class Avita<T extends HTMLElement> {
         return this
     }
 
+    /**
+     * Removes the child element at the specified index from the current `AvitaElement` instance.
+     * @param index - The index of the child element to remove.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
     removeChild(index: number) {
         this.avitaChildren.splice(index, 1)
         this.updateDOMChildren()
         return this
     }
 
+    /**
+     * Updates the DOM children of the current `AvitaElement` instance to match the `avitaChildren` array.
+     * This removes any existing child nodes and appends the new child elements.
+     */
     private updateDOMChildren() {
         this.element.childNodes.forEach((child) => {
             child.remove()
@@ -525,7 +548,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onClick(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("click", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("click", callback)
+        }
         return this
     }
 
@@ -535,7 +560,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onDoubleClick(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("dblclick", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("dblclick", callback)
+        }
         return this
     }
 
@@ -545,7 +572,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onCopy(callback: (event: ClipboardEvent) => void) {
-        this.element.addEventListener("copy", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("copy", callback)
+        }
         return this
     }
 
@@ -555,7 +584,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onCut(callback: (event: ClipboardEvent) => void) {
-        this.element.addEventListener("cut", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("cut", callback)
+        }
         return this
     }
 
@@ -565,7 +596,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onPaste(callback: (event: ClipboardEvent) => void) {
-        this.element.addEventListener("paste", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("paste", callback)
+        }
         return this
     }
 
@@ -575,7 +608,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onCompositionStart(callback: (event: CompositionEvent) => void) {
-        this.element.addEventListener("compositionstart", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("compositionstart", callback)
+        }
         return this
     }
 
@@ -585,7 +620,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onCompositionUpdate(callback: (event: CompositionEvent) => void) {
-        this.element.addEventListener("compositionupdate", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("compositionupdate", callback)
+        }
         return this
     }
 
@@ -595,7 +632,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onCompositionEnd(callback: (event: CompositionEvent) => void) {
-        this.element.addEventListener("compositionend", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("compositionend", callback)
+        }
         return this
     }
 
@@ -655,7 +694,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onKeyDown(callback: (event: KeyboardEvent) => void) {
-        this.element.addEventListener("keydown", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("keydown", callback)
+        }
         return this
     }
 
@@ -665,7 +706,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onKeyPress(callback: (event: KeyboardEvent) => void) {
-        this.element.addEventListener("keypress", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("keypress", callback)
+        }
         return this
     }
 
@@ -675,7 +718,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onKeyUp(callback: (event: KeyboardEvent) => void) {
-        this.element.addEventListener("keyup", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("keyup", callback)
+        }
         return this
     }
 
@@ -685,7 +730,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onFocus(callback: (event: FocusEvent) => void) {
-        this.element.addEventListener("focus", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("focus", callback)
+        }
         return this
     }
 
@@ -695,7 +742,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onBlur(callback: (event: FocusEvent) => void) {
-        this.element.addEventListener("blur", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("blur", callback)
+        }
         return this
     }
 
@@ -705,7 +754,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onFocusIn(callback: (event: FocusEvent) => void) {
-        this.element.addEventListener("focusin", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("focusin", callback)
+        }
         return this
     }
 
@@ -715,7 +766,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onFocusOut(callback: (event: FocusEvent) => void) {
-        this.element.addEventListener("focusout", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("focusout", callback)
+        }
         return this
     }
 
@@ -725,7 +778,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onMouseDown(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("mousedown", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("mousedown", callback)
+        }
         return this
     }
 
@@ -735,7 +790,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onMouseUp(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("mouseup", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("mouseup", callback)
+        }
         return this
     }
 
@@ -745,7 +802,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onMouseEnter(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("mouseenter", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("mouseenter", callback)
+        }
         return this
     }
 
@@ -755,7 +814,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onMouseLeave(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("mouseleave", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("mouseleave", callback)
+        }
         return this
     }
 
@@ -765,7 +826,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onMouseMove(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("mousemove", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("mousemove", callback)
+        }
         return this
     }
 
@@ -775,7 +838,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onMouseOver(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("mouseover", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("mouseover", callback)
+        }
         return this
     }
 
@@ -785,7 +850,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onMouseOut(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("mouseout", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("mouseout", callback)
+        }
         return this
     }
 
@@ -795,7 +862,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onContextMenu(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("contextmenu", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("contextmenu", callback)
+        }
         return this
     }
 
@@ -805,7 +874,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onPointerOver(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("pointerover", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("pointerover", callback)
+        }
         return this
     }
 
@@ -815,7 +886,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onPointerEnter(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("pointerenter", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("pointerenter", callback)
+        }
         return this
     }
 
@@ -825,7 +898,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onPointerLeave(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("pointerleave", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("pointerleave", callback)
+        }
         return this
     }
 
@@ -835,7 +910,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onPointerMove(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("pointermove", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("pointermove", callback)
+        }
         return this
     }
 
@@ -845,7 +922,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onPointerDown(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("pointerdown", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("pointerdown", callback)
+        }
         return this
     }
 
@@ -855,7 +934,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onPointerUp(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("pointerup", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("pointerup", callback)
+        }
         return this
     }
 
@@ -865,7 +946,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onPointerCancel(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("pointercancel", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("pointercancel", callback)
+        }
         return this
     }
 
@@ -875,7 +958,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onPointerOut(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("pointerout", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("pointerout", callback)
+        }
         return this
     }
 
@@ -885,7 +970,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onGotPointerCapture(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("gotpointercapture", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("gotpointercapture", callback)
+        }
         return this
     }
 
@@ -895,7 +982,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onLostPointerCapture(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("lostpointercapture", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("lostpointercapture", callback)
+        }
         return this
     }
 
@@ -905,7 +994,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onTouchStart(callback: (event: TouchEvent) => void) {
-        this.element.addEventListener("touchstart", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("touchstart", callback)
+        }
         return this
     }
 
@@ -915,7 +1006,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onTouchMove(callback: (event: TouchEvent) => void) {
-        this.element.addEventListener("touchmove", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("touchmove", callback)
+        }
         return this
     }
 
@@ -925,7 +1018,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onTouchEnd(callback: (event: TouchEvent) => void) {
-        this.element.addEventListener("touchend", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("touchend", callback)
+        }
         return this
     }
 
@@ -935,7 +1030,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onTouchCancel(callback: (event: TouchEvent) => void) {
-        this.element.addEventListener("touchcancel", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("touchcancel", callback)
+        }
         return this
     }
 
@@ -955,7 +1052,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onResize(callback: (event: UIEvent) => void) {
-        this.element.addEventListener("resize", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("resize", callback)
+        }
         return this
     }
 
@@ -965,7 +1064,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onWheel(callback: (event: WheelEvent) => void) {
-        this.element.addEventListener("wheel", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("wheel", callback)
+        }
         return this
     }
 
@@ -975,7 +1076,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onDrag(callback: (event: DragEvent) => void) {
-        this.element.addEventListener("drag", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("drag", callback)
+        }
         return this
     }
 
@@ -985,7 +1088,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onDragEnd(callback: (event: DragEvent) => void) {
-        this.element.addEventListener("dragend", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("dragend", callback)
+        }
         return this
     }
 
@@ -995,7 +1100,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onDragEnter(callback: (event: DragEvent) => void) {
-        this.element.addEventListener("dragenter", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("dragenter", callback)
+        }
         return this
     }
 
@@ -1005,7 +1112,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onDragLeave(callback: (event: DragEvent) => void) {
-        this.element.addEventListener("dragleave", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("dragleave", callback)
+        }
         return this
     }
 
@@ -1015,7 +1124,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onDragOver(callback: (event: DragEvent) => void) {
-        this.element.addEventListener("dragover", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("dragover", callback)
+        }
         return this
     }
 
@@ -1025,7 +1136,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onDragStart(callback: (event: DragEvent) => void) {
-        this.element.addEventListener("dragstart", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("dragstart", callback)
+        }
         return this
     }
 
@@ -1035,7 +1148,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onDrop(callback: (event: DragEvent) => void) {
-        this.element.addEventListener("drop", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("drop", callback)
+        }
         return this
     }
 
@@ -1175,7 +1290,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onProgress(callback: (event: ProgressEvent) => void) {
-        this.element.addEventListener("progress", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("progress", callback)
+        }
         return this
     }
 
@@ -1285,7 +1402,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onAnimationStart(callback: (event: AnimationEvent) => void) {
-        this.element.addEventListener("animationstart", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("animationstart", callback)
+        }
         return this
     }
 
@@ -1295,7 +1414,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onAnimationEnd(callback: (event: AnimationEvent) => void) {
-        this.element.addEventListener("animationend", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("animationend", callback)
+        }
         return this
     }
 
@@ -1305,7 +1426,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onAnimationIteration(callback: (event: AnimationEvent) => void) {
-        this.element.addEventListener("animationiteration", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("animationiteration", callback)
+        }
         return this
     }
 
@@ -1315,7 +1438,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onTransitionStart(callback: (event: TransitionEvent) => void) {
-        this.element.addEventListener("transitionstart", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("transitionstart", callback)
+        }
         return this
     }
 
@@ -1325,7 +1450,9 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onTransitionEnd(callback: (event: TransitionEvent) => void) {
-        this.element.addEventListener("transitionend", callback)
+        if (this.element instanceof HTMLElement) {
+            this.element.addEventListener("transitionend", callback)
+        }
         return this
     }
 
@@ -3204,6 +3331,30 @@ export default class Avita<T extends HTMLElement> {
     }
 
     /**
+     * Sets the 'marginLeft' and 'marginRight' CSS properties on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'marginLeft' and 'marginRight' CSS properties. Can be a valid CSS margin value, either a string or a number (which will be interpreted as pixels).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    marginX(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        this.element.style.marginLeft = String(value) + unit
+        this.element.style.marginRight = String(value) + unit
+        return this
+    }
+
+    /**
+     * Sets the 'marginTop' and 'marginBottom' CSS properties on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'marginTop' and 'marginBottom' CSS properties. Can be a valid CSS margin value, either a string or a number (which will be interpreted as pixels).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    marginY(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        this.element.style.marginTop = String(value) + unit
+        this.element.style.marginBottom = String(value) + unit
+        return this
+    }
+
+    /**
      * Sets the 'marginBlock' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'marginBlock' CSS property. Can be a valid CSS margin-block value, either a string or a number (which will be interpreted as pixels).
      * @returns The current `AvitaElement` instance for chaining.
@@ -3755,6 +3906,30 @@ export default class Avita<T extends HTMLElement> {
     }
 
     /**
+     * Sets the 'paddingLeft' and 'paddingRight' CSS properties on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'paddingLeft' and 'paddingRight' CSS properties. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    paddingX(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        this.element.style.paddingLeft = String(value) + unit
+        this.element.style.paddingRight = String(value) + unit
+        return this
+    }
+
+    /**
+     * Sets the 'paddingTop' and 'paddingBottom' CSS properties on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'paddingTop' and 'paddingBottom' CSS properties. Can be a string or number, where a number will be interpreted as pixels.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    paddingY(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        this.element.style.paddingTop = String(value) + unit
+        this.element.style.paddingBottom = String(value) + unit
+        return this
+    }
+
+    /**
      * Sets the 'paddingBlock' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'paddingBlock' CSS property. Can be a string or number value.
      * @returns The current `AvitaElement` instance for chaining.
@@ -4013,7 +4188,30 @@ export default class Avita<T extends HTMLElement> {
      */
     rotate(value: string | number) {
         const unit = typeof value === "string" ? "" : "deg"
-        this.element.style.rotate = String(value)
+        this.element.style.rotate = String(value) + unit
+        return this
+    }
+
+    /**
+     * Sets the 'rotate3d' CSS transform property on the current `AvitaElement` instance.
+     * @param x - The x-axis rotation value. Can be a string or number value.
+     * @param y - The y-axis rotation value. Can be a string or number value.
+     * @param z - The z-axis rotation value. Can be a string or number value.
+     * @param angle - The rotation angle value. Can be a string or number value. Degrees by default.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    rotate3D(
+        x: string | number = 0,
+        y: string | number = 0,
+        z: string | number = 0,
+        angle: string | number = 0
+    ): this {
+        const unitX = typeof x === "string" ? "" : ""
+        const unitY = typeof y === "string" ? "" : ""
+        const unitZ = typeof z === "string" ? "" : ""
+        const unitAngle = typeof angle === "string" ? "" : "deg"
+
+        this.element.style.transform = `rotate3d(${x}${unitX}, ${y}${unitY}, ${z}${unitZ}, ${angle}${unitAngle})`
         return this
     }
 
@@ -4957,11 +5155,28 @@ export default class Avita<T extends HTMLElement> {
         return this
     }
 
+    /**
+     * Sets the 'position' CSS property to 'fixed' on the current `AvitaElement` instance.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    fixed() {
+        this.element.style.position = "fixed"
+        return this
+    }
+
+    /**
+     * Sets the display property of the current `AvitaElement` instance to 'flex'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
     flex() {
         this.element.style.display = "flex"
         return this
     }
 
+    /**
+     * Sets the display property of the current `AvitaElement` instance to 'grid'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
     grid() {
         this.element.style.display = "grid"
         return this
@@ -5000,6 +5215,448 @@ export default class Avita<T extends HTMLElement> {
      */
     bolder(): this {
         this.element.style.fontWeight = "bolder"
+        return this
+    }
+
+    /**
+     * Sets the stroke color of the element.
+     * @param value - The CSS color value to set as the stroke.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    stroke(value: string) {
+        this.element.style.stroke = value
+        return this
+    }
+
+    /**
+     * Sets the stroke width of the element.
+     * @param value - The CSS length value to set as the stroke width. Can be a number (in pixels) or a string.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    strokeWidth(value: string | number): this {
+        const unit = typeof value === "string" ? "" : "px"
+        this.element.style.strokeWidth = String(value) + unit
+        return this
+    }
+
+    /**
+     * Sets the stroke opacity of the element.
+     * @param value - The stroke opacity value to set (between 0 and 1).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    strokeOpacity(value: number): this {
+        this.element.style.strokeOpacity = value.toString()
+        return this
+    }
+
+    /**
+     * Sets the stroke linecap of the element.
+     * @param value - The CSS value to set as the stroke linecap (e.g., "butt", "round", "square").
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    linecap(value: "butt" | "round" | "square"): this {
+        this.element.style.strokeLinecap = value
+        return this
+    }
+
+    /**
+     * Sets the stroke linejoin of the element.
+     * @param value - The CSS value to set as the stroke linejoin (e.g., "miter", "round", "bevel").
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    linejoin(value: "miter" | "round" | "bevel"): this {
+        this.element.style.strokeLinejoin = value
+        return this
+    }
+
+    /**
+     * Sets the stroke dash array of the element.
+     * @param value - The CSS value to set as the stroke dash array.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    dasharray(value: string): this {
+        this.element.style.strokeDasharray = value
+        return this
+    }
+
+    /**
+     * Sets the skew angle of the element along the X-axis.
+     * @param value - The skew angle in degrees.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    skewX(value: number): this {
+        this.element.style.transform = `skewX(${value}deg)`
+        return this
+    }
+
+    /**
+     * Sets the skew transformation of the element along the Y-axis.
+     * @param value - The skew angle in degrees.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    skewY(value: number): this {
+        this.element.style.transform = `skewY(${value}deg)`
+        return this
+    }
+
+    /**
+     * Sets the transformation matrix of the element.
+     * @param value - The CSS transform matrix value to set.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    matrix(value: string): this {
+        this.element.style.transform = value
+        return this
+    }
+
+    /**
+     * Sets the fill color of the element.
+     * @param value - The CSS color value to set as the fill.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    fill(value: string) {
+        this.element.style.fill = value
+        return this
+    }
+
+    /**
+     * Sets the fill opacity of the element.
+     * @param value - The fill opacity value to set (between 0 and 1).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    fillOpacity(value: number): this {
+        this.element.style.fillOpacity = value.toString()
+        return this
+    }
+
+    /**
+     * Sets the element to be full-width and full-height.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    full() {
+        this.element.style.width = "100%"
+        this.element.style.height = "100%"
+        return this
+    }
+
+    /**
+     * Sets the element to be full-width.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    fullX() {
+        this.element.style.width = "100%"
+        return this
+    }
+
+    /**
+     * Sets the element to be full-height.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    fullY() {
+        this.element.style.height = "100%"
+        return this
+    }
+
+    /**
+     * Sets the border radius of the element to 9999px.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    rounded(): this
+
+    /**
+     * Sets the border radius of the element.
+     * @param radius - The border radius value to set. Can be a number (in pixels).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    rounded(radius: string): this
+
+    /**
+     * Sets the border radius of the element.
+     * @param radius - The border radius value to set. Can be a number (in pixels).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    rounded(radius: number): this
+
+    rounded(radius?: number | string): this {
+        let borderRadiusValue: string
+
+        if (radius === undefined) {
+            borderRadiusValue = "9999px"
+        } else if (typeof radius === "number") {
+            borderRadiusValue = `${radius}px`
+        } else {
+            borderRadiusValue = radius
+        }
+
+        this.element.style.borderRadius = borderRadiusValue
+        return this
+    }
+
+    // roundedTL
+    /**
+     * Sets the border radius of the top-left corner to 9999px.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedTL(): this
+
+    /**
+     * Sets the border radius of the top-left corner.
+     * @param radius - The border radius value to set. Can be a number (in pixels) or a string.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedTL(radius: string): this
+
+    /**
+     * Sets the border radius of the top-left corner.
+     * @param radius - The border radius value to set. Can be a number (in pixels).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedTL(radius: number): this
+
+    roundedTL(radius?: number | string): this {
+        let borderRadiusValue =
+            radius === undefined
+                ? "9999px"
+                : typeof radius === "number"
+                ? `${radius}px`
+                : radius
+
+        this.element.style.borderTopLeftRadius = borderRadiusValue
+        return this
+    }
+
+    // roundedTR
+    /**
+     * Sets the border radius of the top-right corner to 9999px.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedTR(): this
+
+    /**
+     * Sets the border radius of the top-right corner.
+     * @param radius - The border radius value to set. Can be a number (in pixels) or a string.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedTR(radius: string): this
+
+    /**
+     * Sets the border radius of the top-right corner.
+     * @param radius - The border radius value to set. Can be a number (in pixels).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedTR(radius: number): this
+
+    roundedTR(radius?: number | string): this {
+        let borderRadiusValue =
+            radius === undefined
+                ? "9999px"
+                : typeof radius === "number"
+                ? `${radius}px`
+                : radius
+
+        this.element.style.borderTopRightRadius = borderRadiusValue
+        return this
+    }
+
+    // roundedBL
+    /**
+     * Sets the border radius of the bottom-left corner to 9999px.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedBL(): this
+
+    /**
+     * Sets the border radius of the bottom-left corner.
+     * @param radius - The border radius value to set. Can be a number (in pixels) or a string.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedBL(radius: string): this
+
+    /**
+     * Sets the border radius of the bottom-left corner.
+     * @param radius - The border radius value to set. Can be a number (in pixels).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedBL(radius: number): this
+
+    roundedBL(radius?: number | string): this {
+        let borderRadiusValue =
+            radius === undefined
+                ? "9999px"
+                : typeof radius === "number"
+                ? `${radius}px`
+                : radius
+
+        this.element.style.borderBottomLeftRadius = borderRadiusValue
+        return this
+    }
+
+    // roundedBR
+    /**
+     * Sets the border radius of the bottom-right corner to 9999px.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedBR(): this
+
+    /**
+     * Sets the border radius of the bottom-right corner.
+     * @param radius - The border radius value to set. Can be a number (in pixels) or a string.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedBR(radius: string): this
+
+    /**
+     * Sets the border radius of the bottom-right corner.
+     * @param radius - The border radius value to set. Can be a number (in pixels).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedBR(radius: number): this
+
+    roundedBR(radius?: number | string): this {
+        let borderRadiusValue =
+            radius === undefined
+                ? "9999px"
+                : typeof radius === "number"
+                ? `${radius}px`
+                : radius
+
+        this.element.style.borderBottomRightRadius = borderRadiusValue
+        return this
+    }
+
+    // roundedTop
+    /**
+     * Sets the border radius of the top corners to 9999px.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedTop(): this
+
+    /**
+     * Sets the border radius of the top corners.
+     * @param radius - The border radius value to set. Can be a number (in pixels) or a string.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedTop(radius: string): this
+
+    /**
+     * Sets the border radius of the top corners.
+     * @param radius - The border radius value to set. Can be a number (in pixels).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedTop(radius: number): this
+
+    roundedTop(radius?: number | string): this {
+        let borderRadiusValue =
+            radius === undefined
+                ? "9999px"
+                : typeof radius === "number"
+                ? `${radius}px`
+                : radius
+
+        this.element.style.borderTopLeftRadius = borderRadiusValue
+        this.element.style.borderTopRightRadius = borderRadiusValue
+        return this
+    }
+
+    // roundedBottom
+    /**
+     * Sets the border radius of the bottom corners to 9999px.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedBottom(): this
+
+    /**
+     * Sets the border radius of the bottom corners.
+     * @param radius - The border radius value to set. Can be a number (in pixels) or a string.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedBottom(radius: string): this
+
+    /**
+     * Sets the border radius of the bottom corners.
+     * @param radius - The border radius value to set. Can be a number (in pixels).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedBottom(radius: number): this
+
+    roundedBottom(radius?: number | string): this {
+        let borderRadiusValue =
+            radius === undefined
+                ? "9999px"
+                : typeof radius === "number"
+                ? `${radius}px`
+                : radius
+
+        this.element.style.borderBottomLeftRadius = borderRadiusValue
+        this.element.style.borderBottomRightRadius = borderRadiusValue
+        return this
+    }
+
+    // roundedLeft
+    /**
+     * Sets the border radius of the left corners to 9999px.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedLeft(): this
+
+    /**
+     * Sets the border radius of the left corners.
+     * @param radius - The border radius value to set. Can be a number (in pixels) or a string.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedLeft(radius: string): this
+
+    /**
+     * Sets the border radius of the left corners.
+     * @param radius - The border radius value to set. Can be a number (in pixels).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedLeft(radius: number): this
+
+    roundedLeft(radius?: number | string): this {
+        let borderRadiusValue =
+            radius === undefined
+                ? "9999px"
+                : typeof radius === "number"
+                ? `${radius}px`
+                : radius
+
+        this.element.style.borderTopLeftRadius = borderRadiusValue
+        this.element.style.borderBottomLeftRadius = borderRadiusValue
+        return this
+    }
+
+    // roundedRight
+    /**
+     * Sets the border radius of the right corners to 9999px.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedRight(): this
+
+    /**
+     * Sets the border radius of the right corners.
+     * @param radius - The border radius value to set. Can be a number (in pixels) or a string.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedRight(radius: string): this
+
+    /**
+     * Sets the border radius of the right corners.
+     * @param radius - The border radius value to set. Can be a number (in pixels).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    roundedRight(radius: number): this
+
+    roundedRight(radius?: number | string): this {
+        let borderRadiusValue =
+            radius === undefined
+                ? "9999px"
+                : typeof radius === "number"
+                ? `${radius}px`
+                : radius
+
+        this.element.style.borderTopRightRadius = borderRadiusValue
+        this.element.style.borderBottomRightRadius = borderRadiusValue
         return this
     }
 }

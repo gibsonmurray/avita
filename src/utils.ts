@@ -21,6 +21,7 @@ export function defaultStyles() {
             }
 
             a {
+                cursor: pointer;
                 text-decoration: none;
                 color: inherit;
             }

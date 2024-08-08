@@ -211,13 +211,45 @@ Congrats! You've built a simple todo app using Avita.
 ## TODO
 
 -   [ ] Add more comprehensive documentation
--   [ ] Add paddingX and paddingY
--   [ ] Add marginX and marginY
--   [ ] Add borderRadiusX and borderRadiusY
--   [ ] Add fixed
--   [ ] Add tailwind-like utilities for css properties
 -   [ ] Add routing
--   [ ] Improve state management?
 -   [ ] Prettier plugin
+-   [ ] Icon integration?
+-   [ ] Add tailwind-like utilities for css properties?
+-   [ ] Improve state management?
+-   [x] `.full()` - 100% height and width
+-   [x] `.fullY()` - 100% height
+-   [x] `.fullX()` - 100% width
+-   [x] `.stroke()` - stroke css
+-   [x] `.fill()` - fill css
+-   [x] `.rounded()`
+-   [x] `.marginX()`
+-   [x] `.marginY()`
+-   [x] `.paddingX()`
+-   [x] `.paddingY()`
+-   [x] `.rounded()`
+-   [x] `.fixed()` - fixed position
+-   [x] `.rotate3D()`
+-   [x] `<i>`
+-   [x] `<b>`
+-   [x] `<br>`
+-   [x] `<sup>`
+-   [x] `<sub>`
+-   [x] `<em>`
+-   [x] `<strong>`
+-   [x] `<kbd>`
+-   [x] `<code>`
+-   [x] `<samp>`
+-   [x] `<cite>`
+-   [x] `<var>`
+-   [x] `<big>`
+-   [x] `<small>`
+-   [x] `<dfn>`
+-   [x] `<q>`
+-   [x] `<time>`
+-   [x] `<pre>`
+-   [x] `<svg>`
+-   [x] `<path>`
+-   [x] `<map>`
+-   [x] `<area>`
 
 Copyright (c) 2024 Gibson Murray
