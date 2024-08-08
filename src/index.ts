@@ -41,6 +41,16 @@ import {
     source,
     embed,
     object,
+    style,
+    head,
+    link,
+    meta,
+    title,
+    base,
+    script,
+    noscript,
+    template,
+    html,
 } from "./elements"
 import AvitaColor from "./avita-color"
 import Avita, { $ } from "./avita"
@@ -88,7 +98,17 @@ export {
     source,
     embed,
     object,
+    style,
+    head,
+    link,
+    meta,
+    title,
+    base,
+    script,
+    noscript,
+    template,
+    html,
     AvitaColor,
-    $
+    $,
 }
 export default Avita

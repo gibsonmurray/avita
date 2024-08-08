@@ -12,6 +12,7 @@ Avita is a lightweight and intuitive JavaScript framework designed to simplify t
 -   [Installation](#installation)
 -   [Quick Start](#quick-start)
 -   [Tutorial](#tutorial)
+-   [TODO](#todo)
 
 ## Features
 
@@ -206,5 +207,17 @@ Avita.render(app)
 Congrats! You've built a simple todo app using Avita.
 
 ---
+
+## TODO
+
+-   [ ] Add more comprehensive documentation
+-   [ ] Add paddingX and paddingY
+-   [ ] Add marginX and marginY
+-   [ ] Add borderRadiusX and borderRadiusY
+-   [ ] Add fixed
+-   [ ] Add tailwind-like utilities for css properties
+-   [ ] Add routing
+-   [ ] Improve state management?
+-   [ ] Prettier plugin
 
 Copyright (c) 2024 Gibson Murray
