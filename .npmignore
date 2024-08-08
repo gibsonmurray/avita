@@ -1,6 +1,7 @@
 /src
 /node_modules
 /test
+/docs
 
 .env
 .DS_Store
