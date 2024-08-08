@@ -8,3 +8,6 @@
 
 tsconfig.json
 tsup.config.ts
+.gitignore
+bun.lockb
+typedoc.json
