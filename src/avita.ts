@@ -4454,7 +4454,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'rotate' CSS property on the current `AvitaElement` instance.
+     * Sets the 'rotate' CSS transform property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'rotate' CSS property. Can be a string or number value.
      * @returns The current `AvitaElement` instance for chaining.
      */
@@ -4488,7 +4488,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'scale' CSS property on the current `AvitaElement` instance.
+     * Sets the 'scale' CSS transform on the current `AvitaElement` instance.
      * @param value - The value to set for the 'scale' CSS property. Can be a string or number value.
      * @returns The current `AvitaElement` instance for chaining.
      */
@@ -5586,7 +5586,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the skew angle of the element along the X-axis.
+     * Sets the skew transformation angle of the element along the X-axis.
      * @param value - The skew angle in degrees.
      * @returns The current `AvitaElement` instance for chaining.
      */
@@ -5596,7 +5596,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the skew transformation of the element along the Y-axis.
+     * Sets the skew transformation angle of the element along the Y-axis.
      * @param value - The skew angle in degrees.
      * @returns The current `AvitaElement` instance for chaining.
      */
