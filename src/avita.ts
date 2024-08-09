@@ -45,7 +45,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         options: {
             defaultStyles?: boolean
         } = {
-            defaultStyles: true
+            defaultStyles: true,
         }
     ) {
         const root = document.querySelector(selector)
@@ -5658,6 +5658,20 @@ export default class Avita<T extends HTMLElement | SVGElement> {
 
         this.element.style.borderTopRightRadius = borderRadiusValue
         this.element.style.borderBottomRightRadius = borderRadiusValue
+        return this
+    }
+
+    viewbox(x: number, y: number, width: number, height: number): this {
+        if (this.element instanceof SVGElement) {
+            this.element.setAttribute("viewBox", `${x} ${y} ${width} ${height}`)
+        }
+        return this
+    }
+
+    preserveAspectRatio(align: string, meetOrSlice: string): this {
+        if (this.element instanceof SVGElement) {
+            this.element.setAttribute("preserveAspectRatio", `${align} ${meetOrSlice}`)
+        }
         return this
     }
 }
