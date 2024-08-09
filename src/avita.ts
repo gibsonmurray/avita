@@ -368,15 +368,30 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Gets the `title` attribute of the element.
+     * @returns The current `title` attribute value of the element.
+     */
+    title(): string
+
+    /**
      * Sets the `title` attribute of the element.
      * @param value - The text to set as the `title` attribute of the element.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    title(value: string) {
+    title(value: string): this
+
+    title(value?: string): string | this {
         if (this.element instanceof HTMLElement) {
-            this.element.title = value
+            if (value === undefined) {
+                // Getter: Return the current title attribute value
+                return this.element.title
+            } else {
+                // Setter: Set the title attribute value
+                this.element.title = value
+                return this
+            }
         }
-        return this
+        return this // In case the element is not an HTMLElement, return this for chaining
     }
 
     /**
@@ -2555,7 +2570,6 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         this.element.style.caretColor = String(value)
         return this
     }
-
 
     /**
      * Clears the CSS styles applied to the current `AvitaElement` instance.
