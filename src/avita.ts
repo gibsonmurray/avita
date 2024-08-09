@@ -2510,8 +2510,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         this.element.style.boxShadow = value
         return this
     }
-    
-    
+
     /**
      * Sets the 'boxSizing' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'boxSizing' CSS property. Can be one of the valid 'box-sizing' CSS property values.
@@ -5977,6 +5976,71 @@ export default class Avita<T extends HTMLElement | SVGElement> {
             )
         }
         return this
+    }
+
+    /**
+     * Executes the provided callback function when the specified media query matches the current viewport.
+     * @param query - The media query to check against the current viewport.
+     * @param callback - The function to call when the media query matches.
+     * @returns The current `Avita` instance for chaining.
+     */
+    media(query: string, callback: (element: Avita<T>) => void): this {
+        const mediaQuery = window.matchMedia(query)
+        const handleMediaChange = (event: MediaQueryListEvent) => {
+            if (event.matches) {
+                callback(this)
+            }
+        }
+        mediaQuery.addEventListener("change", handleMediaChange)
+        if (mediaQuery.matches) {
+            callback(this)
+        }
+        return this
+    }
+
+    /**
+     * Executes the provided callback function when the current viewport width is at least 640px.
+     * @param callback - The function to call when the media query matches.
+     * @returns The current `Avita` instance for chaining.
+     */
+    sm(callback: (element: Avita<T>) => void): this {
+        return this.media("(min-width: 640px)", callback)
+    }
+
+    /**
+     * Executes the provided callback function when the current viewport width is at least 768px.
+     * @param callback - The function to call when the media query matches.
+     * @returns The current `Avita` instance for chaining.
+     */
+    md(callback: (element: Avita<T>) => void): this {
+        return this.media("(min-width: 768px)", callback)
+    }
+
+    /**
+     * Executes the provided callback function when the current viewport width is at least 1024px.
+     * @param callback - The function to call when the media query matches.
+     * @returns The current `Avita` instance for chaining.
+     */
+    lg(callback: (element: Avita<T>) => void): this {
+        return this.media("(min-width: 1024px)", callback)
+    }
+
+    /**
+     * Executes the provided callback function when the current viewport width is at least 1280px.
+     * @param callback - The function to call when the media query matches.
+     * @returns The current `Avita` instance for chaining.
+     */
+    xl(callback: (element: Avita<T>) => void): this {
+        return this.media("(min-width: 1280px)", callback)
+    }
+
+    /**
+     * Executes the provided callback function when the current viewport width is at least 1536px.
+     * @param callback - The function to call when the media query matches.
+     * @returns The current `Avita` instance for chaining.
+     */
+    xxl(callback: (element: Avita<T>) => void): this {
+        return this.media("(min-width: 1536px)", callback)
     }
 }
 
