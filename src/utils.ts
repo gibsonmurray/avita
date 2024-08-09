@@ -48,3 +48,23 @@ export function numberToSeconds(n: number | string): string {
     }
     return n
 }
+
+/**
+ * Generates a unique class name string.
+ * @returns A unique class name string in the format `class-{randomString}`.
+ */
+export function generateClass(): string {
+    return `class-${Math.random().toString(36).substring(2, 15)}`
+}
+
+/**
+ * Generates a unique identifier string.
+ * @returns A unique identifier string in the format `id-{random_string}`.
+ */
+export function generateId(): string {
+    return `id-${Math.random().toString(36).substring(2, 15)}`
+}
+
+export function camelToKebab(str: string): string {
+    return str.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase()
+}

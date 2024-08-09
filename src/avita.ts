@@ -1,6 +1,6 @@
 import type * as AvitaTypes from "./types"
-import { span } from "./elements"
-import { defaultStyles, numberToSeconds } from "./utils"
+import { span, style } from "./elements"
+import { camelToKebab, defaultStyles, generateClass, numberToSeconds } from "./utils"
 
 export default class Avita<T extends HTMLElement | SVGElement> {
     private element: T
@@ -5979,82 +5979,179 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Executes the provided callback function when the specified media query matches the current viewport.
-     * @param query - The media query to check against the current viewport.
-     * @param callback - The function to call when the media query matches.
-     * @returns The current `Avita` instance for chaining.
+     * Manually generates the CSS for a particular media query on the current `Avita` element.
+     * @param query - The media query to generate the CSS for
+     * @param props - The applied CSS properties to the media query
      */
-    media(query: string, callback: (element: Avita<T>) => void): this {
-        const mediaQuery = window.matchMedia(query)
-        const handleMediaChange = (
-            event: MediaQueryListEvent | MediaQueryList
-        ) => {
-            if (event.matches) {
-                callback(this)
-            }
+    media(query: string, props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Manually generates the CSS rules for a particular media query on the current `Avita` element.
+     * @param query - The media query to generate the CSS for
+     * @param property - The CSS property to apply to the media query
+     * @param value - The value to set for the CSS property
+     */
+    media(query: string, property: string, value: string): this
+
+    media(
+        query: string,
+        propsOrProperty: Partial<CSSStyleDeclaration> | string,
+        value?: string
+    ) {
+        const uniqueClass = generateClass()
+        this.class(uniqueClass)
+
+        let body = ""
+
+        if (typeof propsOrProperty === "string" && value) {
+            body = `${camelToKebab(propsOrProperty)}: ${value};`
         }
 
-        // Listen for changes in the media query
-        mediaQuery.addEventListener("change", handleMediaChange)
-
-        // Handle initial check
-        if (mediaQuery.matches) {
-            callback(this)
+        if (typeof propsOrProperty === "object") {
+            Object.entries(propsOrProperty).forEach(([prop, val]) => {
+                body += `${camelToKebab(prop)}: ${val};`
+            })
         }
 
-        // Handle window resize events
-        const handleResize = () => {
-            handleMediaChange(mediaQuery)
-        }
+        let mediaQuery = `.${uniqueClass} { ${body} }`
 
-        window.addEventListener("resize", handleResize)
+        $("head").append(style().text(`@media ${query} { ${mediaQuery} }`))
 
         return this
     }
 
     /**
      * Executes the provided callback function when the current viewport width is at least 640px.
-     * @param callback - The function to call when the media query matches.
+     * @param props - The CSS properties to apply to the element when the viewport width is at least 640px.
+     * @param value - The value to set for the CSS property
      * @returns The current `Avita` instance for chaining.
      */
-    sm(callback: (element: Avita<T>) => void): this {
-        return this.media("(min-width: 640px)", callback)
+    sm(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Executes the provided callback function when the current viewport width is at least 640px.
+     * @param property - The CSS property to apply to the element when the viewport width is at least 640px.
+     * @param value - The value to set for the CSS property
+     * @returns The current `Avita` instance for chaining.
+     */
+    sm(property: string, value: string): this
+
+    sm(propertyOrProps: string | Partial<CSSStyleDeclaration>, value?: string) {
+        if (typeof propertyOrProps === "string" && value) {
+            this.media("(min-width: 640px)", propertyOrProps, value)
+        }
+        if (typeof propertyOrProps === "object") {
+            this.media("(min-width: 640px)", propertyOrProps)
+        }
+        return this
     }
 
     /**
-     * Executes the provided callback function when the current viewport width is at least 768px.
-     * @param callback - The function to call when the media query matches.
+     * Applies the provided CSS properties when the current viewport width is at least 768px.
+     * @param props - The CSS properties to apply to the element when the viewport width is at least 768px.
      * @returns The current `Avita` instance for chaining.
      */
-    md(callback: (element: Avita<T>) => void): this {
-        return this.media("(min-width: 768px)", callback)
+    md(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Applies the provided CSS property and value when the current viewport width is at least 768px.
+     * @param property - The CSS property to apply to the element when the viewport width is at least 768px.
+     * @param value - The value to set for the CSS property.
+     * @returns The current `Avita` instance for chaining.
+     */
+    md(property: string, value: string): this
+
+    md(
+        propertyOrProps: string | Partial<CSSStyleDeclaration>,
+        value?: string
+    ): this {
+        if (typeof propertyOrProps === "string" && value) {
+            this.media("(min-width: 768px)", propertyOrProps, value)
+        } else if (typeof propertyOrProps === "object") {
+            this.media("(min-width: 768px)", propertyOrProps)
+        }
+        return this
     }
 
     /**
-     * Executes the provided callback function when the current viewport width is at least 1024px.
-     * @param callback - The function to call when the media query matches.
+     * Applies the provided CSS properties when the current viewport width is at least 1024px.
+     * @param props - The CSS properties to apply to the element when the viewport width is at least 1024px.
      * @returns The current `Avita` instance for chaining.
      */
-    lg(callback: (element: Avita<T>) => void): this {
-        return this.media("(min-width: 1024px)", callback)
+    lg(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Applies the provided CSS property and value when the current viewport width is at least 1024px.
+     * @param property - The CSS property to apply to the element when the viewport width is at least 1024px.
+     * @param value - The value to set for the CSS property.
+     * @returns The current `Avita` instance for chaining.
+     */
+    lg(property: string, value: string): this
+
+    lg(
+        propertyOrProps: string | Partial<CSSStyleDeclaration>,
+        value?: string
+    ): this {
+        if (typeof propertyOrProps === "string" && value) {
+            this.media("(min-width: 1024px)", propertyOrProps, value)
+        } else if (typeof propertyOrProps === "object") {
+            this.media("(min-width: 1024px)", propertyOrProps)
+        }
+        return this
     }
 
     /**
-     * Executes the provided callback function when the current viewport width is at least 1280px.
-     * @param callback - The function to call when the media query matches.
+     * Applies the provided CSS properties when the current viewport width is at least 1280px.
+     * @param props - The CSS properties to apply to the element when the viewport width is at least 1280px.
      * @returns The current `Avita` instance for chaining.
      */
-    xl(callback: (element: Avita<T>) => void): this {
-        return this.media("(min-width: 1280px)", callback)
+    xl(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Applies the provided CSS property and value when the current viewport width is at least 1280px.
+     * @param property - The CSS property to apply to the element when the viewport width is at least 1280px.
+     * @param value - The value to set for the CSS property.
+     * @returns The current `Avita` instance for chaining.
+     */
+    xl(property: string, value: string): this
+
+    xl(
+        propertyOrProps: string | Partial<CSSStyleDeclaration>,
+        value?: string
+    ): this {
+        if (typeof propertyOrProps === "string" && value) {
+            this.media("(min-width: 1280px)", propertyOrProps, value)
+        } else if (typeof propertyOrProps === "object") {
+            this.media("(min-width: 1280px)", propertyOrProps)
+        }
+        return this
     }
 
     /**
-     * Executes the provided callback function when the current viewport width is at least 1536px.
-     * @param callback - The function to call when the media query matches.
+     * Applies the provided CSS properties when the current viewport width is at least 1536px.
+     * @param props - The CSS properties to apply to the element when the viewport width is at least 1536px.
      * @returns The current `Avita` instance for chaining.
      */
-    xxl(callback: (element: Avita<T>) => void): this {
-        return this.media("(min-width: 1536px)", callback)
+    xxl(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Applies the provided CSS property and value when the current viewport width is at least 1536px.
+     * @param property - The CSS property to apply to the element when the viewport width is at least 1536px.
+     * @param value - The value to set for the CSS property.
+     * @returns The current `Avita` instance for chaining.
+     */
+    xxl(property: string, value: string): this
+
+    xxl(
+        propertyOrProps: string | Partial<CSSStyleDeclaration>,
+        value?: string
+    ): this {
+        if (typeof propertyOrProps === "string" && value) {
+            this.media("(min-width: 1536px)", propertyOrProps, value)
+        } else if (typeof propertyOrProps === "object") {
+            this.media("(min-width: 1536px)", propertyOrProps)
+        }
+        return this
     }
 }
 
