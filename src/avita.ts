@@ -5661,7 +5661,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         return this
     }
 
-    viewbox(x: number, y: number, width: number, height: number): this {
+    viewBox(x: number, y: number, width: number, height: number): this {
         if (this.element instanceof SVGElement) {
             this.element.setAttribute("viewBox", `${x} ${y} ${width} ${height}`)
         }
