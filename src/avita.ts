@@ -548,7 +548,18 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is hovered over.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    onHover = this.onMouseOver
+    onHover(callback: (event: MouseEvent) => void) {
+        if (this.element instanceof HTMLElement) {
+            const initialStyle = this.element.style.cssText
+
+            this.element.addEventListener("mouseover", callback)
+
+            this.element.addEventListener("mouseout", () => {
+                this.element.style.cssText = initialStyle
+            })
+        }
+        return this
+    }
 
     /**
      * Attaches a click event listener to the current `AvitaElement` instance.
@@ -5677,7 +5688,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
 
     preserveAspectRatio(align: string, meetOrSlice: string): this {
         if (this.element instanceof SVGElement) {
-            this.element.setAttribute("preserveAspectRatio", `${align} ${meetOrSlice}`)
+            this.element.setAttribute(
+                "preserveAspectRatio",
+                `${align} ${meetOrSlice}`
+            )
         }
         return this
     }
