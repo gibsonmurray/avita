@@ -216,6 +216,7 @@ Congrats! You've built a simple todo app using Avita.
 -   [ ] Add tailwind integration
 -   [ ] Improve state management?
 -   [x] Add routing
+-   [x] generates `@media` queries
 -   [x] `.onHover()` - toggles on hover
 -   [x] `.full()` - 100% height and width
 -   [x] `.fullY()` - 100% height
