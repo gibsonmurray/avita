@@ -1,7 +1,10 @@
-import { defineConfig } from "tsup";
+import { defineConfig } from "tsup"
 
 export default defineConfig({
-    entry: ["src/index.ts"],
+    entry: {
+        "avita/index": "src/index.ts",
+        "avita/router": "src/router.ts",
+    },
     format: ["esm", "cjs", "iife"],
     dts: true,
     clean: true,
@@ -9,4 +12,4 @@ export default defineConfig({
     skipNodeModulesBundle: true,
     target: "esnext",
     minify: true,
-});
+})

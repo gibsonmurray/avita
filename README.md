@@ -211,11 +211,12 @@ Congrats! You've built a simple todo app using Avita.
 ## TODO
 
 -   [ ] Add more comprehensive documentation
--   [ ] Add routing
 -   [ ] Prettier plugin
 -   [ ] Icon integration?
--   [ ] Add tailwind-like utilities for css properties?
+-   [ ] Add tailwind integration
 -   [ ] Improve state management?
+-   [x] Add routing
+-   [x] `.onHover()` - toggles on hover
 -   [x] `.full()` - 100% height and width
 -   [x] `.fullY()` - 100% height
 -   [x] `.fullX()` - 100% width

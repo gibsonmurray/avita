@@ -4,6 +4,7 @@ import { defaultStyles, numberToSeconds } from "./utils"
 
 export default class Avita<T extends HTMLElement | SVGElement> {
     private element: T
+    private elements: T[]
     private avitaChildren: Avita<T>[]
 
     /**
@@ -18,7 +19,13 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     constructor(element: T)
 
-    constructor(tagOrElement: string | T) {
+    /**
+     * Creates a new instance of the AvitaElement class.
+     * @param elements - The HTML elements to wrap.
+     */
+    constructor(elements: T[])
+
+    constructor(tagOrElement: string | T | T[]) {
         if (typeof tagOrElement === "string") {
             this.element = document.createElementNS(
                 tagOrElement.startsWith("svg")
@@ -26,8 +33,16 @@ export default class Avita<T extends HTMLElement | SVGElement> {
                     : "http://www.w3.org/1999/xhtml",
                 tagOrElement
             ) as T
+            this.elements = [this.element] // Initialize elements with the single created element
+        } else if (Array.isArray(tagOrElement)) {
+            if (tagOrElement.length === 0) {
+                throw new Error("The elements array should not be empty.")
+            }
+            this.elements = tagOrElement
+            this.element = tagOrElement[0] // Use the first element as the primary element
         } else {
             this.element = tagOrElement
+            this.elements = [tagOrElement] // Wrap the single element in an array
         }
         this.avitaChildren = []
     }
@@ -63,29 +78,17 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Finds the first element with the given selector in the DOM tree.
+     * Finds the the element(s) with the given selector in the DOM tree.
      * @param selector - The CSS selector to match against.
      * @returns An AvitaElement instance matching the selector.
      * @throws {Error} If no element is found with the given selector.
      */
     static find<T extends HTMLElement>(selector: string): Avita<T>
 
-    /**
-     * Finds all elements with the given selector in the DOM tree.
-     * @param selector - The CSS selector to match against.
-     * @returns An array of AvitaElement instances matching the selector.
-     * @throws {Error} If no elements are found with the given selector.
-     */
-    static find<T extends HTMLElement>(selector: string): Avita<T>[]
-
-    static find<T extends HTMLElement>(
-        selector: string
-    ): Avita<T> | Avita<T>[] {
+    static find<T extends HTMLElement>(selector: string): Avita<T> {
         const elements = document.querySelectorAll(selector) as NodeListOf<T>
         if (elements.length > 1) {
-            return Array.from(elements).map((element) => {
-                return new Avita<T>(element)
-            })
+            return new Avita<T>(Array.from(elements))
         }
         if (elements.length === 1) {
             return new Avita<T>(elements[0])
@@ -103,22 +106,12 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     find(selector: string): Avita<T>
 
-    /**
-     * Finds all elements with the given selector in the Avita element's DOM subtree.
-     * @param selector - The CSS selector to match against.
-     * @returns An array of AvitaElement instances matching the selector.
-     * @throws {Error} If no elements are found with the given selector.
-     */
-    find(selector: string): Avita<T>[]
-
-    find(selector: string): Avita<T> | Avita<T>[] {
+    find(selector: string): Avita<T> {
         const elements = this.element.querySelectorAll(
             selector
         ) as NodeListOf<T>
         if (elements.length > 1) {
-            return Array.from(elements).map((element) => {
-                return new Avita<T>(element)
-            })
+            return new Avita<T>(Array.from(elements))
         }
         if (elements.length === 1) {
             return new Avita<T>(elements[0])
@@ -140,25 +133,30 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the CSS class(es) of the element.
-     * @param value - The CSS class(es) to add to the element.
+     * Sets the CSS class(es) of the element(s).
+     * @param value - The CSS class(es) to add to the element(s).
      * @returns The current AvitaElement instance for chaining.
      */
     class(value: string) {
         const classNames = value.split(" ")
         this.element.classList.add(...classNames)
+        this.elements.forEach((element) => {
+            element.classList.add(...classNames)
+        })
         return this
     }
 
     /**
-     * Gets the value of the specified css property of the element.
+     * Gets the value of the specified css property of the element(s).
+     * @note Use this method to get/set the value of multiple elements.
      * @param property - The CSS property to get the value of.
      * @returns The value of the specified CSS property.
      */
     css(property: string): string | undefined
 
     /**
-     * Sets the inline styles of the element.
+     * Sets the inline styles of the element(s).
+     * @note Use this method to get/set the value of multiple elements.
      * @param property - The CSS property to set.
      * @param value - The value to set for the CSS property.
      * @returns The current AvitaElement instance for chaining.
@@ -166,8 +164,9 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     css(property: string, value: string): this
 
     /**
-     * Sets the inline styles of the element.
-     * @param value - An object containing the CSS styles to apply to the element.
+     * Sets the inline styles of the element(s).
+     * @note Use this method to get/set the value of multiple elements.
+     * @param value - An object containing the CSS styles to apply to the element(s).
      * @returns The current AvitaElement instance for chaining.
      */
     css(props: Partial<CSSStyleDeclaration>): this
@@ -186,6 +185,9 @@ export default class Avita<T extends HTMLElement | SVGElement> {
             } else {
                 // Set a single property
                 this.element.style[propertyOrProps as any] = value
+                this.elements.forEach((element) => {
+                    element.style[propertyOrProps as any] = value
+                })
                 return this
             }
         } else {
@@ -193,6 +195,9 @@ export default class Avita<T extends HTMLElement | SVGElement> {
             for (const [prop, val] of Object.entries(propertyOrProps)) {
                 if (val !== undefined) {
                     this.element.style[prop as any] = String(val)
+                    this.elements.forEach((element) => {
+                        element.style[prop as any] = String(val)
+                    })
                 }
             }
             return this
@@ -200,20 +205,20 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Gets all attributes of the element.
+     * Gets all attributes of the element(s).
      * @returns {Object} The values of the specified attributes.
      */
     attr(): Record<string, string>
 
     /**
-     * Gets the specified attribute of the element.
+     * Gets the specified attribute of the element(s).
      * @param name - The name of the attribute to set.
      * @returns The value of the specified attribute.
      */
     attr(name: string): string | undefined
 
     /**
-     * Sets the specified attribute of the element.
+     * Sets the specified attribute of the element(s).
      * @param name - The name of the attribute to set.
      * @param value - The value to set for the attribute.
      * @returns The current AvitaElement instance for chaining.
@@ -221,8 +226,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     attr(name: string, value: string): this
 
     /**
-     * Sets the specified attributes of the element.
-     * @param attributes - An object containing the attributes to set on the element.
+     * Sets the specified attributes of the element(s).
+     * @param attributes - An object containing the attributes to set on the element(s).
      * @returns The current AvitaElement instance for chaining.
      */
     attr(attributes: Record<string, string>): this
@@ -246,12 +251,18 @@ export default class Avita<T extends HTMLElement | SVGElement> {
             } else {
                 // Set the value of the specified attribute
                 this.element.setAttribute(nameOrAttributes, value)
+                this.elements.forEach((element) => {
+                    element.setAttribute(nameOrAttributes, value)
+                })
                 return this
             }
         } else {
             // Set multiple attributes
             for (const [key, val] of Object.entries(nameOrAttributes)) {
                 this.element.setAttribute(key, val)
+                this.elements.forEach((element) => {
+                    element.setAttribute(key, val)
+                })
             }
             return this
         }
@@ -441,16 +452,22 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     children(...elements: (Avita<T> | string)[]): this
 
     children(...elements: (Avita<T> | string)[]): Avita<T>[] | this {
-        this.avitaChildren = []
-        elements.forEach((element) => {
-            if (typeof element === "string") {
-                this.avitaChildren.push(span().text(element) as Avita<T>)
-            } else {
-                this.avitaChildren.push(element)
-            }
-        })
-        this.updateDOMChildren()
-        return this
+        if (elements.length === 0) {
+            // Getter logic
+            return this.avitaChildren
+        } else {
+            // Setter logic
+            this.avitaChildren = []
+            elements.forEach((element) => {
+                if (typeof element === "string") {
+                    this.avitaChildren.push(span().text(element) as Avita<T>)
+                } else {
+                    this.avitaChildren.push(element)
+                }
+            })
+            this.updateDOMChildren()
+            return this
+        }
     }
 
     /**
@@ -544,18 +561,58 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Attaches a hover event listener to the current `AvitaElement` instance.
-     * @param callback - The callback function to be executed when the element is hovered over.
+     * Attaches an event listener to the current `AvitaElement` instance. Works with both single and multiple elements.
+     * @param event - The name of the event to listen for.
+     * @param callback - The callback function to be executed when the event is triggered.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    onHover(callback: (event: MouseEvent) => void) {
+    on(event: string, callback: (event: Event) => void) {
+        this.element.addEventListener(event, callback)
+        if (this.elements.length > 1) {
+            this.elements.forEach((element) => {
+                element.addEventListener(event, callback)
+            })
+        }
+        return this
+    }
+
+    /**
+     * Attaches hover event listeners to the current `AvitaElement` instance.
+     * Restores the original state when the mouse leaves the element.
+     * @param onMouseEnter - The callback function to be executed when the mouse enters the element.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    onHover(onMouseEnter: (event: MouseEvent) => void): this
+
+    /**
+     * Attaches hover event listeners to the current `AvitaElement` instance.
+     * Executes the provided callbacks when the mouse enters and exits the element.
+     * @param onMouseEnter - The callback function to be executed when the mouse enters the element.
+     * @param onMouseLeave - The callback function to be executed when the mouse leaves the element.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    onHover(
+        onMouseEnter: (event: MouseEvent) => void,
+        onMouseLeave: (event: MouseEvent) => void
+    ): this
+
+    onHover(
+        onMouseEnter: (event: MouseEvent) => void,
+        onMouseLeave?: (event: MouseEvent) => void
+    ): this {
         if (this.element instanceof HTMLElement) {
-            const initialStyle = this.element.style.cssText
+            const originalStyle = this.element.style.cssText
 
-            this.element.addEventListener("mouseover", callback)
+            // Attach mouseover (enter) event listener
+            this.element.addEventListener("mouseover", onMouseEnter)
 
-            this.element.addEventListener("mouseout", () => {
-                this.element.style.cssText = initialStyle
+            // Attach mouseout (leave) event listener, either restore the original style or call the provided onMouseLeave callback
+            this.element.addEventListener("mouseout", (event) => {
+                if (onMouseLeave) {
+                    onMouseLeave(event)
+                } else {
+                    this.element.style.cssText = originalStyle
+                }
             })
         }
         return this
@@ -1672,6 +1729,14 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Shorthand for background() method.
+     * Sets the 'background' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'background' CSS property. Can be a string representing a valid CSS background value.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    bg = this.background
+
+    /**
      * Sets the 'backgroundAttachment' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'backgroundAttachment' CSS property.
      * @returns The current `AvitaElement` instance for chaining.
@@ -1710,6 +1775,14 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         this.element.style.backgroundColor = String(value)
         return this
     }
+
+    /**
+     * Shorthand for backgroundColor() method.
+     * Sets the 'backgroundColor' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'backgroundColor' CSS property. Can be a string representing a valid CSS color value or an `AvitaTypes.AvitaColorType` value.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    bgColor = this.backgroundColor
 
     /**
      * Sets the 'backgroundImage' CSS property on the current `AvitaElement` instance.
@@ -2280,6 +2353,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * Sets the 'borderRadius' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'borderRadius' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
      * @returns The current `AvitaElement` instance for chaining.
+     * @deprecated Use `rounded()` instead.
      */
     borderRadius(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
@@ -2482,12 +2556,22 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         return this
     }
 
+
+    /**
+     * Clears the CSS styles applied to the current `AvitaElement` instance.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    clear() {
+        this.element.style.cssText = ""
+        return this
+    }
+
     /**
      * Sets the 'clear' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'clear' CSS property. Can be one of the valid 'clear' CSS property values.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    clear(value: AvitaTypes.Clear) {
+    clearCSS(value: AvitaTypes.Clear) {
         this.element.style.clear = value
         return this
     }
@@ -3339,13 +3423,79 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'margin' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'margin' CSS property. Can be a valid CSS margin value, either a string or a number (which will be interpreted as pixels).
+     * Sets the 'margin' CSS property with one value applied to all sides.
+     * @param value - The value to set for the 'margin' CSS property.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    margin(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.margin = String(value) + unit
+    margin(value: string | number): this
+
+    /**
+     * Sets the 'margin' CSS property with two values: vertical and horizontal.
+     * @param vertical - The value to set for the top and bottom margin.
+     * @param horizontal - The value to set for the left and right margin.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    margin(vertical: string | number, horizontal: string | number): this
+
+    /**
+     * Sets the 'margin' CSS property with three values: top, horizontal, and bottom.
+     * @param top - The value to set for the top margin.
+     * @param horizontal - The value to set for the left and right margin.
+     * @param bottom - The value to set for the bottom margin.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    margin(
+        top: string | number,
+        horizontal: string | number,
+        bottom: string | number
+    ): this
+
+    /**
+     * Sets the 'margin' CSS property with four values: top, right, bottom, and left.
+     * @param top - The value to set for the top margin.
+     * @param right - The value to set for the right margin.
+     * @param bottom - The value to set for the bottom margin.
+     * @param left - The value to set for the left margin.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    margin(
+        top: string | number,
+        right: string | number,
+        bottom: string | number,
+        left: string | number
+    ): this
+
+    margin(...values: (string | number)[]): this {
+        const processValue = (value: string | number) =>
+            typeof value === "number" ? `${value}px` : value
+
+        switch (values.length) {
+            case 1:
+                this.element.style.margin = processValue(values[0])
+                break
+            case 2:
+                this.element.style.margin = `${processValue(
+                    values[0]
+                )} ${processValue(values[1])}`
+                break
+            case 3:
+                this.element.style.margin = `${processValue(
+                    values[0]
+                )} ${processValue(values[1])} ${processValue(values[2])}`
+                break
+            case 4:
+                this.element.style.margin = `${processValue(
+                    values[0]
+                )} ${processValue(values[1])} ${processValue(
+                    values[2]
+                )} ${processValue(values[3])}`
+                break
+            default:
+                throw new Error(
+                    "Invalid number of arguments provided to margin(). Must be 1, 2, 3, or 4."
+                )
+        }
+
         return this
     }
 
@@ -3914,13 +4064,79 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'padding' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'padding' CSS property. Can be a string or number, where a number will be interpreted as pixels.
+     * Sets the 'padding' CSS property with one value applied to all sides.
+     * @param value - The value to set for the 'padding' CSS property.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    padding(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.padding = String(value) + unit
+    padding(value: string | number): this
+
+    /**
+     * Sets the 'padding' CSS property with two values: vertical and horizontal.
+     * @param vertical - The value to set for the top and bottom padding.
+     * @param horizontal - The value to set for the left and right padding.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    padding(vertical: string | number, horizontal: string | number): this
+
+    /**
+     * Sets the 'padding' CSS property with three values: top, horizontal, and bottom.
+     * @param top - The value to set for the top padding.
+     * @param horizontal - The value to set for the left and right padding.
+     * @param bottom - The value to set for the bottom padding.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    padding(
+        top: string | number,
+        horizontal: string | number,
+        bottom: string | number
+    ): this
+
+    /**
+     * Sets the 'padding' CSS property with four values: top, right, bottom, and left.
+     * @param top - The value to set for the top padding.
+     * @param right - The value to set for the right padding.
+     * @param bottom - The value to set for the bottom padding.
+     * @param left - The value to set for the left padding.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    padding(
+        top: string | number,
+        right: string | number,
+        bottom: string | number,
+        left: string | number
+    ): this
+
+    padding(...values: (string | number)[]): this {
+        const processValue = (value: string | number) =>
+            typeof value === "number" ? `${value}px` : value
+
+        switch (values.length) {
+            case 1:
+                this.element.style.padding = processValue(values[0])
+                break
+            case 2:
+                this.element.style.padding = `${processValue(
+                    values[0]
+                )} ${processValue(values[1])}`
+                break
+            case 3:
+                this.element.style.padding = `${processValue(
+                    values[0]
+                )} ${processValue(values[1])} ${processValue(values[2])}`
+                break
+            case 4:
+                this.element.style.padding = `${processValue(
+                    values[0]
+                )} ${processValue(values[1])} ${processValue(
+                    values[2]
+                )} ${processValue(values[3])}`
+                break
+            default:
+                throw new Error(
+                    "Invalid number of arguments provided to padding(). Must be 1, 2, 3, or 4."
+                )
+        }
+
         return this
     }
 
@@ -4207,7 +4423,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     rotate(value: string | number) {
         const unit = typeof value === "string" ? "" : "deg"
-        this.element.style.rotate = String(value) + unit
+        this.element.style.transform = `rotate(${value}${unit})`
         return this
     }
 
@@ -4240,7 +4456,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     scale(value: string | number) {
-        this.element.style.scale = String(value)
+        this.element.style.transform = `scale(${value})`
         return this
     }
 
@@ -4844,7 +5060,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
 
     /**
      * Adds the 'transition' CSS property on the current `AvitaElement` instance.
-     * Defaults to 'all 0.2s ease-in-out'.
+     * Defaults to 'all 0.1s ease-in-out'.
      * @returns The current `AvitaElement` instance for chaining.
      */
     transition(): this
@@ -4859,7 +5075,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     transition(value?: string): this {
         if (value === undefined) {
             // Set default transition
-            this.element.style.transition = "all 0.2s ease-in-out"
+            this.element.style.transition = "all 0.1s ease-in-out"
         } else {
             // Set custom transition
             this.element.style.transition = value
@@ -4914,8 +5130,42 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'translate' CSS property. Can be a string value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    translate(value: string) {
-        this.element.style.translate = value
+    translate(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        this.element.style.transform = `translate(${value}${unit})`
+        return this
+    }
+
+    /**
+     * Sets the 'translateX' CSS transform property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'translateX' transform. Can be a string or number value.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    translateX(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        this.element.style.transform = `translateX(${value}${unit})`
+        return this
+    }
+
+    /**
+     * Sets the 'translateY' CSS transform property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'translateY' transform. Can be a string or number value.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    translateY(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        this.element.style.transform = `translateY(${value}${unit})`
+        return this
+    }
+
+    /**
+     * Sets the 'translateZ' CSS transform property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'translateZ' transform. Can be a string or number value.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    translateZ(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        this.element.style.transform = `translateZ(${value}${unit})`
         return this
     }
 
@@ -5548,23 +5798,23 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * Sets the border radius of the top corners to 9999px.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    roundedTop(): this
+    roundedT(): this
 
     /**
      * Sets the border radius of the top corners.
      * @param radius - The border radius value to set. Can be a number (in pixels) or a string.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    roundedTop(radius: string): this
+    roundedT(radius: string): this
 
     /**
      * Sets the border radius of the top corners.
      * @param radius - The border radius value to set. Can be a number (in pixels).
      * @returns The current `AvitaElement` instance for chaining.
      */
-    roundedTop(radius: number): this
+    roundedT(radius: number): this
 
-    roundedTop(radius?: number | string): this {
+    roundedT(radius?: number | string): this {
         let borderRadiusValue =
             radius === undefined
                 ? "9999px"
@@ -5582,23 +5832,23 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * Sets the border radius of the bottom corners to 9999px.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    roundedBottom(): this
+    roundedB(): this
 
     /**
      * Sets the border radius of the bottom corners.
      * @param radius - The border radius value to set. Can be a number (in pixels) or a string.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    roundedBottom(radius: string): this
+    roundedB(radius: string): this
 
     /**
      * Sets the border radius of the bottom corners.
      * @param radius - The border radius value to set. Can be a number (in pixels).
      * @returns The current `AvitaElement` instance for chaining.
      */
-    roundedBottom(radius: number): this
+    roundedB(radius: number): this
 
-    roundedBottom(radius?: number | string): this {
+    roundedB(radius?: number | string): this {
         let borderRadiusValue =
             radius === undefined
                 ? "9999px"
@@ -5616,23 +5866,23 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * Sets the border radius of the left corners to 9999px.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    roundedLeft(): this
+    roundedL(): this
 
     /**
      * Sets the border radius of the left corners.
      * @param radius - The border radius value to set. Can be a number (in pixels) or a string.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    roundedLeft(radius: string): this
+    roundedL(radius: string): this
 
     /**
      * Sets the border radius of the left corners.
      * @param radius - The border radius value to set. Can be a number (in pixels).
      * @returns The current `AvitaElement` instance for chaining.
      */
-    roundedLeft(radius: number): this
+    roundedL(radius: number): this
 
-    roundedLeft(radius?: number | string): this {
+    roundedL(radius?: number | string): this {
         let borderRadiusValue =
             radius === undefined
                 ? "9999px"
@@ -5650,23 +5900,23 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * Sets the border radius of the right corners to 9999px.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    roundedRight(): this
+    roundedR(): this
 
     /**
      * Sets the border radius of the right corners.
      * @param radius - The border radius value to set. Can be a number (in pixels) or a string.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    roundedRight(radius: string): this
+    roundedR(radius: string): this
 
     /**
      * Sets the border radius of the right corners.
      * @param radius - The border radius value to set. Can be a number (in pixels).
      * @returns The current `AvitaElement` instance for chaining.
      */
-    roundedRight(radius: number): this
+    roundedR(radius: number): this
 
-    roundedRight(radius?: number | string): this {
+    roundedR(radius?: number | string): this {
         let borderRadiusValue =
             radius === undefined
                 ? "9999px"

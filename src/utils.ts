@@ -14,6 +14,7 @@ export function defaultStyles() {
                 box-sizing: border-box;
                 padding: 0;
                 margin: 0;
+                color: inherit;
             }
 
             body {
@@ -23,7 +24,6 @@ export function defaultStyles() {
             a {
                 cursor: pointer;
                 text-decoration: none;
-                color: inherit;
             }
 
             button {
