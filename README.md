@@ -211,6 +211,7 @@ Congrats! You've built a simple todo app using Avita.
 ## TODO
 
 -   [ ] Add more comprehensive documentation
+-   [ ] animation integration?
 -   [ ] Prettier plugin
 -   [ ] Icon integration?
 -   [ ] Add tailwind integration

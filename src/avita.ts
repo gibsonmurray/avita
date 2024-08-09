@@ -1,6 +1,11 @@
 import type * as AvitaTypes from "./types"
 import { span, style } from "./elements"
-import { camelToKebab, defaultStyles, generateClass, numberToSeconds } from "./utils"
+import {
+    camelToKebab,
+    defaultStyles,
+    generateClass,
+    numberToSeconds,
+} from "./utils"
 
 export default class Avita<T extends HTMLElement | SVGElement> {
     private element: T
@@ -4455,7 +4460,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     rotate(value: string | number) {
         const unit = typeof value === "string" ? "" : "deg"
-        this.element.style.transform = `rotate(${value}${unit})`
+        this.element.style.transform += `rotate(${value}${unit}) `
         return this
     }
 
@@ -4478,7 +4483,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         const unitZ = typeof z === "string" ? "" : ""
         const unitAngle = typeof angle === "string" ? "" : "deg"
 
-        this.element.style.transform = `rotate3d(${x}${unitX}, ${y}${unitY}, ${z}${unitZ}, ${angle}${unitAngle})`
+        this.element.style.transform += `rotate3d(${x}${unitX}, ${y}${unitY}, ${z}${unitZ}, ${angle}${unitAngle}) `
         return this
     }
 
@@ -4488,7 +4493,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     scale(value: string | number) {
-        this.element.style.transform = `scale(${value})`
+        this.element.style.transform += `scale(${value}) `
         return this
     }
 
@@ -5056,7 +5061,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     transform(value: string) {
-        this.element.style.transform = value
+        this.element.style.transform += value
         return this
     }
 
@@ -5164,7 +5169,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     translate(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.transform = `translate(${value}${unit})`
+        this.element.style.transform += `translate(${value}${unit}) `
         return this
     }
 
@@ -5175,7 +5180,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     translateX(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.transform = `translateX(${value}${unit})`
+        this.element.style.transform += `translateX(${value}${unit}) `
         return this
     }
 
@@ -5186,7 +5191,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     translateY(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.transform = `translateY(${value}${unit})`
+        this.element.style.transform += `translateY(${value}${unit}) `
         return this
     }
 
@@ -5197,7 +5202,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     translateZ(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.transform = `translateZ(${value}${unit})`
+        this.element.style.transform += `translateZ(${value}${unit})`
         return this
     }
 
@@ -5433,7 +5438,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
             this.element.style.position = "absolute"
             this.element.style.top = "50%"
             this.element.style.left = "50%"
-            this.element.style.transform = "translate(-50%, -50%)"
+            this.element.style.transform += "translate(-50%, -50%) "
         }
         return this
     }
@@ -5586,7 +5591,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     skewX(value: number): this {
-        this.element.style.transform = `skewX(${value}deg)`
+        this.element.style.transform += `skewX(${value}deg) `
         return this
     }
 
@@ -5596,7 +5601,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     skewY(value: number): this {
-        this.element.style.transform = `skewY(${value}deg)`
+        this.element.style.transform += `skewY(${value}deg) `
         return this
     }
 
@@ -5606,7 +5611,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     matrix(value: string): this {
-        this.element.style.transform = value
+        this.element.style.transform += value
         return this
     }
 
