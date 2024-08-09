@@ -1133,7 +1133,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     onScroll(callback: (event: Event) => void) {
-        this.element.addEventListener("scroll", callback)
+        window.addEventListener("scroll", callback)
         return this
     }
 
@@ -2506,11 +2506,12 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'boxShadow' CSS property. Can be a string representing a valid CSS box-shadow value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    boxShadow(value: string) {
+    shadow(value: string) {
         this.element.style.boxShadow = value
         return this
     }
-
+    
+    
     /**
      * Sets the 'boxSizing' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'boxSizing' CSS property. Can be one of the valid 'box-sizing' CSS property values.
@@ -2829,6 +2830,24 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     flexDirection(value: AvitaTypes.FlexDirection) {
         this.element.style.flexDirection = value
+        return this
+    }
+
+    /**
+     * Sets the 'flexDirection' CSS property on the current `AvitaElement` instance to 'column'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    flexCol() {
+        this.element.style.flexDirection = "column"
+        return this
+    }
+
+    /**
+     * Sets the 'flexDirection' CSS property on the current `AvitaElement` instance to 'row'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    flexRow() {
+        this.element.style.flexDirection = "row"
         return this
     }
 
