@@ -544,6 +544,13 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Attaches a hover event listener to the current `AvitaElement` instance.
+     * @param callback - The callback function to be executed when the element is hovered over.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    onHover = this.onMouseOver
+
+    /**
      * Attaches a click event listener to the current `AvitaElement` instance.
      * @param callback - The callback function to be executed when the element is clicked.
      * @returns The current `AvitaElement` instance for chaining.
