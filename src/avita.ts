@@ -4454,25 +4454,14 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'rotate' CSS transform property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'rotate' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    rotate(value: string | number) {
-        const unit = typeof value === "string" ? "" : "deg"
-        this.element.style.transform += `rotate(${value}${unit}) `
-        return this
-    }
-
-    /**
-     * Sets the 'rotate3d' CSS transform property on the current `AvitaElement` instance.
+     * Sets the rotate CSS property on the current `AvitaElement` instance.
      * @param x - The x-axis rotation value. Can be a string or number value.
      * @param y - The y-axis rotation value. Can be a string or number value.
      * @param z - The z-axis rotation value. Can be a string or number value.
      * @param angle - The rotation angle value. Can be a string or number value. Degrees by default.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    rotate3D(
+    rotate(
         x: string | number = 0,
         y: string | number = 0,
         z: string | number = 0,
@@ -4483,17 +4472,17 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         const unitZ = typeof z === "string" ? "" : ""
         const unitAngle = typeof angle === "string" ? "" : "deg"
 
-        this.element.style.transform += `rotate3d(${x}${unitX}, ${y}${unitY}, ${z}${unitZ}, ${angle}${unitAngle}) `
+        this.element.style.rotate = `${x}${unitX} ${y}${unitY} ${z}${unitZ} ${angle}${unitAngle}`
         return this
     }
 
     /**
-     * Sets the 'scale' CSS transform on the current `AvitaElement` instance.
+     * Sets the 'scale' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'scale' CSS property. Can be a string or number value.
      * @returns The current `AvitaElement` instance for chaining.
      */
     scale(value: string | number) {
-        this.element.style.transform += `scale(${value}) `
+        this.element.style.scale = String(value)
         return this
     }
 
@@ -5061,7 +5050,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     transform(value: string) {
-        this.element.style.transform += value
+        this.element.style.transform = value
         return this
     }
 
@@ -5164,45 +5153,101 @@ export default class Avita<T extends HTMLElement | SVGElement> {
 
     /**
      * Sets the 'translate' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'translate' CSS property. Can be a string value.
+     * Applies a translation along the X-axis, Y-axis, and optionally the Z-axis using a single string.
+     * @param value - The full `translate` value as a string (e.g., "10px, 20px, 30px").
      * @returns The current `AvitaElement` instance for chaining.
      */
-    translate(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.transform += `translate(${value}${unit}) `
+    translate(value: string): this
+
+    /**
+     * Sets the 'translate' CSS property on the current `AvitaElement` instance.
+     * Applies a 2D translation along the X-axis.
+     * @param x - The value to set for the 'translate' CSS property along the X-axis. Can be a string or number.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    translate(x: string | number): this
+
+    /**
+     * Sets the 'translate' CSS property on the current `AvitaElement` instance.
+     * Applies a 2D translation along the X and Y axes.
+     * @param x - The value to set for the 'translate' CSS property along the X-axis. Can be a string or number.
+     * @param y - The value to set for the 'translate' CSS property along the Y-axis. Can be a string or number.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    translate(x: string | number, y: string | number): this
+
+    /**
+     * Sets the 'translate' CSS property on the current `AvitaElement` instance.
+     * Applies a 3D translation along the X, Y, and Z axes.
+     * @param x - The value to set for the 'translate' CSS property along the X-axis. Can be a string or number.
+     * @param y - The value to set for the 'translate' CSS property along the Y-axis. Can be a string or number.
+     * @param z - The value to set for the 'translate' CSS property along the Z-axis. Can be a string or number. This parameter is optional.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    translate(x: string | number, y: string | number, z: string | number): this
+
+    translate(
+        xOrValue: string | number,
+        y?: string | number,
+        z?: string | number
+    ): this {
+        let translateValue: string
+
+        if (
+            typeof xOrValue === "string" &&
+            y === undefined &&
+            z === undefined
+        ) {
+            // If only one string argument is provided, treat it as the full translate value.
+            translateValue = xOrValue
+        } else {
+            // Otherwise, process as individual axis values.
+            const unitX = typeof xOrValue === "string" ? "" : "px"
+            const unitY = typeof y === "string" ? "" : "px"
+            const unitZ = typeof z === "string" ? "" : "px"
+
+            translateValue =
+                z !== undefined
+                    ? `${xOrValue}${unitX} ${y}${unitY} ${z}${unitZ}`
+                    : y !== undefined
+                    ? `${xOrValue}${unitX} ${y}${unitY}`
+                    : `${xOrValue}${unitX}`
+        }
+
+        this.element.style.translate = translateValue
         return this
     }
 
     /**
-     * Sets the 'translateX' CSS transform property on the current `AvitaElement` instance.
+     * Sets the 'translateX' CSS translate property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'translateX' transform. Can be a string or number value.
      * @returns The current `AvitaElement` instance for chaining.
      */
     translateX(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.transform += `translateX(${value}${unit}) `
+        this.element.style.translate = `${value}${unit} 0 0`
         return this
     }
 
     /**
-     * Sets the 'translateY' CSS transform property on the current `AvitaElement` instance.
+     * Sets the 'translateY' CSS translate property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'translateY' transform. Can be a string or number value.
      * @returns The current `AvitaElement` instance for chaining.
      */
     translateY(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.transform += `translateY(${value}${unit}) `
+        this.element.style.transform = `0 ${value}${unit} 0`
         return this
     }
 
     /**
-     * Sets the 'translateZ' CSS transform property on the current `AvitaElement` instance.
+     * Sets the 'translateZ' CSS translate property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'translateZ' transform. Can be a string or number value.
      * @returns The current `AvitaElement` instance for chaining.
      */
     translateZ(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.transform += `translateZ(${value}${unit})`
+        this.element.style.transform = `0 0 ${value}${unit}`
         return this
     }
 
@@ -5438,7 +5483,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
             this.element.style.position = "absolute"
             this.element.style.top = "50%"
             this.element.style.left = "50%"
-            this.element.style.transform += "translate(-50%, -50%) "
+            this.element.style.transform = "translate(-50%, -50%)"
         }
         return this
     }
@@ -5591,7 +5636,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     skewX(value: number): this {
-        this.element.style.transform += `skewX(${value}deg) `
+        this.element.style.transform = `skewX(${value}deg)`
         return this
     }
 
@@ -5601,7 +5646,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     skewY(value: number): this {
-        this.element.style.transform += `skewY(${value}deg) `
+        this.element.style.transform = `skewY(${value}deg)`
         return this
     }
 
@@ -5611,7 +5656,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     matrix(value: string): this {
-        this.element.style.transform += value
+        this.element.style.transform = value
         return this
     }
 
