@@ -5986,15 +5986,29 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     media(query: string, callback: (element: Avita<T>) => void): this {
         const mediaQuery = window.matchMedia(query)
-        const handleMediaChange = (event: MediaQueryListEvent) => {
+        const handleMediaChange = (
+            event: MediaQueryListEvent | MediaQueryList
+        ) => {
             if (event.matches) {
                 callback(this)
             }
         }
+
+        // Listen for changes in the media query
         mediaQuery.addEventListener("change", handleMediaChange)
+
+        // Handle initial check
         if (mediaQuery.matches) {
             callback(this)
         }
+
+        // Handle window resize events
+        const handleResize = () => {
+            handleMediaChange(mediaQuery)
+        }
+
+        window.addEventListener("resize", handleResize)
+
         return this
     }
 
