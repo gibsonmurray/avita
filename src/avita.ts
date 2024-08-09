@@ -42,8 +42,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     static render<T extends HTMLElement>(
         children: Avita<T>,
         selector: string = "#root",
-        options?: {
+        options: {
             defaultStyles?: boolean
+        } = {
+            defaultStyles: true
         }
     ) {
         const root = document.querySelector(selector)
@@ -143,9 +145,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns The current AvitaElement instance for chaining.
      */
     class(value: string) {
-        value.split(" ").forEach((className) => {
-            this.element.classList.add(className)
-        })
+        const classNames = value.split(" ")
+        this.element.classList.add(...classNames)
         return this
     }
 
