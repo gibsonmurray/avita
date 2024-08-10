@@ -8,9 +8,7 @@
     "types": "dist/index.d.ts",
     "devDependencies": {
         "@types/bun": "latest",
-        "tsup": "^8.2.4",
-        "typedoc": "^0.26.5",
-        "typedoc-plugin-markdown": "^4.2.3"
+        "tsup": "^8.2.4"
     },
     "peerDependencies": {
         "typescript": "^5.5.4"
