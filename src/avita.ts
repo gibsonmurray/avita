@@ -597,6 +597,143 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Attaches a CSS hover effect to the current `AvitaElement` instance.
+     * The hover effect is defined by the provided CSS properties or a single property-value pair.
+     * A unique CSS class is generated and applied to the element to scope the hover effect.
+     * @param props - The CSS properties to apply to the element when hovered over.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    onHoverCSS(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Attaches a CSS hover effect to the current `AvitaElement` instance.
+     * The hover effect is defined by the provided CSS property and value.
+     * A unique CSS class is generated and applied to the element to scope the hover effect.
+     * @param property - The CSS property to apply to the element when hovered over.
+     * @param value - The value to set for the CSS property.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    onHoverCSS(property: string, value: string): this
+
+    onHoverCSS(
+        propsOrProperty: Partial<CSSStyleDeclaration> | string,
+        value?: string
+    ): this {
+        return this.applyPseudoClassCSS("hover", propsOrProperty, value)
+    }
+
+    /**
+     * Attaches a CSS active effect to the current `AvitaElement` instance.
+     * The active effect is defined by the provided CSS properties or a single property-value pair.
+     * A unique CSS class is generated and applied to the element to scope the active effect.
+     * @param props - The CSS properties to apply to the element when it is active.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    onActiveCSS(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Attaches a CSS active effect to the current `AvitaElement` instance.
+     * The active effect is defined by the provided CSS property and value.
+     * A unique CSS class is generated and applied to the element to scope the active effect.
+     * @param property - The CSS property to apply to the element when it is active.
+     * @param value - The value to set for the CSS property.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    onActiveCSS(property: string, value: string): this
+
+    onActiveCSS(
+        propsOrProperty: Partial<CSSStyleDeclaration> | string,
+        value?: string
+    ): this {
+        return this.applyPseudoClassCSS("active", propsOrProperty, value)
+    }
+
+    /**
+     * Attaches a CSS focus effect to the current `AvitaElement` instance.
+     * The focus effect is defined by the provided CSS properties or a single property-value pair.
+     * A unique CSS class is generated and applied to the element to scope the focus effect.
+     * @param props - The CSS properties to apply to the element when it is focused.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    onFocusCSS(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Attaches a CSS focus effect to the current `AvitaElement` instance.
+     * The focus effect is defined by the provided CSS property and value.
+     * A unique CSS class is generated and applied to the element to scope the focus effect.
+     * @param property - The CSS property to apply to the element when it is focused.
+     * @param value - The value to set for the CSS property.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    onFocusCSS(property: string, value: string): this
+
+    onFocusCSS(
+        propsOrProperty: Partial<CSSStyleDeclaration> | string,
+        value?: string
+    ): this {
+        return this.applyPseudoClassCSS("focus", propsOrProperty, value)
+    }
+
+    /**
+     * Attaches a CSS focus-within effect to the current `AvitaElement` instance.
+     * The focus-within effect is defined by the provided CSS properties or a single property-value pair.
+     * A unique CSS class is generated and applied to the element to scope the focus-within effect.
+     * @param props - The CSS properties to apply to the element when it or one of its descendants is focused.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    onFocusWithinCSS(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Attaches a CSS focus-within effect to the current `AvitaElement` instance.
+     * The focus-within effect is defined by the provided CSS property and value.
+     * A unique CSS class is generated and applied to the element to scope the focus-within effect.
+     * @param property - The CSS property to apply to the element when it or one of its descendants is focused.
+     * @param value - The value to set for the CSS property.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    onFocusWithinCSS(property: string, value: string): this
+
+    onFocusWithinCSS(
+        propsOrProperty: Partial<CSSStyleDeclaration> | string,
+        value?: string
+    ): this {
+        return this.applyPseudoClassCSS("focus-within", propsOrProperty, value)
+    }
+
+    /**
+     * Helper method to apply CSS for a given pseudoclass.
+     * @param pseudoClass - The pseudoclass to apply (e.g., "hover", "active").
+     * @param propsOrProperty - The CSS properties or property to apply.
+     * @param value - The value to set for the CSS property (if a single property is provided).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    private applyPseudoClassCSS(
+        pseudoClass: string,
+        propsOrProperty: Partial<CSSStyleDeclaration> | string,
+        value?: string
+    ): this {
+        const uniqueClass = generateClass()
+        this.class(uniqueClass)
+
+        let body = ""
+
+        if (typeof propsOrProperty === "string" && value) {
+            body = `${camelToKebab(propsOrProperty)}: ${value};`
+        }
+
+        if (typeof propsOrProperty === "object") {
+            Object.entries(propsOrProperty).forEach(([prop, val]) => {
+                body += `${camelToKebab(prop)}: ${val};`
+            })
+        }
+
+        const pseudoCSS = `.${uniqueClass}:${pseudoClass} { ${body} }`
+        $("head").append(style().text(pseudoCSS))
+
+        return this
+    }
+
+    /**
      * Attaches hover event listeners to the current `AvitaElement` instance.
      * Restores the original state when the mouse leaves the element.
      * @param onMouseEnter - The callback function to be executed when the mouse enters the element.
@@ -621,17 +758,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         onMouseLeave?: (event: MouseEvent) => void
     ): this {
         if (this.element instanceof HTMLElement) {
-            const originalStyle = this.element.style.cssText
-
-            // Attach mouseover (enter) event listener
             this.element.addEventListener("mouseover", onMouseEnter)
-
-            // Attach mouseout (leave) event listener, either restore the original style or call the provided onMouseLeave callback
             this.element.addEventListener("mouseout", (event) => {
                 if (onMouseLeave) {
                     onMouseLeave(event)
-                } else {
-                    this.element.style.cssText = originalStyle
                 }
             })
         }
@@ -4454,25 +4584,13 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the rotate CSS property on the current `AvitaElement` instance.
-     * @param x - The x-axis rotation value. Can be a string or number value.
-     * @param y - The y-axis rotation value. Can be a string or number value.
-     * @param z - The z-axis rotation value. Can be a string or number value.
-     * @param angle - The rotation angle value. Can be a string or number value. Degrees by default.
+     * Sets the 'rotate' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'rotate' CSS property. Can be a string or number value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    rotate(
-        x: string | number = 0,
-        y: string | number = 0,
-        z: string | number = 0,
-        angle: string | number = 0
-    ): this {
-        const unitX = typeof x === "string" ? "" : ""
-        const unitY = typeof y === "string" ? "" : ""
-        const unitZ = typeof z === "string" ? "" : ""
-        const unitAngle = typeof angle === "string" ? "" : "deg"
-
-        this.element.style.rotate = `${x}${unitX} ${y}${unitY} ${z}${unitZ} ${angle}${unitAngle}`
+    rotate(value: string | number): this {
+        const unit = typeof value === "string" ? "" : "deg"
+        this.element.style.rotate = String(value) + unit
         return this
     }
 
