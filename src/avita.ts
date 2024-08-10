@@ -4135,8 +4135,31 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'overflow' CSS property. Must be a valid CSS `overflow` value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    overflow(value: AvitaTypes.Overflow) {
-        this.element.style.overflow = value
+    overflow(value: AvitaTypes.Overflow): this
+
+    /**
+     * Sets the 'overflow-x' and 'overflow-y' CSS properties on the current `AvitaElement` instance.
+     * @param overflowX - The value to set for the 'overflow-x' CSS property. Must be a valid CSS `overflow` value.
+     * @param overflowY - The value to set for the 'overflow-y' CSS property. Must be a valid CSS `overflow` value.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    overflow(
+        overflowX: AvitaTypes.Overflow,
+        overflowY: AvitaTypes.Overflow
+    ): this
+
+    overflow(
+        valueOrX: AvitaTypes.Overflow,
+        overflowY?: AvitaTypes.Overflow
+    ): this {
+        if (overflowY === undefined) {
+            // Single value: set overflow for both x and y
+            this.element.style.overflow = valueOrX
+        } else {
+            // Two values: set overflow-x and overflow-y separately
+            this.element.style.overflowX = valueOrX
+            this.element.style.overflowY = overflowY
+        }
         return this
     }
 
