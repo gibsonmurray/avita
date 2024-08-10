@@ -83,44 +83,92 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Finds the the element(s) with the given selector in the DOM tree.
+     * Finds the element(s) with the given selector in the DOM tree.
      * @param selector - The CSS selector to match against.
-     * @returns An AvitaElement instance matching the selector.
+     * @returns An Avita instance matching the selector.
      * @throws {Error} If no element is found with the given selector.
      */
     static find<T extends HTMLElement>(selector: string): Avita<T>
 
-    static find<T extends HTMLElement>(selector: string): Avita<T> {
+    /**
+     * Finds the element(s) with the given selector in the DOM tree.
+     * @param selector - The CSS selector to match against.
+     * @param raw - A boolean indicating whether to return the raw HTML element(s).
+     * @returns The raw HTML element(s) matching the selector.
+     * @throws {Error} If no element is found with the given selector.
+     */
+    static find<T extends HTMLElement>(selector: string, raw: true): T | T[]
+
+    static find<T extends HTMLElement>(
+        selector: string,
+        raw?: boolean
+    ): Avita<T> | T | T[] {
         const elements = document.querySelectorAll(selector) as NodeListOf<T>
-        if (elements.length > 1) {
-            return new Avita<T>(Array.from(elements))
+
+        if (raw) {
+            // If the raw argument is provided and true
+            if (elements.length > 1) {
+                return Array.from(elements) // Return an array of raw elements
+            }
+            if (elements.length === 1) {
+                return elements[0] // Return the single raw element
+            }
+        } else {
+            if (elements.length > 1) {
+                return new Avita<T>(Array.from(elements)) // Return an Avita instance with multiple elements
+            }
+            if (elements.length === 1) {
+                return new Avita<T>(elements[0]) // Return an Avita instance with a single element
+            }
         }
-        if (elements.length === 1) {
-            return new Avita<T>(elements[0])
-        }
+
         throw new Error(
-            `Element(s) with selector: '${selector}' not found in local DOM subtree`
+            `Element(s) with selector: '${selector}' not found in DOM tree`
         )
     }
 
     /**
-     * Finds the first element with the given selector in the Avita element's DOM subtree.
+     * Finds the element(s) with the given selector in the local DOM subtree.
      * @param selector - The CSS selector to match against.
-     * @returns An AvitaElement instance matching the selector.
+     * @returns An Avita instance matching the selector.
      * @throws {Error} If no element is found with the given selector.
      */
-    find(selector: string): Avita<T>
+    find<T extends HTMLElement>(selector: string): Avita<T>
 
-    find(selector: string): Avita<T> {
+    /**
+     * Finds the element(s) with the given selector in the local DOM subtree.
+     * @param selector - The CSS selector to match against.
+     * @param raw - A boolean indicating whether to return the raw HTML element(s).
+     * @returns The raw HTML element(s) matching the selector.
+     * @throws {Error} If no element is found with the given selector.
+     */
+    find<T extends HTMLElement>(selector: string, raw: true): T | T[]
+
+    find<T extends HTMLElement>(
+        selector: string,
+        raw?: boolean
+    ): Avita<T> | T | T[] {
         const elements = this.element.querySelectorAll(
             selector
         ) as NodeListOf<T>
-        if (elements.length > 1) {
-            return new Avita<T>(Array.from(elements))
+
+        if (raw) {
+            // If the raw argument is provided and true
+            if (elements.length > 1) {
+                return Array.from(elements) // Return an array of raw elements
+            }
+            if (elements.length === 1) {
+                return elements[0] // Return the single raw element
+            }
+        } else {
+            if (elements.length > 1) {
+                return new Avita<T>(Array.from(elements)) // Return an Avita instance with multiple elements
+            }
+            if (elements.length === 1) {
+                return new Avita<T>(elements[0]) // Return an Avita instance with a single element
+            }
         }
-        if (elements.length === 1) {
-            return new Avita<T>(elements[0])
-        }
+
         throw new Error(
             `Element(s) with selector: '${selector}' not found in local DOM subtree`
         )
