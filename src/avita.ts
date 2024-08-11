@@ -5445,36 +5445,81 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'rotate' CSS property. Can be a string or number value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    rotate(value: string | number): this
-
-    /**
-     * Sets the 'rotate' CSS property for 3D rotation on the current `AvitaElement` instance.
-     * @param x - Rotation around the x-axis in degrees.
-     * @param y - Rotation around the y-axis in degrees.
-     * @param z - Rotation around the z-axis in degrees.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    rotate(x: number, y: number, z: number): this
-
-    rotate(valueOrX: string | number, y?: number, z?: number): this {
-        if (typeof y === "number" && typeof z === "number") {
-            // 3D rotation
-            this.element.style.transform += `rotate3d(${valueOrX}deg, ${y}deg, ${z}deg) `
-            if (this.elements.length > 0)
-                this.elements.forEach((element) => {
-                    element.style.transform += `rotate3d(${valueOrX}deg, ${y}deg, ${z}deg) `
-                })
-        } else {
-            // 2D rotation
-            const unit = typeof valueOrX === "string" ? "" : "deg"
-            this.element.style.rotate = String(valueOrX) + unit
-            if (this.elements.length > 0)
-                this.elements.forEach((element) => {
-                    element.style.rotate = String(valueOrX) + unit
-                })
-        }
+    rotate(value: string | number) {
+        const unit = typeof value === "string" ? "" : "deg"
+        this.element.style.rotate = String(value) + unit
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.style.rotate = String(value) + unit
+            })
         return this
     }
+
+    /**
+     * Sets the 'rotateX' CSS transform property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'rotateX' CSS property. Can be a string or number value.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    rotateX(value: string | number) {
+        const unit = typeof value === "string" ? "" : "deg"
+        const val = `rotateX(${value}${unit}) `
+        this.element.style.transform += val
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.style.transform += val
+            })
+        return this
+    }
+
+    /**
+     * A shorthand property for calling the `rotateX()` method on the current `AvitaElement` instance.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    rx = this.rotateX
+
+    /**
+     * Sets the 'rotateY' CSS transform property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'rotateY' CSS property. Can be a string or number value.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    rotateY(value: string | number) {
+        const unit = typeof value === "string" ? "" : "deg"
+        const val = `rotateY(${value}${unit}) `
+        this.element.style.transform += val
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.style.transform += val
+            })
+        return this
+    }
+
+    /**
+     * A shorthand property for calling the `rotateY()` method on the current `AvitaElement` instance.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    ry = this.rotateY
+
+    /**
+     * Sets the 'rotateZ' CSS transform property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'rotateZ' CSS property. Can be a string or number value.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    rotateZ(value: string | number) {
+        const unit = typeof value === "string" ? "" : "deg"
+        const val = `rotateZ(${value}${unit}) `
+        this.element.style.transform += val
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.style.transform += val
+            })
+        return this
+    }
+
+    /**
+     * A shorthand property for calling the `rotateZ()` method on the current `AvitaElement` instance.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    rz = this.rotateZ
 
     /**
      * Sets the 'scale' CSS property on the current `AvitaElement` instance.
