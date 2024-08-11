@@ -2496,6 +2496,20 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     bg = this.background
 
     /**
+     * Sets the 'backgroundClip' CSS property on the current `AvitaElement` instance and all its child elements to the specified value.
+     * @param value - The value to set for the 'backgroundClip' CSS property. Can be a string representing a valid CSS background-clip value.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    bgClip(value: string) {
+        this.element.style.backgroundClip = value
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.style.backgroundClip = value
+            })
+        return this
+    }
+
+    /**
      * Sets the 'backgroundSize' CSS property on the current `AvitaElement` instance and all its child elements to 'contain', scaling the background image to fit within the element while maintaining its aspect ratio.
      * @returns The current `AvitaElement` instance for chaining.
      */
@@ -3516,6 +3530,20 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.style.font = value
+            })
+        return this
+    }
+
+    /**
+     * Sets the 'fontFamily' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'fontFamily' CSS property. Can be a valid CSS font-family value.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    family(value: string) {
+        this.element.style.fontFamily = value
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.style.fontFamily = value
             })
         return this
     }
