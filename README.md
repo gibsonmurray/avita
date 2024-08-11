@@ -211,7 +211,7 @@ Congrats! You've built a simple todo app using Avita.
 ## TODO
 
 -   [ ] Add more comprehensive documentation
--   [ ] css animation generation
+-   [ ] animation integration with GSAP
 -   [ ] Prettier plugin
 -   [ ] Icon integration
 -   [ ] Markdown support
