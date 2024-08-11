@@ -105,10 +105,10 @@ import {
     hstack,
     zstack,
 } from "./elements"
-import AvitaColor from "./avita-color"
 import Avita, { $ } from "./avita"
 
 export {
+    $,
     div,
     span,
     button,
@@ -214,7 +214,5 @@ export {
     vstack,
     hstack,
     zstack,
-    AvitaColor,
-    $,
 }
 export default Avita

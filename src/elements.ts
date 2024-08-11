@@ -1,4 +1,3 @@
-import type * as AvitaTypes from "./types"
 import Avita from "./avita"
 
 /**
@@ -915,17 +914,31 @@ export function feOffset(): Avita<SVGFEOffsetElement> {
     return new Avita<SVGFEOffsetElement>("feOffset")
 }
 
-
 // Custom Elements
 
-export function vstack(align: AvitaTypes.StackAlign = "center"): Avita<HTMLDivElement> {
+/**
+ * Creates a new `Avita<HTMLDivElement>` element with a vertical stack layout.
+ * @param align - The alignment of the stack, defaults to "center".
+ * @returns A new `Avita<HTMLDivElement>` element with a vertical stack layout.
+ */
+export function vstack(align: string = "center"): Avita<HTMLDivElement> {
     return new Avita<HTMLDivElement>("div").vstack(align)
 }
 
-export function hstack(align: AvitaTypes.StackAlign = "center"): Avita<HTMLDivElement> {
+/**
+ * Creates a new `Avita<HTMLDivElement>` element with a horizontal stack layout.
+ * @param align - The alignment of the stack, defaults to "center".
+ * @returns A new `Avita<HTMLDivElement>` element with a horizontal stack layout.
+ */
+export function hstack(align: string = "center"): Avita<HTMLDivElement> {
     return new Avita<HTMLDivElement>("div").hstack(align)
 }
 
-export function zstack(align: AvitaTypes.StackAlign = "center"): Avita<HTMLDivElement> {
+/**
+ * Creates a new `Avita<HTMLDivElement>` element with a stacked layout along the z-axis.
+ * @param align - The alignment of the stack, defaults to "center".
+ * @returns A new `Avita<HTMLDivElement>` element with a z-axis stack layout.
+ */
+export function zstack(align: string = "center"): Avita<HTMLDivElement> {
     return new Avita<HTMLDivElement>("div").zstack(align)
 }

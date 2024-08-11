@@ -211,49 +211,15 @@ Congrats! You've built a simple todo app using Avita.
 ## TODO
 
 -   [ ] Add more comprehensive documentation
--   [ ] animation integration?
+-   [ ] css animation generation
 -   [ ] Prettier plugin
 -   [ ] Icon integration?
 -   [ ] Add tailwind integration
 -   [ ] Improve state management?
 -   [x] `vstack`, `hstack`, and `zstack` both elements and css properties
 -   [x] Add routing
--   [x] generates `@media` queries
--   [x] `.onHover()` - toggles on hover
--   [x] `.full()` - 100% height and width
--   [x] `.fullY()` - 100% height
--   [x] `.fullX()` - 100% width
--   [x] `.stroke()` - stroke css
--   [x] `.fill()` - fill css
--   [x] `.rounded()`
--   [x] `.marginX()`
--   [x] `.marginY()`
--   [x] `.paddingX()`
--   [x] `.paddingY()`
--   [x] `.rounded()`
--   [x] `.fixed()` - fixed position
--   [x] `.rotate3D()`
--   [x] `<i>`
--   [x] `<b>`
--   [x] `<br>`
--   [x] `<sup>`
--   [x] `<sub>`
--   [x] `<em>`
--   [x] `<strong>`
--   [x] `<kbd>`
--   [x] `<code>`
--   [x] `<samp>`
--   [x] `<cite>`
--   [x] `<var>`
--   [x] `<big>`
--   [x] `<small>`
--   [x] `<dfn>`
--   [x] `<q>`
--   [x] `<time>`
--   [x] `<pre>`
--   [x] `<svg>`
--   [x] `<path>`
--   [x] `<map>`
--   [x] `<area>`
+-   [x] generated `@media` queries
+-   [x] generated pseudoselector classes
+-   [x] revision of Avita methods
 
 Copyright (c) 2024 Gibson Murray

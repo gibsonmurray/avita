@@ -23,6 +23,6 @@
         "noPropertyAccessFromIndexSignature": false,
         "baseUrl": "."
     },
-    "include": ["src/**/*", "src/types/**/*"],
+    "include": ["src/**/*"],
     "exclude": ["test/**/*"]
 }

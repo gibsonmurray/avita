@@ -65,6 +65,11 @@ export function generateId(): string {
     return `id-${Math.random().toString(36).substring(2, 15)}`
 }
 
+/**
+ * Converts a camelCase string to a kebab-case string.
+ * @param str - The camelCase string to convert.
+ * @returns The converted kebab-case string.
+ */
 export function camelToKebab(str: string): string {
     return str.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase()
 }
