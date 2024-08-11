@@ -213,8 +213,9 @@ Congrats! You've built a simple todo app using Avita.
 -   [ ] Add more comprehensive documentation
 -   [ ] css animation generation
 -   [ ] Prettier plugin
--   [ ] Icon integration?
--   [ ] Add tailwind integration
+-   [ ] Icon integration
+-   [ ] Markdown support
+-   [ ] Tailwind integration
 -   [ ] Improve state management?
 -   [x] `vstack`, `hstack`, and `zstack` both elements and css properties
 -   [x] Add routing
