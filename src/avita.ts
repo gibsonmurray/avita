@@ -6339,11 +6339,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     zIndex(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.zIndex = String(value) + unit
+        this.element.style.zIndex = String(value)
         if (this.elements.length > 0)
             this.elements.forEach((element) => {
-                element.style.zIndex = String(value) + unit
+                element.style.zIndex = String(value)
             })
         return this
     }
