@@ -216,6 +216,7 @@ Congrats! You've built a simple todo app using Avita.
 -   [ ] Icon integration?
 -   [ ] Add tailwind integration
 -   [ ] Improve state management?
+-   [x] `vstack`, `hstack`, and `zstack` both elements and css properties
 -   [x] Add routing
 -   [x] generates `@media` queries
 -   [x] `.onHover()` - toggles on hover

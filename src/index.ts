@@ -101,6 +101,9 @@ import {
     animateTransform,
     feDropShadow,
     feOffset,
+    vstack,
+    hstack,
+    zstack,
 } from "./elements"
 import AvitaColor from "./avita-color"
 import Avita, { $ } from "./avita"
@@ -208,6 +211,9 @@ export {
     animateTransform,
     feDropShadow,
     feOffset,
+    vstack,
+    hstack,
+    zstack,
     AvitaColor,
     $,
 }

@@ -128,6 +128,18 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Waits for the DOM to be fully loaded and then executes the provided callback function.
+     * @param callback - The function to be executed when the DOM is ready.
+     */
+    static ready(callback: () => void) {
+        if (document.readyState === "complete") {
+            callback()
+        } else {
+            document.addEventListener("DOMContentLoaded", callback)
+        }
+    }
+
+    /**
      * Finds the element(s) with the given selector in the local DOM subtree.
      * @param selector - The CSS selector to match against.
      * @returns An Avita instance matching the selector.
@@ -174,34 +186,65 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         )
     }
 
-    // Element Properties
     /**
-     * Sets the id property of the element.
-     * @param id - The id to set on the element.
-     * @returns The current AvitaElement instance for chaining.
+     * Gets the ID of the current Avita element.
+     * @returns The ID of the current Avita element as a string.
      */
-    id(id: string) {
+    id(): string
+
+    /**
+     * Sets the ID of the current Avita element.
+     * @param value - The new ID to set for the Avita element.
+     * @returns The current Avita instance for chaining.
+     */
+    id(value: string): this
+
+    id(id?: string) {
+        if (!id) {
+            return this.element.id
+        }
         this.element.id = id
         return this
     }
 
     /**
-     * Sets the CSS class(es) of the element(s).
-     * @param value - The CSS class(es) to add to the element(s).
-     * @returns The current AvitaElement instance for chaining.
+     * Gets the CSS class(es) of the first element.
+     * @returns The current CSS classes as a string.
      */
-    class(value: string) {
-        const classNames = value.split(" ")
-        this.element.classList.add(...classNames)
-        this.elements.forEach((element) => {
-            element.classList.add(...classNames)
-        })
-        return this
+    class(): string
+
+    /**
+     * Sets the CSS class(es) of the element(s), concatenating them with the existing classes.
+     * @param value - The CSS class(es) to add to the element(s).
+     * @returns The current Avita instance for chaining.
+     */
+    class(value: string): this
+
+    // Implementation
+    class(value?: string): string | this {
+        if (value === undefined) {
+            // Getter: Return the class names as a string
+            return this.element.className
+        } else {
+            // Setter: Add the new classes
+            const classNames = value.split(" ")
+            this.element.classList.add(...classNames)
+            this.elements.forEach((element) => {
+                element.classList.add(...classNames)
+            })
+            return this
+        }
     }
 
     /**
-     * Gets the value of the specified css property of the element(s).
-     * @note Use this method to get/set the value of multiple elements.
+     * Gets the CSS class(es) of the current Avita element.
+     * @returns The current CSS classes as a CSSStyleDeclaration object.
+     */
+    css(): CSSStyleDeclaration
+
+    /**
+     * Gets the value of the specified CSS property of the element(s).
+     * @note Use this method to get the value of multiple elements.
      * @param property - The CSS property to get the value of.
      * @returns The value of the specified CSS property.
      */
@@ -209,7 +252,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
 
     /**
      * Sets the inline styles of the element(s).
-     * @note Use this method to get/set the value of multiple elements.
+     * @note Use this method to set the value of a single property.
      * @param property - The CSS property to set.
      * @param value - The value to set for the CSS property.
      * @returns The current AvitaElement instance for chaining.
@@ -218,36 +261,42 @@ export default class Avita<T extends HTMLElement | SVGElement> {
 
     /**
      * Sets the inline styles of the element(s).
-     * @note Use this method to get/set the value of multiple elements.
-     * @param value - An object containing the CSS styles to apply to the element(s).
+     * @note Use this method to set multiple properties at once.
+     * @param props - An object containing the CSS styles to apply to the element(s).
      * @returns The current AvitaElement instance for chaining.
      */
     css(props: Partial<CSSStyleDeclaration>): this
 
     css(
-        propertyOrProps: string | Partial<CSSStyleDeclaration>,
+        propertyOrProps?: string | Partial<CSSStyleDeclaration>,
         value?: string
-    ): string | this | undefined {
+    ): string | this | CSSStyleDeclaration | undefined {
+        const computedStyle = getComputedStyle(this.element)
+
+        if (!propertyOrProps && !value) {
+            // Return all computed styles when no arguments are provided
+            return computedStyle
+        }
+
         if (typeof propertyOrProps === "string") {
-            if (value === undefined) {
-                // Get the value of a single property
-                const computedStyle = getComputedStyle(this.element)
+            if (!value) {
+                // Get the value of a single CSS property
                 return (
                     computedStyle.getPropertyValue(propertyOrProps) || undefined
                 )
             } else {
-                // Set a single property
-                this.element.style[propertyOrProps as any] = value
+                // Set a single CSS property
                 this.elements.forEach((element) => {
                     element.style[propertyOrProps as any] = value
                 })
                 return this
             }
-        } else {
-            // Set multiple properties
+        }
+
+        if (typeof propertyOrProps === "object") {
+            // Set multiple CSS properties
             for (const [prop, val] of Object.entries(propertyOrProps)) {
                 if (val !== undefined) {
-                    this.element.style[prop as any] = String(val)
                     this.elements.forEach((element) => {
                         element.style[prop as any] = String(val)
                     })
@@ -449,7 +498,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
 
     /**
      * Sets the text content of the element.
-     * @param value - The text to set as the content of the element.
+     * @param value - The text content to set for the element.
      * @returns The current `AvitaElement` instance for chaining.
      */
     text(value: string) {
@@ -641,143 +690,6 @@ export default class Avita<T extends HTMLElement | SVGElement> {
                 element.addEventListener(event, callback)
             })
         }
-        return this
-    }
-
-    /**
-     * Attaches a CSS hover effect to the current `AvitaElement` instance.
-     * The hover effect is defined by the provided CSS properties or a single property-value pair.
-     * A unique CSS class is generated and applied to the element to scope the hover effect.
-     * @param props - The CSS properties to apply to the element when hovered over.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    onHoverCSS(props: Partial<CSSStyleDeclaration>): this
-
-    /**
-     * Attaches a CSS hover effect to the current `AvitaElement` instance.
-     * The hover effect is defined by the provided CSS property and value.
-     * A unique CSS class is generated and applied to the element to scope the hover effect.
-     * @param property - The CSS property to apply to the element when hovered over.
-     * @param value - The value to set for the CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    onHoverCSS(property: string, value: string): this
-
-    onHoverCSS(
-        propsOrProperty: Partial<CSSStyleDeclaration> | string,
-        value?: string
-    ): this {
-        return this.applyPseudoClassCSS("hover", propsOrProperty, value)
-    }
-
-    /**
-     * Attaches a CSS active effect to the current `AvitaElement` instance.
-     * The active effect is defined by the provided CSS properties or a single property-value pair.
-     * A unique CSS class is generated and applied to the element to scope the active effect.
-     * @param props - The CSS properties to apply to the element when it is active.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    onActiveCSS(props: Partial<CSSStyleDeclaration>): this
-
-    /**
-     * Attaches a CSS active effect to the current `AvitaElement` instance.
-     * The active effect is defined by the provided CSS property and value.
-     * A unique CSS class is generated and applied to the element to scope the active effect.
-     * @param property - The CSS property to apply to the element when it is active.
-     * @param value - The value to set for the CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    onActiveCSS(property: string, value: string): this
-
-    onActiveCSS(
-        propsOrProperty: Partial<CSSStyleDeclaration> | string,
-        value?: string
-    ): this {
-        return this.applyPseudoClassCSS("active", propsOrProperty, value)
-    }
-
-    /**
-     * Attaches a CSS focus effect to the current `AvitaElement` instance.
-     * The focus effect is defined by the provided CSS properties or a single property-value pair.
-     * A unique CSS class is generated and applied to the element to scope the focus effect.
-     * @param props - The CSS properties to apply to the element when it is focused.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    onFocusCSS(props: Partial<CSSStyleDeclaration>): this
-
-    /**
-     * Attaches a CSS focus effect to the current `AvitaElement` instance.
-     * The focus effect is defined by the provided CSS property and value.
-     * A unique CSS class is generated and applied to the element to scope the focus effect.
-     * @param property - The CSS property to apply to the element when it is focused.
-     * @param value - The value to set for the CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    onFocusCSS(property: string, value: string): this
-
-    onFocusCSS(
-        propsOrProperty: Partial<CSSStyleDeclaration> | string,
-        value?: string
-    ): this {
-        return this.applyPseudoClassCSS("focus", propsOrProperty, value)
-    }
-
-    /**
-     * Attaches a CSS focus-within effect to the current `AvitaElement` instance.
-     * The focus-within effect is defined by the provided CSS properties or a single property-value pair.
-     * A unique CSS class is generated and applied to the element to scope the focus-within effect.
-     * @param props - The CSS properties to apply to the element when it or one of its descendants is focused.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    onFocusWithinCSS(props: Partial<CSSStyleDeclaration>): this
-
-    /**
-     * Attaches a CSS focus-within effect to the current `AvitaElement` instance.
-     * The focus-within effect is defined by the provided CSS property and value.
-     * A unique CSS class is generated and applied to the element to scope the focus-within effect.
-     * @param property - The CSS property to apply to the element when it or one of its descendants is focused.
-     * @param value - The value to set for the CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    onFocusWithinCSS(property: string, value: string): this
-
-    onFocusWithinCSS(
-        propsOrProperty: Partial<CSSStyleDeclaration> | string,
-        value?: string
-    ): this {
-        return this.applyPseudoClassCSS("focus-within", propsOrProperty, value)
-    }
-
-    /**
-     * Helper method to apply CSS for a given pseudoclass.
-     * @param pseudoClass - The pseudoclass to apply (e.g., "hover", "active").
-     * @param propsOrProperty - The CSS properties or property to apply.
-     * @param value - The value to set for the CSS property (if a single property is provided).
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    private applyPseudoClassCSS(
-        pseudoClass: string,
-        propsOrProperty: Partial<CSSStyleDeclaration> | string,
-        value?: string
-    ): this {
-        const uniqueClass = generateClass()
-        this.class(uniqueClass)
-
-        let body = ""
-
-        if (typeof propsOrProperty === "string" && value) {
-            body = `${camelToKebab(propsOrProperty)}: ${value};`
-        }
-
-        if (typeof propsOrProperty === "object") {
-            Object.entries(propsOrProperty).forEach(([prop, val]) => {
-                body += `${camelToKebab(prop)}: ${val};`
-            })
-        }
-
-        const pseudoCSS = `.${uniqueClass}:${pseudoClass} { ${body} }`
-        $("head").append(style().text(pseudoCSS))
-
         return this
     }
 
@@ -1730,7 +1642,147 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         return this
     }
 
+    // Pseudoclasses onEventCSS methods
+
+    /**
+     * Attaches a CSS hover effect to the current `AvitaElement` instance.
+     * The hover effect is defined by the provided CSS properties or a single property-value pair.
+     * A unique CSS class is generated and applied to the element to scope the hover effect.
+     * @param props - The CSS properties to apply to the element when hovered over.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    onHoverCSS(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Attaches a CSS hover effect to the current `AvitaElement` instance.
+     * The hover effect is defined by the provided CSS property and value.
+     * A unique CSS class is generated and applied to the element to scope the hover effect.
+     * @param property - The CSS property to apply to the element when hovered over.
+     * @param value - The value to set for the CSS property.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    onHoverCSS(property: string, value: string): this
+
+    onHoverCSS(
+        propsOrProperty: Partial<CSSStyleDeclaration> | string,
+        value?: string
+    ): this {
+        return this.applyPseudoClassCSS("hover", propsOrProperty, value)
+    }
+
+    /**
+     * Attaches a CSS active effect to the current `AvitaElement` instance.
+     * The active effect is defined by the provided CSS properties or a single property-value pair.
+     * A unique CSS class is generated and applied to the element to scope the active effect.
+     * @param props - The CSS properties to apply to the element when it is active.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    onActiveCSS(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Attaches a CSS active effect to the current `AvitaElement` instance.
+     * The active effect is defined by the provided CSS property and value.
+     * A unique CSS class is generated and applied to the element to scope the active effect.
+     * @param property - The CSS property to apply to the element when it is active.
+     * @param value - The value to set for the CSS property.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    onActiveCSS(property: string, value: string): this
+
+    onActiveCSS(
+        propsOrProperty: Partial<CSSStyleDeclaration> | string,
+        value?: string
+    ): this {
+        return this.applyPseudoClassCSS("active", propsOrProperty, value)
+    }
+
+    /**
+     * Attaches a CSS focus effect to the current `AvitaElement` instance.
+     * The focus effect is defined by the provided CSS properties or a single property-value pair.
+     * A unique CSS class is generated and applied to the element to scope the focus effect.
+     * @param props - The CSS properties to apply to the element when it is focused.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    onFocusCSS(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Attaches a CSS focus effect to the current `AvitaElement` instance.
+     * The focus effect is defined by the provided CSS property and value.
+     * A unique CSS class is generated and applied to the element to scope the focus effect.
+     * @param property - The CSS property to apply to the element when it is focused.
+     * @param value - The value to set for the CSS property.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    onFocusCSS(property: string, value: string): this
+
+    onFocusCSS(
+        propsOrProperty: Partial<CSSStyleDeclaration> | string,
+        value?: string
+    ): this {
+        return this.applyPseudoClassCSS("focus", propsOrProperty, value)
+    }
+
+    /**
+     * Attaches a CSS focus-within effect to the current `AvitaElement` instance.
+     * The focus-within effect is defined by the provided CSS properties or a single property-value pair.
+     * A unique CSS class is generated and applied to the element to scope the focus-within effect.
+     * @param props - The CSS properties to apply to the element when it or one of its descendants is focused.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    onFocusWithinCSS(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Attaches a CSS focus-within effect to the current `AvitaElement` instance.
+     * The focus-within effect is defined by the provided CSS property and value.
+     * A unique CSS class is generated and applied to the element to scope the focus-within effect.
+     * @param property - The CSS property to apply to the element when it or one of its descendants is focused.
+     * @param value - The value to set for the CSS property.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    onFocusWithinCSS(property: string, value: string): this
+
+    onFocusWithinCSS(
+        propsOrProperty: Partial<CSSStyleDeclaration> | string,
+        value?: string
+    ): this {
+        return this.applyPseudoClassCSS("focus-within", propsOrProperty, value)
+    }
+
+    /**
+     * Helper method to apply CSS for a given pseudoclass.
+     * @param pseudoClass - The pseudoclass to apply (e.g., "hover", "active").
+     * @param propsOrProperty - The CSS properties or property to apply.
+     * @param value - The value to set for the CSS property (if a single property is provided).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    private applyPseudoClassCSS(
+        pseudoClass: string,
+        propsOrProperty: Partial<CSSStyleDeclaration> | string,
+        value?: string
+    ): this {
+        const uniqueClass = generateClass()
+        this.class(uniqueClass)
+
+        let body = ""
+
+        if (typeof propsOrProperty === "string" && value) {
+            body = `${camelToKebab(propsOrProperty)}: ${value}!important;\n`
+        }
+
+        if (typeof propsOrProperty === "object") {
+            Object.entries(propsOrProperty).forEach(([prop, val]) => {
+                body += `${camelToKebab(prop)}: ${val}!important;\n`
+            })
+        }
+
+        const pseudoCSS = `.${uniqueClass}:${pseudoClass} {\n${body}\n}`
+        $("head").append(style().text(pseudoCSS))
+
+        return this
+    }
+
     // CSS Properties
+
     /**
      * Sets the 'all' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'all' CSS property.
@@ -1746,7 +1798,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param color - The color value to set for the 'accent-color' property.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    accentColor(color: AvitaTypes.AvitaColorType | string) {
+    accent(color: string) {
         this.element.style.accentColor = String(color)
         return this
     }
@@ -1756,7 +1808,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'appearance' CSS property.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    appearance(value: AvitaTypes.Appearance) {
+    appearance(value: string) {
         this.element.style.appearance = value
         return this
     }
@@ -1766,118 +1818,57 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'align-content' CSS property.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    alignContent(value: AvitaTypes.AlignContent) {
+    alignContent(value: string) {
         this.element.style.alignContent = value
         return this
     }
+
+    /**
+     * Shorthand for setting the 'align-content' CSS property on the current `AvitaElement` instance.
+     * @returns The current value of the 'align-content' CSS property.
+     */
+    aContent = this.alignContent
 
     /**
      * Sets the 'align-items' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'align-items' CSS property.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    alignItems(value: AvitaTypes.AlignItems) {
+    alignItems(value: string) {
         this.element.style.alignItems = value
         return this
     }
+
+    /**
+     * Shorthand for setting the 'align-items' CSS property on the current `AvitaElement` instance.
+     * @returns The current value of the 'align-items' CSS property.
+     */
+    aItems = this.alignItems
 
     /**
      * Sets the 'align-self' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'align-self' CSS property.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    alignSelf(value: AvitaTypes.AlignSelf) {
+    alignSelf(value: string) {
         this.element.style.alignSelf = value
         return this
     }
 
     /**
+     * Shorthand for setting the 'align-self' CSS property on the current `AvitaElement` instance.
+     * @returns The current value of the 'align-self' CSS property.
+     */
+    aSelf = this.alignSelf
+
+    /**
+     * Todo: Big things coming soon...
      * Sets the 'animation' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'animation' CSS property.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    animation(value: string) {
+    animationCSS(value: string) {
         this.element.style.animation = value
-        return this
-    }
-
-    /**
-     * Sets the 'animationDelay' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'animationDelay' CSS property. Can be a string or number representing the delay in seconds.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    animationDelay(value: string | number) {
-        this.element.style.animationDelay = numberToSeconds(value)
-        return this
-    }
-
-    /**
-     * Sets the 'animationDirection' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'animationDirection' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    animationDirection(value: AvitaTypes.AnimationDirection) {
-        this.element.style.animationDirection = value
-        return this
-    }
-
-    /**
-     * Sets the 'animationDuration' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'animationDuration' CSS property. Can be a string or number representing the duration in seconds.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    animationDuration(value: string | number) {
-        this.element.style.animationDuration = numberToSeconds(value)
-        return this
-    }
-
-    /**
-     * Sets the 'animationFillMode' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'animationFillMode' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    animationFillMode(value: AvitaTypes.AnimationFillMode) {
-        this.element.style.animationFillMode = value
-        return this
-    }
-
-    /**
-     * Sets the 'animationIterationCount' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'animationIterationCount' CSS property. Can be a number or the string 'infinite'.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    animationIterationCount(value: AvitaTypes.AnimationIterationCount) {
-        this.element.style.animationIterationCount = value
-        return this
-    }
-
-    /**
-     * Sets the 'animationName' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'animationName' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    animationName(value: string) {
-        this.element.style.animationName = value
-        return this
-    }
-
-    /**
-     * Sets the 'animationPlayState' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'animationPlayState' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    animationPlayState(value: AvitaTypes.AnimationPlayState) {
-        this.element.style.animationPlayState = value
-        return this
-    }
-
-    /**
-     * Sets the 'animationTimingFunction' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'animationTimingFunction' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    animationTimingFunction(value: AvitaTypes.AnimationTimingFunction) {
-        this.element.style.animationTimingFunction = value
         return this
     }
 
@@ -1892,27 +1883,36 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Shorthand for setting the 'background' CSS property on the current `AvitaElement` instance.
+     * @returns The current value of the 'aspectRatio' CSS property.
+     */
+    ratio = this.aspectRatio
+
+    /**
      * Sets the 'backdropFilter' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backdropFilter' CSS property. Can be a string or an array with the filter name and value.
+     * @param value - The value to set for the 'backdropFilter' CSS property. Can be a string representing a valid CSS backdrop-filter value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    backdropFilter(value: AvitaTypes.BackdropFilter) {
-        if (typeof value === "string") {
-            this.element.style.backdropFilter = value
-            return this
-        }
-        const [filter, val] = value
-        this.element.style.backdropFilter = `${filter}(${val})`
+    backFilter(value: string) {
+        this.element.style.backdropFilter = value
         return this
     }
 
     /**
-     * Sets the 'backfaceVisibility' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backfaceVisibility' CSS property.
+     * Sets the 'backfaceVisibility' CSS property on the current `AvitaElement` instance to 'hidden', making the element single-sided.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    backfaceVisibility(value: AvitaTypes.BackfaceVisibility) {
-        this.element.style.backfaceVisibility = value
+    singleSided() {
+        this.element.style.backfaceVisibility = "hidden"
+        return this
+    }
+
+    /**
+     * Sets the 'backfaceVisibility' CSS property on the current `AvitaElement` instance to 'visible', making the element double-sided.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    doubleSided() {
+        this.element.style.backfaceVisibility = "visible"
         return this
     }
 
@@ -1927,160 +1927,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Shorthand for background() method.
-     * Sets the 'background' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'background' CSS property. Can be a string representing a valid CSS background value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Gets the 'background' CSS property value of the current `AvitaElement` instance.
+     * @returns The current value of the 'background' CSS property.
      */
     bg = this.background
-
-    /**
-     * Sets the 'backgroundAttachment' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundAttachment' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    backgroundAttachment(value: AvitaTypes.BackgroundAttachment) {
-        this.element.style.backgroundAttachment = value
-        return this
-    }
-
-    /**
-     * Sets the 'backgroundBlendMode' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundBlendMode' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    backgroundBlendMode(value: AvitaTypes.BackgroundBlendMode) {
-        this.element.style.backgroundBlendMode = value
-        return this
-    }
-
-    /**
-     * Sets the 'backgroundClip' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundClip' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    backgroundClip(value: AvitaTypes.BackgroundClip) {
-        this.element.style.backgroundClip = value
-        return this
-    }
-
-    /**
-     * Sets the 'backgroundColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundColor' CSS property. Can be a string representing a valid CSS color value or an `AvitaTypes.AvitaColorType` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    backgroundColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.backgroundColor = String(value)
-        return this
-    }
-
-    /**
-     * Shorthand for backgroundColor() method.
-     * Sets the 'backgroundColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundColor' CSS property. Can be a string representing a valid CSS color value or an `AvitaTypes.AvitaColorType` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    bgColor = this.backgroundColor
-
-    /**
-     * Sets the 'backgroundImage' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundImage' CSS property. Can be a string representing a valid CSS background image value or an `AvitaTypes.AvitaColorType` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    backgroundImage(value: string | AvitaTypes.AvitaColorType) {
-        this.element.style.backgroundImage = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'backgroundOrigin' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundOrigin' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    backgroundOrigin(value: AvitaTypes.BackgroundOrigin) {
-        this.element.style.backgroundOrigin = value
-        return this
-    }
-
-    /**
-     * Sets the 'backgroundPosition' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundPosition' CSS property. Can be a string representing a valid CSS background position value or an `AvitaTypes.BackgroundPosition` tuple.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    backgroundPosition(value: AvitaTypes.BackgroundPosition) {
-        if (typeof value === "string") {
-            this.element.style.backgroundPosition = value
-            return this
-        }
-        const [pos, val] = value
-        this.element.style.backgroundPosition = `${pos} ${val}`
-        return this
-    }
-
-    /**
-     * Sets the 'backgroundPositionX' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundPositionX' CSS property. Can be a string representing a valid CSS background position value or an `AvitaTypes.BackgroundPosition` tuple.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    backgroundPositionX(value: AvitaTypes.BackgroundPosition) {
-        if (typeof value === "string") {
-            this.element.style.backgroundPositionX = value
-            return this
-        }
-        const [pos, val] = value
-        this.element.style.backgroundPositionX = `${pos} ${val}`
-        return this
-    }
-
-    /**
-     * Sets the 'backgroundPositionY' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundPositionY' CSS property. Can be a string representing a valid CSS background position value or an `AvitaTypes.BackgroundPosition` tuple.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    backgroundPositionY(value: AvitaTypes.BackgroundPosition) {
-        if (typeof value === "string") {
-            this.element.style.backgroundPositionX = value
-            return this
-        }
-        const [pos, val] = value
-        this.element.style.backgroundPositionX = `${pos} ${val}`
-        return this
-    }
-
-    /**
-     * Sets the 'backgroundRepeat' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundRepeat' CSS property. Can be a valid CSS background repeat value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    backgroundRepeat(value: AvitaTypes.BackgroundRepeat) {
-        this.element.style.backgroundRepeat = value
-        return this
-    }
-
-    /**
-     * Sets the 'backgroundSize' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundSize' CSS property. Can be a string representing a valid CSS background size value or an `AvitaTypes.BackgroundSize` tuple.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    backgroundSize(value: AvitaTypes.BackgroundSize) {
-        if (typeof value === "string") {
-            this.element.style.backgroundSize = value
-            return this
-        }
-        const [size, val] = value
-        this.element.style.backgroundSize = `${size} ${val}`
-        return this
-    }
-
-    /**
-     * Sets the 'blockSize' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'blockSize' CSS property. Can be a string or number representing a valid CSS block size value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    blockSize(value: string | number) {
-        this.element.style.blockSize = String(value)
-        return this
-    }
 
     /**
      * Sets the 'border' CSS property on the current `AvitaElement` instance.
@@ -2093,125 +1943,32 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'borderBlock' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlock' CSS property. Can be a string representing a valid CSS border block value.
+     * Sets the 'borderLeft' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'borderLeft' CSS property. Can be a string representing a valid CSS border value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    borderBlock(value: string) {
-        this.element.style.borderBlock = value
+    borderL(value: string) {
+        this.element.style.borderLeft = value
         return this
     }
 
     /**
-     * Sets the 'borderBlockColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockColor' CSS property. Can be a string representing a valid CSS color value or an `AvitaTypes.AvitaColorType`.
+     * Sets the 'borderRight' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'borderRight' CSS property. Can be a string representing a valid CSS border value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    borderBlockColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderBlockColor = String(value)
+    borderR(value: string) {
+        this.element.style.borderRight = value
         return this
     }
 
     /**
-     * Sets the 'borderBlockEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockEnd' CSS property. Can be a string representing a valid CSS border block end value.
+     * Sets the 'borderTop' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'borderTop' CSS property. Can be a string representing a valid CSS border value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    borderBlockEnd(value: string) {
-        this.element.style.borderBlockEnd = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderBlockEndColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockEndColor' CSS property. Can be a string representing a valid CSS color value or an `AvitaTypes.AvitaColorType`.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBlockEndColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderBlockEndColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'borderBlockEndStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockEndStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBlockEndStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderBlockEndStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderBlockEndWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockEndWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBlockEndWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderBlockEndWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderBlockStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockStart' CSS property. Can be a string representing a valid CSS border block start value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBlockStart(value: string) {
-        this.element.style.borderBlockStart = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderBlockStartColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockStartColor' CSS property. Can be a string representing a valid CSS color value or an `AvitaTypes.AvitaColorType`.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBlockStartColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderBlockStartColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'borderBlockStartStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockStartStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBlockStartStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderBlockStartStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderBlockStartWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockStartWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBlockStartWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderBlockStartWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderBlockStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBlockStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderBlockStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderBlockWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBlockWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderBlockWidth = String(value) + unit
+    borderT(value: string) {
+        this.element.style.borderTop = value
         return this
     }
 
@@ -2220,93 +1977,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'borderBottom' CSS property. Can be a string representing a valid CSS border value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    borderBottom(value: string) {
+    borderB(value: string) {
         this.element.style.borderBottom = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderBottomColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBottomColor' CSS property. Can be a value from the `AvitaTypes.AvitaColorType` enum or a string representing a valid CSS color value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBottomColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderBottomColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'borderBottomLeftRadius' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBottomLeftRadius' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBottomLeftRadius(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderBottomLeftRadius = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderBottomRightRadius' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBottomRightRadius' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBottomRightRadius(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderBottomRightRadius = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderTopLeftRadius' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderTopLeftRadius' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderTopLeftRadius(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderTopLeftRadius = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderTopRightRadius' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderTopRightRadius' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderTopRightRadius(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderTopRightRadius = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderBottomStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBottomStyle' CSS property. Can be one of the valid CSS border style values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBottomStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderBottomStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderBottomWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBottomWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBottomWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderBottomWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderCollapse' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderCollapse' CSS property. Can be one of the valid CSS border collapse values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderCollapse(value: AvitaTypes.BorderCollapse) {
-        this.element.style.borderCollapse = value
         return this
     }
 
@@ -2325,61 +1997,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'borderImage' CSS property. Can be a string representing a valid CSS border image value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    borderImage(value: string) {
+    borderImg(value: string) {
         this.element.style.borderImage = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderImageOutset' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderImageOutset' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderImageOutset(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderImageOutset = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderImageRepeat' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderImageRepeat' CSS property. Can be one of the valid CSS border image repeat values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderImageRepeat(value: AvitaTypes.BorderImageRepeat) {
-        this.element.style.borderImageRepeat = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderImageSlice' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderImageSlice' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderImageSlice(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderImageSlice = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderImageSource' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderImageSource' CSS property. Can be a string representing a valid CSS border image source value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderImageSource(value: string) {
-        this.element.style.borderImageSource = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderImageWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderImageWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderImageWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderImageWidth = String(value) + unit
         return this
     }
 
@@ -2394,271 +2013,12 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'borderInlineColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineColor' CSS property. Can be a string representing a valid CSS color value or an `AvitaTypes.AvitaColorType` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderInlineColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'borderInlineEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineEnd' CSS property. Can be a string representing a valid CSS border inline end value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineEnd(value: string) {
-        this.element.style.borderInlineEnd = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderInlineEndColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineEndColor' CSS property. Can be a string representing a valid CSS color value or an `AvitaTypes.AvitaColorType` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineEndColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderInlineEndColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'borderInlineEndStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineEndStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineEndStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderInlineEndStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderInlineEndWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineEndWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineEndWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderInlineEndWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderInlineStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineStart' CSS property. Can be a string representing a valid CSS border inline start value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineStart(value: string) {
-        this.element.style.borderInlineStart = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderInlineStartColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineStartColor' CSS property. Can be a string representing a valid CSS color value or an `AvitaTypes.AvitaColorType` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineStartColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderInlineStartColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'borderInlineStartStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineStartStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineStartStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderInlineStartStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderInlineStartWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineStartWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineStartWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderInlineStartWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderInlineStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderInlineStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderInlineWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderInlineWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderLeft' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderLeft' CSS property. Can be a string representing a valid CSS border value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderLeft(value: string) {
-        this.element.style.borderLeft = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderLeftColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderLeftColor' CSS property. Can be a value from the `AvitaTypes.AvitaColorType` enum or a string representing a valid CSS color value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderLeftColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderLeftColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'borderLeftStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderLeftStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderLeftStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderLeftStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderLeftWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderLeftWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderLeftWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderLeftWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderRadius' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderRadius' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     * @deprecated Use `rounded()` instead.
-     */
-    borderRadius(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderRadius = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderRight' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderRight' CSS property. Can be a string representing a valid CSS border value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderRight(value: string) {
-        this.element.style.borderRight = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderRightColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderRightColor' CSS property. Can be a value from the `AvitaTypes.AvitaColorType` enum or a string representing a valid CSS color value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderRightColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderRightColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'borderRightStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderRightStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderRightStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderRightStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderRightWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderRightWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderRightWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderRightWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderSpacing' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderSpacing' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderSpacing(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderSpacing = String(value) + unit
-        return this
-    }
-
-    /**
      * Sets the 'borderStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
+     * @param value - The value to set for the 'borderStyle' CSS property.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    borderStyle(value: AvitaTypes.BorderStyle) {
+    borderStyle(value: string) {
         this.element.style.borderStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderTop' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderTop' CSS property. Can be a string representing a valid CSS border value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderTop(value: string) {
-        this.element.style.borderTop = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderTopColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderTopColor' CSS property. Can be a value from the `AvitaTypes.AvitaColorType` enum or a string representing a valid CSS color value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderTopColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderTopColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'borderTopStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderTopStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderTopStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderTopStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderTopWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderTopWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderTopWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderTopWidth = String(value) + unit
         return this
     }
 
@@ -2667,7 +2027,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'borderWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    borderWidth(value: string | number) {
+    borderW(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.borderWidth = String(value) + unit
         return this
@@ -2685,6 +2045,13 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Shorhand for setting the 'bottom' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'bottom' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    b = this.bottom
+
+    /**
      * Sets the 'boxShadow' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'boxShadow' CSS property. Can be a string representing a valid CSS box-shadow value.
      * @returns The current `AvitaElement` instance for chaining.
@@ -2695,52 +2062,43 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'boxSizing' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'boxSizing' CSS property. Can be one of the valid 'box-sizing' CSS property values.
+     * Sets the 'boxSizing' CSS property on the current `AvitaElement` instance to 'border-box'.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    boxSizing(value: AvitaTypes.BoxSizing) {
-        this.element.style.boxSizing = value
+    borderBox() {
+        this.element.style.boxSizing = "border-box"
         return this
     }
 
     /**
-     * Sets the 'breakAfter' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'breakAfter' CSS property. Can be one of the valid 'break-after' CSS property values.
+     * Why would you use this?? Just use `borderBox()` instead. Yes this still works but whyyy?
+     * Sets the 'boxSizing' CSS property on the current `AvitaElement` instance to 'content-box'.
      * @returns The current `AvitaElement` instance for chaining.
+     * @deprecated Use `borderBox()` instead bozo.
      */
-    breakAfter(value: AvitaTypes.BreakAfter) {
-        this.element.style.breakAfter = value
+    contentBox() {
+        this.element.style.boxSizing = "coontent-box"
         return this
     }
 
     /**
-     * Sets the 'breakBefore' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'breakBefore' CSS property. Can be one of the valid 'break-before' CSS property values.
+     * Mostly for printing a page.
+     * Sets the 'breakBefore', 'breakInside', and 'breakAfter' CSS properties on the current `AvitaElement` instance.
+     * @param before - The value to set for the 'breakBefore' CSS property. Can be a valid CSS 'break-before' value.
+     * @param inside - The value to set for the 'breakInside' CSS property. Can be a valid CSS 'break-inside' value.
+     * @param after - The value to set for the 'breakAfter' CSS property. Can be a valid CSS 'break-after' value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    breakBefore(value: AvitaTypes.BreakBefore) {
-        this.element.style.breakBefore = value
-        return this
-    }
-
-    /**
-     * Sets the 'breakInside' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'breakInside' CSS property. Can be one of the valid 'break-inside' CSS property values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    breakInside(value: AvitaTypes.BreakInside) {
-        this.element.style.breakInside = value
-        return this
-    }
-
-    /**
-     * Sets the 'captionSide' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'captionSide' CSS property. Can be one of the valid 'caption-side' CSS property values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    captionSide(value: AvitaTypes.CaptionSide) {
-        this.element.style.captionSide = value
+    break(before?: string, inside?: string, after?: string) {
+        if (before) {
+            this.element.style.breakBefore = before
+        }
+        if (inside) {
+            this.element.style.breakInside = inside
+        }
+        if (after) {
+            this.element.style.breakAfter = after
+        }
         return this
     }
 
@@ -2755,6 +2113,14 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Shorthands the 'caretColor' CSS property on the current `AvitaElement` instance until css can actually change carets.
+     * Sets the 'caretColor' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'caretColor' CSS property. Can be one of the valid CSS color values.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    caret = this.caretColor
+
+    /**
      * Clears the CSS styles applied to the current `AvitaElement` instance.
      * @returns The current `AvitaElement` instance for chaining.
      */
@@ -2764,22 +2130,11 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'clear' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'clear' CSS property. Can be one of the valid 'clear' CSS property values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    clearCSS(value: AvitaTypes.Clear) {
-        this.element.style.clear = value
-        return this
-    }
-
-    /**
      * Sets the 'clipPath' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'clipPath' CSS property. Can be a valid CSS clip-path value.
      * @returns The current `AvitaElement` instance for chaining.
      */
     clipPath(value: string) {
-        // todo add features
         this.element.style.clipPath = value
         return this
     }
@@ -2795,109 +2150,12 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'columnCount' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columnCount' CSS property. Can be a number or one of the valid 'column-count' CSS property values.
+     * For those who like semantic precision (and who doesn't).
+     * Sets the (text) 'color' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'color' CSS property. Can be one of the valid CSS color values.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    columnCount(value: AvitaTypes.ColumnCount | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.columnCount = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'columnFill' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columnFill' CSS property. Can be one of the valid 'column-fill' CSS property values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    columnFill(value: AvitaTypes.ColumnFill) {
-        this.element.style.columnFill = value
-        return this
-    }
-
-    /**
-     * Sets the 'columnGap' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columnGap' CSS property. Can be a valid CSS length value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    columnGap(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.columnGap = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'columnRule' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columnRule' CSS property. Can be a valid CSS 'column-rule' property value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    columnRule(value: string) {
-        this.element.style.columnRule = value
-        return this
-    }
-
-    /**
-     * Sets the 'columnRuleColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columnRuleColor' CSS property. Can be one of the valid CSS color values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    columnRuleColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.columnRuleColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'columnRuleStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columnRuleStyle' CSS property. Can be one of the valid 'border-style' CSS property values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    columnRuleStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.columnRuleStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'columnRuleWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columnRuleWidth' CSS property. Can be a valid CSS length value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    columnRuleWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.columnRuleWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'columnSpan' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columnSpan' CSS property. Can be one of the valid 'column-span' CSS property values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    columnSpan(value: AvitaTypes.ColumnSpan) {
-        this.element.style.columnSpan = value
-        return this
-    }
-
-    /**
-     * Sets the 'columnWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columnWidth' CSS property. Can be a valid CSS length value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    columnWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.columnWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'columns' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columns' CSS property. Can be a valid CSS length value or a number representing the number of columns.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    columns(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.columns = String(value) + unit
-        return this
-    }
+    textColor = this.color
 
     /**
      * Sets the 'content' CSS property on the current `AvitaElement` instance.
@@ -2910,29 +2168,11 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'counterIncrement' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'counterIncrement' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    counterIncrement(value: string) {
-        this.element.style.counterIncrement = value
-        return this
-    }
-
-    /**
-     * Sets the 'counterReset' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'counterReset' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    counterReset(value: string) {
-        this.element.style.counterReset = value
-        return this
-    }
-
-    /**
      * Sets the 'cursor' CSS property on the current `AvitaElement` instance.
+     * See shorthands; List here: https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
      * @param value - The value to set for the 'cursor' CSS property. Can be a valid CSS cursor value.
      * @returns The current `AvitaElement` instance for chaining.
+     * @deprecated Use shorthands like `pointer()` or `grab()` instead.
      */
     cursor(value: AvitaTypes.Cursor) {
         this.element.style.cursor = value
@@ -2940,12 +2180,282 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'direction' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'direction' CSS property. Can be a valid CSS direction value.
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'pointer'.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    direction(value: AvitaTypes.Direction) {
-        this.element.style.direction = value
+    pointer() {
+        this.element.style.cursor = "pointer"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'default'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    default() {
+        this.element.style.cursor = "default"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'context-menu'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    contextMenu() {
+        this.element.style.cursor = "context-menu"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'help'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    help() {
+        this.element.style.cursor = "help"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'progress'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    progress() {
+        this.element.style.cursor = "progress"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'wait'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    wait() {
+        this.element.style.cursor = "wait"
+        return this
+    }
+
+    cell() {
+        this.element.style.cursor = "cell"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'crosshair'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    crosshair() {
+        this.element.style.cursor = "crosshair"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'text'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    txt() {
+        this.element.style.cursor = "text"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'vertical-text'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    txtY() {
+        this.element.style.cursor = "vertical-text"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'alias'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    alias() {
+        this.element.style.cursor = "alias"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'copy'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    copy() {
+        this.element.style.cursor = "copy"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'move'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    move() {
+        this.element.style.cursor = "move"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'no-drop'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    noDrop() {
+        this.element.style.cursor = "no-drop"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'not-allowed'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    notAllowed() {
+        this.element.style.cursor = "not-allowed"
+        return this
+    }
+
+    grab() {
+        this.element.style.cursor = "grab"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'grabbing'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    grabbing() {
+        this.element.style.cursor = "grabbing"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'all-scroll'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    allScroll() {
+        this.element.style.cursor = "all-scroll"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'col-resize'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    resizeCol() {
+        this.element.style.cursor = "col-resize"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'row-resize'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    resizeRow() {
+        this.element.style.cursor = "row-resize"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'n-resize'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    resizeT() {
+        this.element.style.cursor = "n-resize"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'e-resize'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    resizeR() {
+        this.element.style.cursor = "e-resize"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 's-resize'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    resizeB() {
+        this.element.style.cursor = "s-resize"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'w-resize'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    resizeL() {
+        this.element.style.cursor = "w-resize"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'nw-resize'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    resizeTL() {
+        this.element.style.cursor = "nw-resize"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'ne-resize'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    resizeTR() {
+        this.element.style.cursor = "ne-resize"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'sw-resize'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    resizeBL() {
+        this.element.style.cursor = "sw-resize"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'se-resize'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    resizeBR() {
+        this.element.style.cursor = "se-resize"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'ew-resize'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    resizeLR() {
+        this.element.style.cursor = "ew-resize"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'ns-resize'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    resizeTB() {
+        this.element.style.cursor = "ns-resize"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'zoom-in'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    zoomIn() {
+        this.element.style.cursor = "zoom-in"
+        return this
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `AvitaElement` instance to 'zoom-out'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    zoomOut() {
+        this.element.style.cursor = "zoom-out"
         return this
     }
 
@@ -2960,22 +2470,11 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'emptyCells' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'emptyCells' CSS property. Can be a valid CSS emptyCells value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    emptyCells(value: AvitaTypes.EmptyCells) {
-        this.element.style.emptyCells = value
-        return this
-    }
-
-    /**
      * Sets the 'filter' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'filter' CSS property. Can be a valid CSS filter value.
      * @returns The current `AvitaElement` instance for chaining.
      */
     filter(value: string) {
-        // todo add features
         this.element.style.filter = value
         return this
     }
@@ -2985,23 +2484,12 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'flex' CSS property. Can be a valid CSS flex value, or an array of flex-grow, flex-shrink, and flex-basis values.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    flexCSS(value: AvitaTypes.Flex) {
+    flexLayout(value: AvitaTypes.Flex) {
         if (Array.isArray(value)) {
             this.element.style.flex = value.join(" ")
             return this
         }
         this.element.style.flex = value
-        return this
-    }
-
-    /**
-     * Sets the 'flexBasis' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'flexBasis' CSS property. Can be a valid CSS flex-basis value, either a number or a string.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    flexBasis(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.flexBasis = String(value) + unit
         return this
     }
 
@@ -3034,42 +2522,47 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'flexFlow' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'flexFlow' CSS property. Can be a valid CSS flex-flow value.
+     * Sets the 'flexDirection' CSS property on the current `AvitaElement` instance to 'row-reverse'.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    flexFlow(value: string) {
-        this.element.style.flexFlow = value
+    flexRowRev() {
+        this.element.style.flexDirection = "row-reverse"
         return this
     }
 
     /**
-     * Sets the 'flexGrow' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'flexGrow' CSS property. Can be a valid CSS flex-grow value, either a number or a string.
+     * Sets the 'flexDirection' CSS property on the current `AvitaElement` instance to 'column-reverse'.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    flexGrow(value: string | number) {
-        this.element.style.flexGrow = String(value)
+    flexColRev() {
+        this.element.style.flexDirection = "column-reverse"
         return this
     }
 
     /**
-     * Sets the 'flexShrink' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'flexShrink' CSS property. Can be a valid CSS flex-shrink value, either a number or a string.
+     * Sets the 'flexWrap' CSS property on the current `AvitaElement` instance to 'wrap'.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    flexShrink(value: string | number) {
-        this.element.style.flexShrink = String(value)
+    flexWrap() {
+        this.element.style.flexWrap = "wrap"
         return this
     }
 
     /**
-     * Sets the 'flexWrap' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'flexWrap' CSS property. Can be a valid CSS flex-wrap value.
+     * Sets the 'flexWrap' CSS property on the current `AvitaElement` instance to 'nowrap'.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    flexWrap(value: AvitaTypes.FlexWrap) {
-        this.element.style.flexWrap = value
+    flexNoWrap() {
+        this.element.style.flexWrap = "nowrap"
+        return this
+    }
+
+    /**
+     * Sets the 'flexWrap' CSS property on the current `AvitaElement` instance to 'wrap-reverse'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    flexWrapRev() {
+        this.element.style.flexWrap = "wrap-reverse"
         return this
     }
 
@@ -3094,73 +2587,29 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'fontSizeAdjust' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontSizeAdjust' CSS property. Can be a valid CSS font-size-adjust value, either a number or a string.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontSizeAdjust(value: string | number) {
-        this.element.style.fontSizeAdjust = String(Number(value))
-        return this
-    }
-
-    /**
-     * Sets the 'fontFeatureSettings' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontFeatureSettings' CSS property. Can be a valid CSS font-feature-settings value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontFeatureSettings(value: string) {
-        this.element.style.fontFeatureSettings = value
-        return this
-    }
-
-    /**
-     * Sets the 'fontKerning' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontKerning' CSS property. Can be a valid CSS font-kerning value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontKerning(value: AvitaTypes.FontKerning) {
-        this.element.style.fontKerning = value
-        return this
-    }
-
-    /**
-     * Sets the 'fontFamily' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontFamily' CSS property. Can be a valid CSS font-family value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontFamily(value: string) {
-        this.element.style.fontFamily = value
-        return this
-    }
-
-    /**
-     * Sets the 'fontSize' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontSize' CSS property. Can be a valid CSS font-size value, either a number or a string.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontSize(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.fontSize = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'fontStretch' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontStretch' CSS property. Can be a valid CSS font-stretch value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontStretch(value: string) {
-        this.element.style.fontStretch = value
-        return this
-    }
-
-    /**
      * Sets the 'fontStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontStyle' CSS property. Can be a valid CSS font-style value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    fontStyle(value: AvitaTypes.FontStyle) {
-        this.element.style.fontStyle = value
+    base() {
+        this.element.style.fontStyle = "normal"
+        return this
+    }
+
+    /**
+     * Sets the 'fontStyle' CSS property on the current `AvitaElement` instance to 'italic'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    italic() {
+        this.element.style.fontStyle = "italic"
+        return this
+    }
+
+    /**
+     * Sets the 'fontStyle' CSS property on the current `AvitaElement` instance to 'oblique'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    oblique() {
+        this.element.style.fontStyle = "oblique"
         return this
     }
 
@@ -3175,61 +2624,11 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'fontVariantCaps' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontVariantCaps' CSS property. Can be a valid CSS font-variant-caps value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontVariantCaps(value: string) {
-        this.element.style.fontVariantCaps = value
-        return this
-    }
-
-    /**
-     * Sets the 'fontVariantEastAsian' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontVariantEastAsian' CSS property. Can be a valid CSS font-variant-east-asian value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontVariantEastAsian(value: string) {
-        this.element.style.fontVariantEastAsian = value
-        return this
-    }
-
-    /**
-     * Sets the 'fontVariantLigatures' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontVariantLigatures' CSS property. Can be a valid CSS font-variant-ligatures value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontVariantLigatures(value: string) {
-        this.element.style.fontVariantLigatures = value
-        return this
-    }
-
-    /**
-     * Sets the 'fontVariantNumeric' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontVariantNumeric' CSS property. Can be a valid CSS font-variant-numeric value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontVariantNumeric(value: string) {
-        this.element.style.fontVariantNumeric = value
-        return this
-    }
-
-    /**
-     * Sets the 'fontVariantPosition' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontVariantPosition' CSS property. Can be a valid CSS font-variant-position value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontVariantPosition(value: string) {
-        this.element.style.fontVariantPosition = value
-        return this
-    }
-
-    /**
      * Sets the 'fontWeight' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'fontWeight' CSS property. Can be a valid CSS font-weight value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    fontWeight(value: string | number) {
+    weight(value: string | number) {
         this.element.style.fontWeight = String(value)
         return this
     }
@@ -3270,7 +2669,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'gridAutoColumns' CSS property. Can be a valid CSS grid-auto-columns value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    gridAutoColumns(value: string) {
+    gridAutoCols(value: string) {
         this.element.style.gridAutoColumns = value
         return this
     }
@@ -3300,7 +2699,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'gridColumn' CSS property. Can be a valid CSS grid-column value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    gridColumn(value: string) {
+    gridCol(value: string) {
         this.element.style.gridColumn = value
         return this
     }
@@ -3310,7 +2709,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'gridColumnEnd' CSS property. Can be a valid CSS grid-column-end value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    gridColumnEnd(value: string) {
+    gridColEnd(value: string) {
         this.element.style.gridColumnEnd = value
         return this
     }
@@ -3320,7 +2719,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'gridColumnStart' CSS property. Can be a valid CSS grid-column-start value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    gridColumnStart(value: string) {
+    gridColStart(value: string) {
         this.element.style.gridColumnStart = value
         return this
     }
@@ -3370,7 +2769,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'gridTemplateAreas' CSS property. Can be a valid CSS grid-template-areas value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    gridTemplateAreas(value: string) {
+    gridAreas(value: string) {
         this.element.style.gridTemplateAreas = value
         return this
     }
@@ -3380,7 +2779,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'gridTemplateColumns' CSS property. Can be a valid CSS grid-template-columns value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    gridTemplateColumns(value: string) {
+    gridCols(value: string) {
         this.element.style.gridTemplateColumns = value
         return this
     }
@@ -3390,7 +2789,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'gridTemplateRows' CSS property. Can be a valid CSS grid-template-rows value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    gridTemplateRows(value: string) {
+    gridRows(value: string) {
         this.element.style.gridTemplateRows = value
         return this
     }
@@ -3407,6 +2806,13 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Shorthand for setting the 'height' CSS property on the current `AvitaElement` instance. See `height()` for more details.
+     * @param value - The value to set for the 'height' CSS property. Can be a valid CSS height value.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    h = this.height
+
+    /**
      * Sets the 'hyphens' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'hyphens' CSS property. Can be a valid CSS hyphens value.
      * @returns The current `AvitaElement` instance for chaining.
@@ -3421,7 +2827,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'imageRendering' CSS property. Can be a valid CSS image-rendering value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    imageRendering(value: AvitaTypes.ImageRendering) {
+    imgRender(value: AvitaTypes.ImageRendering) {
         this.element.style.imageRendering = value
         return this
     }
@@ -3431,7 +2837,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'inlineSize' CSS property. Can be a valid CSS inline-size value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    inlineSize(value: string | number) {
+    inlineSz(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.inlineSize = String(value) + unit
         return this
@@ -3449,39 +2855,6 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'insetBlock' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'insetBlock' CSS property. Can be a valid CSS inset-block value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    insetBlock(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.insetBlock = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'insetBlockEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'insetBlockEnd' CSS property. Can be a valid CSS inset-block-end value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    insetBlockEnd(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.insetBlockEnd = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'insetBlockStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'insetBlockStart' CSS property. Can be a valid CSS inset-block-start value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    insetBlockStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.insetBlockStart = String(value) + unit
-        return this
-    }
-
-    /**
      * Sets the 'insetInline' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'insetInline' CSS property. Can be a valid CSS inset-inline value.
      * @returns The current `AvitaElement` instance for chaining.
@@ -3493,33 +2866,11 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'insetInlineEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'insetInlineEnd' CSS property. Can be a valid CSS inset-inline-end value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    insetInlineEnd(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.insetInlineEnd = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'insetInlineStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'insetInlineStart' CSS property. Can be a valid CSS inset-inline-start value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    insetInlineStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.insetInlineStart = String(value) + unit
-        return this
-    }
-
-    /**
      * Sets the 'isolation' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'isolation' CSS property. Can be a valid CSS isolation value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    isolation(value: AvitaTypes.Isolation) {
+    isolation(value: "auto" | "initial" | "inherit" | "isolate") {
         this.element.style.isolation = value
         return this
     }
@@ -3529,30 +2880,51 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'justifyContent' CSS property. Can be a valid CSS justify-content value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    justifyContent(value: AvitaTypes.JustifyContent) {
+    justifyContent(value: string) {
         this.element.style.justifyContent = value
         return this
     }
+
+    /**
+     * Shorthand for setting the 'justifyContent' CSS property on the current `AvitaElement` instance. See `justifyContent()` for more details.
+     * @param value - The value to set for the 'justifyContent' CSS property. Can be a valid CSS justify-content value.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    jContent = this.justifyContent
 
     /**
      * Sets the 'justifyItems' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'justifyItems' CSS property. Can be a valid CSS justify-items value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    justifyItems(value: AvitaTypes.JustifyItems) {
+    justifyItems(value: string) {
         this.element.style.justifyItems = value
         return this
     }
+
+    /**
+     * Shorthand for setting the 'justifyItems' CSS property on the current `AvitaElement` instance. See `justifyItems()` for more details.
+     * @param value - The value to set for the 'justifyItems' CSS property. Can be a valid CSS justify-items value.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    jItems = this.justifyItems
 
     /**
      * Sets the 'justifySelf' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'justifySelf' CSS property. Can be a valid CSS justify-self value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    justifySelf(value: AvitaTypes.JustifySelf) {
+    justifySelf(value: string) {
         this.element.style.justifySelf = value
         return this
     }
+
+    /**
+     * Shorthand for setting the 'justifySelf' CSS property on the current `AvitaElement` instance. See `justifySelf()` for more details.
+     * @param value - The value to set for the 'justifySelf' CSS property. Can be a valid CSS justify-self value.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    jSelf = this.justifySelf
 
     /**
      * Sets the 'left' CSS property on the current `AvitaElement` instance.
@@ -3564,6 +2936,13 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         this.element.style.left = String(value) + unit
         return this
     }
+
+    /**
+     * Shorthand for setting the 'left' CSS property on the current `AvitaElement` instance. See `left()` for more details.
+     * @param value - The value to set for the 'left' CSS property. Can be a valid CSS left value.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    l = this.left
 
     /**
      * Sets the 'letterSpacing' CSS property on the current `AvitaElement` instance.
@@ -3581,7 +2960,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'lineHeight' CSS property. Can be a valid CSS line-height value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    lineHeight(value: string | number) {
+    lineH(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.lineHeight = String(value) + unit
         return this
@@ -3592,7 +2971,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'lineBreak' CSS property. Can be a valid CSS line-break value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    lineBreak(value: AvitaTypes.LineBreak) {
+    lineBr(value: AvitaTypes.LineBreak) {
         this.element.style.lineBreak = value
         return this
     }
@@ -3602,38 +2981,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'listStyle' CSS property. Can be a valid CSS list-style value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    listStyle(value: string) {
+    bullet(value: string) {
         this.element.style.listStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'listStyleImage' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'listStyleImage' CSS property. Can be a valid CSS list-style-image value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    listStyleImage(value: string) {
-        this.element.style.listStyleImage = value
-        return this
-    }
-
-    /**
-     * Sets the 'listStylePosition' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'listStylePosition' CSS property. Can be a valid CSS list-style-position value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    listStylePosition(value: AvitaTypes.ListStylePosition) {
-        this.element.style.listStylePosition = value
-        return this
-    }
-
-    /**
-     * Sets the 'listStyleType' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'listStyleType' CSS property. Can be a valid CSS list-style-type value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    listStyleType(value: AvitaTypes.ListStyleType) {
-        this.element.style.listStyleType = value
         return this
     }
 
@@ -3715,6 +3064,13 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Shorthand for setting the 'margin' CSS property on the current `AvitaElement` instance. See `margin()` for more details.
+     * @param values - The value(s) to set for the 'margin' CSS property. Can be a valid CSS margin value, either a string or a number (which will be interpreted as pixels).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    m = this.margin
+
+    /**
      * Sets the 'marginLeft' and 'marginRight' CSS properties on the current `AvitaElement` instance.
      * @param value - The value to set for the 'marginLeft' and 'marginRight' CSS properties. Can be a valid CSS margin value, either a string or a number (which will be interpreted as pixels).
      * @returns The current `AvitaElement` instance for chaining.
@@ -3725,6 +3081,13 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         this.element.style.marginRight = String(value) + unit
         return this
     }
+
+    /**
+     * Shorthand for setting the 'margin-left' and 'margin-right' CSS properties on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'margin-left' and 'margin-right' CSS properties. Can be a valid CSS margin value, either a string or a number (which will be interpreted as pixels).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    mx = this.marginX
 
     /**
      * Sets the 'marginTop' and 'marginBottom' CSS properties on the current `AvitaElement` instance.
@@ -3739,48 +3102,11 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'marginBlock' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'marginBlock' CSS property. Can be a valid CSS margin-block value, either a string or a number (which will be interpreted as pixels).
+     * Shorthand for setting the 'margin-left' and 'margin-right' CSS properties on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'margin-left' and 'margin-right' CSS properties. Can be a valid CSS margin value, either a string or a number (which will be interpreted as pixels).
      * @returns The current `AvitaElement` instance for chaining.
      */
-    marginBlock(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.marginBlock = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'marginBlockEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'marginBlockEnd' CSS property. Can be a valid CSS margin-block-end value, either a string or a number (which will be interpreted as pixels).
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    marginBlockEnd(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.marginBlockEnd = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'marginBlockStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'marginBlockStart' CSS property. Can be a valid CSS margin-block-start value, either a string or a number (which will be interpreted as pixels).
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    marginBlockStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.marginBlockStart = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'marginBottom' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'marginBottom' CSS property. Can be a valid CSS margin-bottom value, either a string or a number (which will be interpreted as pixels).
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    marginBottom(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.marginBottom = String(value) + unit
-        return this
-    }
+    my = this.marginY
 
     /**
      * Sets the 'marginInline' CSS property on the current `AvitaElement` instance.
@@ -3794,59 +3120,76 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'marginInlineEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'marginInlineEnd' CSS property. Can be a valid CSS margin-inline-end value, either a string or a number (which will be interpreted as pixels).
+     * Sets the 'marginBottom' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'marginBottom' CSS property. Can be a valid CSS margin-bottom value, either a string or a number (which will be interpreted as pixels).
      * @returns The current `AvitaElement` instance for chaining.
      */
-    marginInlineEnd(value: string | number) {
+    marginB(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.marginInlineEnd = String(value) + unit
+        this.element.style.marginBottom = String(value) + unit
         return this
     }
 
     /**
-     * Sets the 'marginInlineStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'marginInlineStart' CSS property. Can be a valid CSS margin-inline-start value, either a string or a number (which will be interpreted as pixels).
+     * Shorthand for setting the 'margin-bottom' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'margin-bottom' CSS property. Can be a valid CSS margin-bottom value, either a string or a number (which will be interpreted as pixels).
      * @returns The current `AvitaElement` instance for chaining.
      */
-    marginInlineStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.marginInlineStart = String(value) + unit
-        return this
-    }
+    mb = this.marginB
 
     /**
      * Sets the 'marginLeft' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'marginLeft' CSS property. Can be a valid CSS margin-left value, either a string or a number (which will be interpreted as pixels).
      * @returns The current `AvitaElement` instance for chaining.
      */
-    marginLeft(value: string | number) {
+    marginL(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.marginLeft = String(value) + unit
         return this
     }
 
     /**
+     * Shorthand for setting the 'margin-left' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'margin-left' CSS property. Can be a valid CSS margin-left value, either a string or a number (which will be interpreted as pixels).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    ml = this.marginL
+
+    /**
      * Sets the 'marginRight' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'marginRight' CSS property. Can be a valid CSS margin-right value, either a string or a number (which will be interpreted as pixels).
      * @returns The current `AvitaElement` instance for chaining.
      */
-    marginRight(value: string | number) {
+    marginR(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.marginRight = String(value) + unit
         return this
     }
 
     /**
+     * Shorthand for setting the 'margin-right' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'margin-right' CSS property. Can be a valid CSS margin-right value, either a string or a number (which will be interpreted as pixels).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    mr = this.marginR
+
+    /**
      * Sets the 'marginTop' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'marginTop' CSS property. Can be a valid CSS margin-top value, either a string or a number (which will be interpreted as pixels).
      * @returns The current `AvitaElement` instance for chaining.
      */
-    marginTop(value: string | number) {
+    marginT(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.marginTop = String(value) + unit
         return this
     }
+
+    /**
+     * Shorthand for setting the 'margin-top' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'margin-top' CSS property. Can be a valid CSS margin-top value, either a string or a number (which will be interpreted as pixels).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    mt = this.marginT
 
     /**
      * Sets the 'mask' CSS property on the current `AvitaElement` instance.
@@ -3859,86 +3202,41 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'maskImage' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maskImage' CSS property. Can be a valid CSS mask-image value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'maxHeight' and 'maxWidth' CSS properties on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'maxHeight' and 'maxWidth' CSS properties. Must be a valid CSS length value e.g. '100px 200px'.
      */
-    maskImage(value: string) {
-        this.element.style.maskImage = value
-        return this
-    }
+    maxSz(value: string): this
 
     /**
-     * Sets the 'maskMode' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maskMode' CSS property. Can be a valid CSS mask-mode value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'maxHeight' and 'maxWidth' CSS properties on the current `AvitaElement` instance.
+     * @param width - The value to set for the 'maxWidth' CSS property. If number, it will be interpreted as pixels.
+     * @param height - The value to set for the 'maxHeight' CSS property. If number, it will be interpreted as pixels.
      */
-    maskMode(value: AvitaTypes.MaskMode) {
-        this.element.style.maskMode = value
-        return this
-    }
+    maxSz(width: string | number, height: string | number): this
 
-    /**
-     * Sets the 'maskOrigin' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maskOrigin' CSS property. Can be a valid CSS mask-origin value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    maskOrigin(value: AvitaTypes.MaskOrigin) {
-        this.element.style.maskOrigin = value
-        return this
-    }
-
-    /**
-     * Sets the 'maskPosition' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maskPosition' CSS property. Can be a valid CSS mask-position value, either a single value or an array of two values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    maskPosition(value: AvitaTypes.MaskPosition) {
-        if (Array.isArray(value)) {
-            this.element.style.maskPosition = value.join(" ")
-            return this
+    maxSz(valueOrW: string | number, height?: string | number): this {
+        if (typeof valueOrW === "string" && !height) {
+            const valueArr = valueOrW.split(" ")
+            if (valueArr.length === 2) {
+                this.element.style.maxWidth = valueArr[0]
+                this.element.style.maxHeight = valueArr[1]
+            }
         }
-        this.element.style.maskPosition = value
-        return this
-    }
-
-    /**
-     * Sets the 'maskRepeat' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maskRepeat' CSS property. Can be a valid CSS mask-repeat value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    maskRepeat(value: AvitaTypes.MaskRepeat) {
-        this.element.style.maskRepeat = value
-        return this
-    }
-
-    /**
-     * Sets the 'maskSize' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maskSize' CSS property. Can be a valid CSS mask-size value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    maskSize(value: AvitaTypes.MaskSize) {
-        this.element.style.maskSize = value
-        return this
-    }
-
-    /**
-     * Sets the 'maxBlockSize' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maxBlockSize' CSS property. Can be a valid CSS length value, either a string or a number.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    maxBlockSize(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.maxBlockSize = String(value) + unit
+        if (valueOrW && height) {
+            if (typeof valueOrW === "number") valueOrW = `${valueOrW}px`
+            if (typeof height === "number") height = `${height}px`
+            this.element.style.maxWidth = String(valueOrW)
+            this.element.style.maxHeight = String(height)
+        }
         return this
     }
 
     /**
      * Sets the 'maxHeight' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maxHeight' CSS property. Can be a valid CSS length value, either a string or a number.
+     * @param value - The value to set for the 'maxHeight' CSS property. Can be a valid CSS length value, either a string or a number. If number, it will be interpreted as pixels.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    maxHeight(value: string | number) {
+    maxH(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.maxHeight = String(value) + unit
         return this
@@ -3946,10 +3244,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
 
     /**
      * Sets the 'maxInlineSize' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maxInlineSize' CSS property. Can be a valid CSS length value, either a string or a number.
+     * @param value - The value to set for the 'maxInlineSize' CSS property. Can be a valid CSS length value, either a string or a number. If number, it will be interpreted as pixels.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    maxInlineSize(value: string | number) {
+    maxInline(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.maxInlineSize = String(value) + unit
         return this
@@ -3957,32 +3255,21 @@ export default class Avita<T extends HTMLElement | SVGElement> {
 
     /**
      * Sets the 'maxWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maxWidth' CSS property. Can be a valid CSS length value, either a string or a number.
+     * @param value - The value to set for the 'maxWidth' CSS property. Can be a valid CSS length value, either a string or a number. If number, it will be interpreted as pixels.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    maxWidth(value: string | number) {
+    maxW(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.maxWidth = String(value) + unit
         return this
     }
 
     /**
-     * Sets the 'minBlockSize' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'minBlockSize' CSS property. Can be a valid CSS length value, either a string or a number.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    minBlockSize(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.minBlockSize = String(value) + unit
-        return this
-    }
-
-    /**
      * Sets the 'minHeight' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'minHeight' CSS property. Can be a valid CSS length value, either a string or a number.
+     * @param value - The value to set for the 'minHeight' CSS property. Can be a valid CSS length value, either a string or a number. If number, it will be interpreted as pixels.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    minHeight(value: string | number) {
+    minH(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.minHeight = String(value) + unit
         return this
@@ -3990,10 +3277,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
 
     /**
      * Sets the 'minInlineSize' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'minInlineSize' CSS property. Can be a valid CSS length value, either a string or a number.
+     * @param value - The value to set for the 'minInlineSize' CSS property. Can be a valid CSS length value, either a string or a number. If number, it will be interpreted as pixels.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    minInlineSize(value: string | number) {
+    minInline(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.minInlineSize = String(value) + unit
         return this
@@ -4001,10 +3288,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
 
     /**
      * Sets the 'minWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'minWidth' CSS property. Can be a valid CSS length value, either a string or a number.
+     * @param value - The value to set for the 'minWidth' CSS property. Can be a valid CSS length value, either a string or a number. If number, it will be interpreted as pixels.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    minWidth(value: string | number) {
+    minW(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.minWidth = String(value) + unit
         return this
@@ -4015,7 +3302,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'mixBlendMode' CSS property. Must be a valid CSS `mix-blend-mode` value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    mixBlendMode(value: AvitaTypes.MixBlendMode) {
+    blendMode(value: AvitaTypes.MixBlendMode) {
         this.element.style.mixBlendMode = value
         return this
     }
@@ -4025,7 +3312,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'objectFit' CSS property. Must be a valid CSS `object-fit` value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    objectFit(value: AvitaTypes.ObjectFit) {
+    objFit(value: "contain" | "fill" | "none" | "cover" | "scale-down") {
         this.element.style.objectFit = value
         return this
     }
@@ -4035,7 +3322,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'objectPosition' CSS property. Must be a valid CSS `object-position` value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    objectPosition(value: string) {
+    objXY(value: string) {
         this.element.style.objectPosition = value
         return this
     }
@@ -4047,47 +3334,6 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     offset(value: string) {
         this.element.style.offset = value
-        return this
-    }
-
-    /**
-     * Sets the 'offsetAnchor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'offsetAnchor' CSS property. Must be a valid CSS `offset-anchor` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    offsetAnchor(value: string) {
-        this.element.style.offsetAnchor = value
-        return this
-    }
-
-    /**
-     * Sets the 'offsetDistance' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'offsetDistance' CSS property. Must be a valid CSS `offset-distance` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    offsetDistance(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.offsetDistance = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'offsetPath' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'offsetPath' CSS property. Must be a valid CSS `offset-path` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    offsetPath(value: string) {
-        this.element.style.offsetPath = value
-        return this
-    }
-
-    /**
-     * Sets the 'offsetRotate' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'offsetRotate' CSS property. Must be a valid CSS `offset-rotate` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    offsetRotate(value: string) {
-        this.element.style.offsetRotate = value
         return this
     }
 
@@ -4112,16 +3358,6 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'orphans' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'orphans' CSS property. Must be a valid CSS `orphans` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    orphans(value: number | string) {
-        this.element.style.orphans = String(value)
-        return this
-    }
-
-    /**
      * Sets the 'outline' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'outline' CSS property. Must be a valid CSS `outline` value.
      * @returns The current `AvitaElement` instance for chaining.
@@ -4132,47 +3368,11 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'outlineColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'outlineColor' CSS property. Must be a valid CSS `outline-color` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    outlineColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.outlineColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'outlineOffset' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'outlineOffset' CSS property. Must be a valid CSS `outline-offset` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    outlineOffset(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.outlineOffset = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'outlineStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'outlineStyle' CSS property. Must be a valid CSS `outline-style` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    /**
-     * Sets the 'outlineStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'outlineStyle' CSS property. Must be a valid CSS `outline-style` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    outlineStyle(value: AvitaTypes.OutlineStyle) {
-        this.element.style.outlineStyle = value
-        return this
-    }
-
-    /**
      * Sets the 'outlineWidth' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'outlineWidth' CSS property. Must be a valid CSS `outline-width` value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    outlineWidth(value: string | number) {
+    outlineW(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.outlineWidth = String(value) + unit
         return this
@@ -4212,16 +3412,6 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'overflowAnchor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'overflowAnchor' CSS property. Must be a valid CSS `overflow-anchor` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    overflowAnchor(value: AvitaTypes.OverflowAnchor) {
-        this.element.style.overflowAnchor = value
-        return this
-    }
-
-    /**
      * Sets the 'overflowWrap' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'overflowWrap' CSS property. Must be a valid CSS `overflow-wrap` value.
      * @returns The current `AvitaElement` instance for chaining.
@@ -4248,56 +3438,6 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     overflowY(value: AvitaTypes.Overflow) {
         this.element.style.overflowY = value
-        return this
-    }
-
-    /**
-     * Sets the 'overscrollBehavior' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'overscrollBehavior' CSS property. Must be a valid CSS `overscroll-behavior` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    overscrollBehavior(value: AvitaTypes.OverscrollBehavior) {
-        this.element.style.overscrollBehavior = value
-        return this
-    }
-
-    /**
-     * Sets the 'overscrollBehaviorBlock' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'overscrollBehaviorBlock' CSS property. Must be a valid CSS `overscroll-behavior-block` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    overscrollBehaviorBlock(value: AvitaTypes.OverscrollBehavior) {
-        this.element.style.overscrollBehaviorBlock = value
-        return this
-    }
-
-    /**
-     * Sets the 'overscrollBehaviorInline' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'overscrollBehaviorInline' CSS property. Must be a valid CSS `overscroll-behavior-inline` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    overscrollBehaviorInline(value: AvitaTypes.OverscrollBehavior) {
-        this.element.style.overscrollBehaviorInline = value
-        return this
-    }
-
-    /**
-     * Sets the 'overscrollBehaviorX' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'overscrollBehaviorX' CSS property. Must be a valid CSS `overscroll-behavior-x` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    overscrollBehaviorX(value: AvitaTypes.OverscrollBehavior) {
-        this.element.style.overscrollBehaviorX = value
-        return this
-    }
-
-    /**
-     * Sets the 'overscrollBehaviorY' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'overscrollBehaviorY' CSS property. Must be a valid CSS `overscroll-behavior-y` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    overscrollBehaviorY(value: AvitaTypes.OverscrollBehavior) {
-        this.element.style.overscrollBehaviorY = value
         return this
     }
 
@@ -4379,6 +3519,85 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Shorthand for setting the 'padding' CSS property on the current `AvitaElement` instance. See `padding()` for variations.
+     * @param value - The value to set for the 'padding' CSS property. Can be a valid CSS padding value, either a string or a number (which will be interpreted as pixels).
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    p = this.padding
+
+    /**
+     * Sets the 'padding-top' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'padding-top' CSS property. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    paddingT(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        this.element.style.paddingTop = String(value) + unit
+        return this
+    }
+
+    /**
+     * Shorthand for setting the 'padding-top' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'padding-top' CSS property. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    pt = this.paddingT
+
+    /**
+     * Sets the 'padding-right' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'padding-right' CSS property. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    paddingR(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        this.element.style.paddingRight = String(value) + unit
+        return this
+    }
+
+    /**
+     * Shorthand for setting the 'padding-right' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'padding-right' CSS property. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    pr = this.paddingR
+
+    /**
+     * Sets the 'padding-bottom' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'padding-bottom' CSS property. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    paddingB(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        this.element.style.paddingBottom = String(value) + unit
+        return this
+    }
+
+    /**
+     * Shorthand for setting the 'padding-bottom' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'padding-bottom' CSS property. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    pb = this.paddingB
+
+    /**
+     * Sets the 'padding-left' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'padding-left' CSS property. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    paddingL(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        this.element.style.paddingLeft = String(value) + unit
+        return this
+    }
+
+    /**
+     * Shorthand for setting the 'padding-left' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'padding-left' CSS property. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    pl = this.paddingL
+
+    /**
      * Sets the 'paddingLeft' and 'paddingRight' CSS properties on the current `AvitaElement` instance.
      * @param value - The value to set for the 'paddingLeft' and 'paddingRight' CSS properties. Can be a string or number value, where a number will be interpreted as pixels.
      * @returns The current `AvitaElement` instance for chaining.
@@ -4389,6 +3608,13 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         this.element.style.paddingRight = String(value) + unit
         return this
     }
+
+    /**
+     * Shorthand for setting the 'padding-left' and 'padding-right' CSS properties on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'padding-left' and 'padding-right' CSS properties. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    px = this.paddingX
 
     /**
      * Sets the 'paddingTop' and 'paddingBottom' CSS properties on the current `AvitaElement` instance.
@@ -4403,152 +3629,20 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'paddingBlock' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paddingBlock' CSS property. Can be a string or number value.
+     * Shorthand for setting the 'padding-top' and 'padding-bottom' CSS properties on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'padding-top' and 'padding-bottom' CSS properties. Can be a string or number, where a number will be interpreted as pixels.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    paddingBlock(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.paddingBlock = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'paddingBlockEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paddingBlockEnd' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    paddingBlockEnd(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.paddingBlockEnd = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'paddingBlockStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paddingBlockStart' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    paddingBlockStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.paddingBlockStart = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'paddingBottom' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paddingBottom' CSS property. Can be a string or number, where a number will be interpreted as pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    paddingBottom(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.paddingBottom = String(value) + unit
-        return this
-    }
+    py = this.paddingY
 
     /**
      * Sets the 'paddingInline' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'paddingInline' CSS property. Can be a string or number value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    paddingInline(value: string | number) {
+    textPadding(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.paddingInline = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'paddingInlineEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paddingInlineEnd' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    paddingInlineEnd(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.paddingInlineEnd = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'paddingInlineStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paddingInlineStart' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    paddingInlineStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.paddingInlineStart = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'paddingLeft' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paddingLeft' CSS property. Can be a string or number, where a number will be interpreted as pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    paddingLeft(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.paddingLeft = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'paddingRight' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paddingRight' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    paddingRight(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.paddingRight = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'paddingTop' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paddingTop' CSS property. Can be a string or number value, where a number will be interpreted as pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    paddingTop(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.paddingTop = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'pageBreakAfter' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'pageBreakAfter' CSS property. Can be a value from the `AvitaTypes.PageBreak` type.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    pageBreakAfter(value: AvitaTypes.PageBreak) {
-        this.element.style.pageBreakAfter = value
-        return this
-    }
-
-    /**
-     * Sets the 'pageBreakBefore' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'pageBreakBefore' CSS property. Can be a value from the `AvitaTypes.PageBreak` type.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    pageBreakBefore(value: AvitaTypes.PageBreak) {
-        this.element.style.pageBreakBefore = value
-        return this
-    }
-
-    /**
-     * Sets the 'pageBreakInside' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'pageBreakInside' CSS property. Can be a value from the `AvitaTypes.PageBreak` type.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    pageBreakInside(value: AvitaTypes.PageBreak) {
-        this.element.style.pageBreakInside = value
-        return this
-    }
-
-    /**
-     * Sets the 'paintOrder' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paintOrder' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    paintOrder(value: string) {
-        this.element.style.paintOrder = value
         return this
     }
 
@@ -4560,6 +3654,60 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     perspective(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.perspective = String(value) + unit
+        return this
+    }
+
+    /**
+     * Sets the 'perspective' CSS property on the current `AvitaElement` instance to a value of "100px".
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    uncumfy() {
+        this.element.style.perspective = "100px"
+        return
+    }
+
+    /**
+     * Sets the 'perspective' CSS property on the current `AvitaElement` instance to a value of "200px".
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    close() {
+        this.element.style.perspective = "250px"
+        return this
+    }
+
+    /**
+     * Sets the 'perspective' CSS property on the current `AvitaElement` instance to a value of "500px".
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    near() {
+        this.element.style.perspective = "500px"
+        return this
+    }
+
+    /**
+     * Sets the 'perspective' CSS property on the current `AvitaElement` instance to a value of "800px".
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    away() {
+        this.element.style.perspective = "800px"
+        return this
+    }
+
+    /**
+     * Sets the 'perspective' CSS property on the current `AvitaElement` instance to a value of "1000px".
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    far() {
+        this.element.style.perspective = "1000px"
+        return this
+    }
+
+    /**
+     * Sets the 'perspective' CSS property on the current `AvitaElement` instance to a value of "2000px".
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    further() {
+        this.element.style.perspective = "2000px"
         return this
     }
 
@@ -4604,22 +3752,20 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'pointerEvents' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'pointerEvents' CSS property. Can be a value from the `AvitaTypes.PointerEvents` type.
+     * Sets the 'pointerEvents' CSS property on the current `AvitaElement` instance to 'auto', allowing the element to be clicked.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    pointerEvents(value: AvitaTypes.PointerEvents) {
-        this.element.style.pointerEvents = value
+    clickable() {
+        this.element.style.pointerEvents = "auto"
         return this
     }
 
     /**
-     * Sets the 'position' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'position' CSS property. Can be a value from the `AvitaTypes.Position` type.
+     * Sets the 'pointerEvents' CSS property on the current `AvitaElement` instance to 'none', disabling the element from being clicked.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    position(value: AvitaTypes.Position) {
-        this.element.style.position = value
+    unclickable() {
+        this.element.style.pointerEvents = "none"
         return this
     }
 
@@ -4634,12 +3780,29 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'resize' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'resize' CSS property. Can be a value from the `AvitaTypes.Resize` type.
+     * Sets the 'resize' CSS property on the current `AvitaElement` instance to 'both', allowing the element to be resized in both horizontal and vertical directions.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    resize(value: AvitaTypes.Resize) {
-        this.element.style.resize = value
+    resize() {
+        this.element.style.resize = "both"
+        return this
+    }
+
+    /**
+     * Sets the 'resize' CSS property on the current `AvitaElement` instance to 'horizontal', allowing the element to be resized horizontally.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    resizeX() {
+        this.element.style.resize = "horizontal"
+        return this
+    }
+
+    /**
+     * Sets the 'resize' CSS property on the current `AvitaElement` instance to 'vertical', allowing the element to be resized vertically.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    resizeY() {
+        this.element.style.resize = "vertical"
         return this
     }
 
@@ -4653,6 +3816,12 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         this.element.style.right = String(value) + unit
         return this
     }
+
+    /**
+     * Gets the 'right' CSS property value of the current `AvitaElement` instance.
+     * @returns The value of the 'right' CSS property.
+     */
+    r = this.right
 
     /**
      * Sets the 'rotate' CSS property on the current `AvitaElement` instance.
@@ -4676,12 +3845,20 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'scrollBehavior' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollBehavior' CSS property. Can be a value from the `AvitaTypes.ScrollBehavior` type.
+     * Sets the 'scrollBehavior' CSS property on the current `AvitaElement` instance to 'auto', disabling smooth scrolling behavior.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    scrollBehavior(value: AvitaTypes.ScrollBehavior) {
-        this.element.style.scrollBehavior = value
+    instantScroll() {
+        this.element.style.scrollBehavior = "auto"
+        return this
+    }
+
+    /**
+     * Sets the 'scrollBehavior' CSS property on the current `AvitaElement` instance to 'smooth', enabling smooth scrolling behavior.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    smoothScroll() {
+        this.element.style.scrollBehavior = "smooth"
         return this
     }
 
@@ -4697,116 +3874,6 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'scrollMarginBlock' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollMarginBlock' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollMarginBlock(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginBlock = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollMarginBlockEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollMarginBlockEnd' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollMarginBlockEnd(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginBlockEnd = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollMarginBlockStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollMarginBlockStart' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollMarginBlockStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginBlockStart = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollMarginBottom' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollMarginBottom' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollMarginBottom(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginBottom = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollMarginInline' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollMarginInline' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollMarginInline(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginInline = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollMarginInlineEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollMarginInlineEnd' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollMarginInlineEnd(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginInlineEnd = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollMarginInlineStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollMarginInlineStart' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollMarginInlineStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginInlineStart = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollMarginLeft' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollMarginLeft' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollMarginLeft(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginLeft = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollMarginRight' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollMarginRight' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollMarginRight(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginRight = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollMarginTop' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollMarginTop' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollMarginTop(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginTop = String(value) + unit
-        return this
-    }
-
-    /**
      * Sets the 'scrollPadding' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'scrollPadding' CSS property. Can be a string or number value.
      * @returns The current `AvitaElement` instance for chaining.
@@ -4818,174 +3885,11 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'scrollPaddingBlock' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollPaddingBlock' CSS property. Can be a string or number value.
+     * Sets the 'scrollSnapAlign' CSS property on the current `AvitaElement` instance to 'start', aligning the element to the start of the scroll container.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    scrollPaddingBlock(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingBlock = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollPaddingBlockEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollPaddingBlockEnd' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollPaddingBlockEnd(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingBlockEnd = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollPaddingBlockStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollPaddingBlockStart' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollPaddingBlockStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingBlockStart = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollPaddingBottom' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollPaddingBottom' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollPaddingBottom(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingBottom = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollPaddingBottom' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollPaddingBottom' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollPaddingInline(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingInline = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollPaddingInlineEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollPaddingInlineEnd' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollPaddingInlineEnd(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingInlineEnd = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollPaddingInlineStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollPaddingInlineStart' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollPaddingInlineStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingInlineStart = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollPaddingLeft' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollPaddingLeft' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollPaddingLeft(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingLeft = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollPaddingRight' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollPaddingRight' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollPaddingRight(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingRight = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollPaddingTop' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollPaddingTop' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollPaddingTop(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingTop = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollSnapAlign' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollSnapAlign' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollSnapAlign(value: string) {
-        this.element.style.scrollSnapAlign = value
-        return this
-    }
-
-    /**
-     * Sets the 'scrollSnapStop' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollSnapStop' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollSnapStop(value: string) {
-        this.element.style.scrollSnapStop = value
-        return this
-    }
-
-    /**
-     * Sets the 'scrollSnapType' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollSnapType' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollSnapType(value: string) {
-        this.element.style.scrollSnapType = value
-        return this
-    }
-
-    /**
-     * Sets the 'shapeImageThreshold' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'shapeImageThreshold' CSS property. Must be a number.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    shapeImageThreshold(value: number) {
-        this.element.style.shapeImageThreshold = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'shapeMargin' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'shapeMargin' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    shapeMargin(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.shapeMargin = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'shapeOutside' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'shapeOutside' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    shapeOutside(value: string) {
-        this.element.style.shapeOutside = value
-        return this
+    scrollSnap() {
+        this.element.style.scrollSnapAlign = "start"
     }
 
     /**
@@ -5000,42 +3904,38 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'tableLayout' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'tableLayout' CSS property. Can be a string value from the `AvitaTypes.TableLayout` type.
+     * Sets the 'textAlign' CSS property on the current `AvitaElement` instance to 'left', aligning the text to the left.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    tableLayout(value: AvitaTypes.TableLayout) {
-        this.element.style.tableLayout = value
+    textL() {
+        this.element.style.textAlign = "left"
         return this
     }
 
     /**
-     * Sets the 'textAlign' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textAlign' CSS property. Must be a valid `AvitaTypes.TextAlign` value.
+     * Sets the 'textAlign' CSS property on the current `AvitaElement` instance to 'right', aligning the text to the right.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    textAlign(value: AvitaTypes.TextAlign) {
-        this.element.style.textAlign = value
+    textR() {
+        this.element.style.textAlign = "right"
         return this
     }
 
     /**
-     * Sets the 'textAlignLast' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textAlignLast' CSS property. Can be a value from the `AvitaTypes.TextAlignLast` type.
+     * Sets the 'textAlign' CSS property on the current `AvitaElement` instance to 'center', aligning the text to the center.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    textAlignLast(value: AvitaTypes.TextAlignLast) {
-        this.element.style.textAlignLast = value
+    textC() {
+        this.element.style.textAlign = "center"
         return this
     }
 
     /**
-     * Sets the 'textCombineUpright' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textCombineUpright' CSS property. Can be a string value.
+     * Sets the 'textAlign' CSS property on the current `AvitaElement` instance to 'justify', aligning the text to be justified.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    textCombineUpright(value: string) {
-        this.element.style.textCombineUpright = value
+    textJ() {
+        this.element.style.textAlign = "justify"
         return this
     }
 
@@ -5044,7 +3944,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'textDecoration' CSS property. Can be a string value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    textDecoration(value: string) {
+    decoration(value: string) {
         this.element.style.textDecoration = value
         return this
     }
@@ -5054,18 +3954,35 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'textDecorationColor' CSS property. Can be a string value or an `AvitaTypes.AvitaColorType`.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    textDecorationColor(value: string | AvitaTypes.AvitaColorType) {
-        this.element.style.textDecorationColor = value.toString()
+    decorColor(value: string) {
+        this.element.style.textDecorationColor = value
         return this
     }
 
     /**
-     * Sets the 'textDecorationLine' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textDecorationLine' CSS property. Can be a string value.
+     * Sets the 'textDecorationLine' CSS property on the current `AvitaElement` instance to 'overline', creating a halo effect.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    textDecorationLine(value: string) {
-        this.element.style.textDecorationLine = value
+    halo() {
+        this.element.style.textDecorationLine = "overline"
+        return this
+    }
+
+    /**
+     * Sets the 'textDecorationLine' CSS property on the current `AvitaElement` instance to "line-through", creating a strikethrough effect.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    crossout() {
+        this.element.style.textDecorationLine = "line-through"
+        return this
+    }
+
+    /**
+     * Sets the 'textDecorationLine' CSS property on the current `AvitaElement` instance to 'underline'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    underline() {
+        this.element.style.textDecorationLine = "underline"
         return this
     }
 
@@ -5074,7 +3991,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'textDecorationStyle' CSS property. Can be a string value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    textDecorationStyle(value: string) {
+    decorStyle(value: string) {
         this.element.style.textDecorationStyle = value
         return this
     }
@@ -5084,7 +4001,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'textDecorationThickness' CSS property. Can be a string value or a number representing a pixel value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    textDecorationThickness(value: string | number) {
+    decorationW(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.textDecorationThickness = String(value) + unit
         return this
@@ -5095,7 +4012,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'textEmphasis' CSS property. Can be a string value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    textEmphasis(value: string) {
+    emphasis(value: string) {
         this.element.style.textEmphasis = value
         return this
     }
@@ -5105,7 +4022,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'textEmphasisColor' CSS property. Can be a string value or an `AvitaTypes.AvitaColorType`.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    textEmphasisColor(value: string | AvitaTypes.AvitaColorType) {
+    emphasisColor(value: string | AvitaTypes.AvitaColorType) {
         this.element.style.textEmphasisColor = value.toString()
         return this
     }
@@ -5115,7 +4032,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'textEmphasisPosition' CSS property. Can be a string value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    textEmphasisPosition(value: string) {
+    emphasisXY(value: string) {
         this.element.style.textEmphasisPosition = value
         return this
     }
@@ -5125,7 +4042,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'textEmphasisStyle' CSS property. Can be a string value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    textEmphasisStyle(value: string) {
+    emphasisStyle(value: string) {
         this.element.style.textEmphasisStyle = value
         return this
     }
@@ -5135,7 +4052,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'textIndent' CSS property. Can be a string value or a number representing a pixel value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    textIndent(value: string | number) {
+    indent(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.textIndent = String(value) + unit
         return this
@@ -5146,28 +4063,38 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'textOrientation' CSS property. Can be a string value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    textOrientation(value: string) {
+    textOrient(value: string) {
         this.element.style.textOrientation = value
         return this
     }
 
     /**
-     * Sets the 'textOverflow' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textOverflow' CSS property. Can be a string value.
+     * Rotates the text of the current `AvitaElement` instance by 90 degrees, displaying it vertically.
+     * Sets the 'textOrientation' CSS property on the current `AvitaElement` instance to 'upright'.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    textOverflow(value: string) {
-        this.element.style.textOverflow = value
+    verticalText() {
+        this.element.style.textOrientation = "upright"
         return this
     }
 
     /**
-     * Sets the 'textRendering' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textRendering' CSS property. Can be a string value.
+     * Rotates the text of the current `AvitaElement` instance by 90 degrees, displaying it vertically.
+     * Sets the 'textOrientation' CSS property on the current `AvitaElement` instance to 'sideways'.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    textRendering(value: string) {
-        this.element.style.textRendering = value
+    sideways() {
+        this.element.style.textOrientation = "sideways"
+        return this
+    }
+
+    /**
+     * This will cause any overflowing text to be truncated and display an ellipsis ('...') at the end.
+     * Sets the 'textOverflow' CSS property on the current `AvitaElement` instance to 'ellipsis'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    ellipses() {
+        this.element.style.textOverflow = "ellipsis"
         return this
     }
 
@@ -5186,8 +4113,38 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'textTransform' CSS property. Can be a string value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    textTransform(value: string) {
+    textTrans(value: string) {
         this.element.style.textTransform = value
+        return this
+    }
+
+    /**
+     * UPPERCASE TEXT!!!
+     * Sets the 'textTransform' CSS property on the current `AvitaElement` instance to 'uppercase'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    caps() {
+        this.element.style.textTransform = "uppercase"
+        return this
+    }
+
+    /**
+     * Capitalizes the first letter of each word
+     * Sets the 'textTransform' CSS property on the current `AvitaElement` instance to "capitalize".
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    capEach() {
+        this.element.style.textTransform = "capitalize"
+        return this
+    }
+
+    /**
+     * lowercase text...
+     * Sets the 'textTransform' CSS property on the current `AvitaElement` instance to 'lowercase'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    lowercase() {
+        this.element.style.textTransform = "lowercase"
         return this
     }
 
@@ -5196,19 +4153,9 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'textUnderlineOffset' CSS property. Can be a string or number value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    textUnderlineOffset(value: string | number) {
+    underlineY(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.textUnderlineOffset = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'textUnderlinePosition' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textUnderlinePosition' CSS property. Can be a string value from the `AvitaTypes.TextUnderlinePosition` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    textUnderlinePosition(value: AvitaTypes.TextUnderlinePosition) {
-        this.element.style.textUnderlinePosition = value
         return this
     }
 
@@ -5224,11 +4171,18 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Shorthand for `top()` method.
+     * Gets the 'top' CSS property value of the current `AvitaElement` instance.
+     * @returns The current value of the 'top' CSS property.
+     */
+    t = this.top
+
+    /**
      * Sets the 'touchAction' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'touchAction' CSS property. Can be a string value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    touchAction(value: string) {
+    touch(value: string) {
         this.element.style.touchAction = value
         return this
     }
@@ -5244,32 +4198,33 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'transformBox' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'transformBox' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    transformBox(value: string) {
-        this.element.style.transformBox = value
-        return this
-    }
-
-    /**
      * Sets the 'transformOrigin' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'transformOrigin' CSS property. Can be a string value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    transformOrigin(value: string) {
+    origin(value: string) {
         this.element.style.transformOrigin = value
         return this
     }
 
     /**
-     * Sets the 'transformStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'transformStyle' CSS property. Can be a string value.
+     * Sets the 'transformStyle' CSS property on the current `AvitaElement` instance to 'flat'.
+     * This flattens the 3D transform of the element.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    transformStyle(value: string) {
-        this.element.style.transformStyle = value
+    flat(): this {
+        this.element.style.transformStyle = "flat"
+        this.element.style.perspective = "none"
+        return this
+    }
+
+    /**
+     * Sets the 'transformStyle' CSS property on the current `AvitaElement` instance to 'preserve-3d'.
+     * This preserves the 3D transform of the element.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    preserve3d(): this {
+        this.element.style.transformStyle = "preserve-3d"
         return this
     }
 
@@ -5303,7 +4258,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'transitionDelay' CSS property. Can be a string or number value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    transitionDelay(value: string | number) {
+    delay(value: string | number) {
         const unit = typeof value === "string" ? "" : "s"
         this.element.style.transitionDelay = numberToSeconds(value) + unit
         return this
@@ -5314,7 +4269,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'transitionDuration' CSS property. Can be a string or number value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    transitionDuration(value: string | number) {
+    duration(value: string | number) {
         const unit = typeof value === "string" ? "" : "s"
         this.element.style.transitionDuration = numberToSeconds(value) + unit
         return this
@@ -5325,7 +4280,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'transitionProperty' CSS property. Can be a string value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    transitionProperty(value: string) {
+    transProp(value: string) {
         this.element.style.transitionProperty = value
         return this
     }
@@ -5335,7 +4290,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'transitionTimingFunction' CSS property. Can be a string value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    transitionTimingFunction(value: string) {
+    timingFunction(value: string) {
         this.element.style.transitionTimingFunction = value
         return this
     }
@@ -5419,15 +4374,31 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Shorthand for `translateX()` method.
+     * Sets the 'translateX' CSS translate property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'translateX' transform. Can be a string or number value.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    transX = this.translateX
+
+    /**
      * Sets the 'translateY' CSS translate property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'translateY' transform. Can be a string or number value.
      * @returns The current `AvitaElement` instance for chaining.
      */
     translateY(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.transform = `0 ${value}${unit} 0`
+        this.element.style.translate = `0 ${value}${unit} 0`
         return this
     }
+
+    /**
+     * Shorthand for `translateY()` method.
+     * Sets the 'translateY' CSS translate property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'translateY' transform. Can be a string or number value.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    transY = this.translateY
 
     /**
      * Sets the 'translateZ' CSS translate property on the current `AvitaElement` instance.
@@ -5436,19 +4407,17 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     translateZ(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.transform = `0 0 ${value}${unit}`
+        this.element.style.translate = `0 0 ${value}${unit}`
         return this
     }
 
     /**
-     * Sets the 'unicodeBidi' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'unicodeBidi' CSS property. Can be a string value.
+     * Shorthand for `translateZ()` method.
+     * Sets the 'translateZ' CSS translate property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'translateZ' transform. Can be a string or number value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    unicodeBidi(value: string) {
-        this.element.style.unicodeBidi = value
-        return this
-    }
+    transZ = this.translateZ
 
     /**
      * Sets the 'userSelect' CSS property on the current `AvitaElement` instance.
@@ -5457,6 +4426,24 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     userSelect(value: string) {
         this.element.style.userSelect = value
+        return this
+    }
+
+    /**
+     * Sets the 'userSelect' CSS property on the current `AvitaElement` instance to 'auto', allowing the element to be selectable.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    selectable() {
+        this.element.style.userSelect = "auto"
+        return this
+    }
+
+    /**
+     * Sets the 'userSelect' CSS property on the current `AvitaElement` instance to 'none', making the element unselectable.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    unselectable() {
+        this.element.style.userSelect = "none"
         return this
     }
 
@@ -5512,17 +4499,6 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'widows' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'widows' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    widows(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.widows = String(value) + unit
-        return this
-    }
-
-    /**
      * Sets the 'width' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'width' CSS property. Can be a string or number value.
      * @returns The current `AvitaElement` instance for chaining.
@@ -5534,34 +4510,12 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'willChange' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'willChange' CSS property. Can be a string value.
+     * Shorthand for `width()`
+     * Sets the 'width' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'width' CSS property. Can be a string or number value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    willChange(value: string) {
-        this.element.style.willChange = value
-        return this
-    }
-
-    /**
-     * Sets the 'wordWrap' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'wordWrap' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    wordWrap(value: AvitaTypes.WordWrap) {
-        this.element.style.wordWrap = value
-        return this
-    }
-
-    /**
-     * Sets the 'writingMode' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'writingMode' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    writingMode(value: string) {
-        this.element.style.writingMode = value
-        return this
-    }
+    w = this.width
 
     /**
      * Sets the 'zIndex' CSS property on the current `AvitaElement` instance.
@@ -5571,6 +4525,32 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     zIndex(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.zIndex = String(value) + unit
+        return this
+    }
+
+    /**
+     * Shorthand for `zIndex()`
+     * Sets the 'zIndex' CSS property on the current `AvitaElement` instance.
+     * @param value - The value to set for the 'zIndex' CSS property. Can be a string or number value.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    z = this.zIndex
+
+    /**
+     * Shows the element by setting the 'visibility' CSS property to 'visible'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    visible() {
+        this.element.style.visibility = "visible"
+        return this
+    }
+
+    /**
+     * Hides the element by setting the 'visibility' CSS property to 'hidden'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    invisible() {
+        this.element.style.visibility = "hidden"
         return this
     }
 
@@ -5602,11 +4582,12 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Shows the element by setting the 'display' CSS property to 'flex'.
+     * Shows the element by setting the 'display' CSS property to the specified value.
+     * @param display - The value to set for the 'display' CSS property. Defaults to 'flex'.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    show() {
-        this.element.style.display = "flex"
+    show(display: string = "flex") {
+        this.element.style.display = display
         return this
     }
 
@@ -5678,6 +4659,96 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Stacks the current `AvitaElement` and its children vertically, with the ability to align the children along the vertical axis.
+     * Fills 100% of the parent's width and height by default.
+     * @param align - The alignment of the children along the vertical axis. Defaults to 'center'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    vstack(align: AvitaTypes.StackAlign = "center") {
+        this.full()
+        this.center()
+        this.flexCol()
+        switch (align) {
+            case "top":
+                this.justifyContent("flex-start")
+                break
+            case "center":
+                this.justifyContent("center")
+                break
+            case "bottom":
+                this.justifyContent("flex-end")
+                break
+            case "left":
+                this.alignItems("flex-start")
+                break
+            case "right":
+                this.alignItems("flex-end")
+                break
+            case "between":
+                this.justifyContent("space-between")
+                break
+            case "around":
+                this.justifyContent("space-around")
+                break
+            case "evenly":
+                this.justifyContent("space-evenly")
+                break
+        }
+        return this
+    }
+
+    /**
+     * Stacks the current `AvitaElement` and its children horizontally, with the ability to align the children along the horizontal axis.
+     * Fills 100% of the parent's width and height by default.
+     * @param align - The alignment of the children along the horizontal axis. Defaults to 'center'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    hstack(align: AvitaTypes.StackAlign = "center") {
+        this.full()
+        this.center()
+        switch (align) {
+            case "top":
+                this.alignItems("flex-start")
+                break
+            case "center":
+                this.alignItems("center")
+                break
+            case "bottom":
+                this.alignItems("flex-end")
+                break
+            case "left":
+                this.justifyContent("flex-start")
+                break
+            case "right":
+                this.justifyContent("flex-end")
+                break
+            case "between":
+                this.justifyContent("space-between")
+                break
+            case "around":
+                this.justifyContent("space-around")
+                break
+            case "evenly":
+                this.justifyContent("space-evenly")
+                break
+        }
+        return this
+    }
+
+    /**
+     * Stacks the current `AvitaElement` and its children vertically, with the ability to align the children along the vertical axis.
+     * Fills 100% of the parent's width and height by default.
+     * @param align - The alignment of the children along the vertical axis. Defaults to 'center'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    zstack(align: AvitaTypes.StackAlign = "center") {
+        this.relative()
+        this.hstack(align)
+        $(() => this.avitaChildren.forEach((child) => child.absolute()))
+        return this
+    }
+
+    /**
      * Sets the 'position' CSS property to 'absolute' on the current `AvitaElement` instance.
      * @returns The current `AvitaElement` instance for chaining.
      */
@@ -5701,6 +4772,24 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     fixed() {
         this.element.style.position = "fixed"
+        return this
+    }
+
+    /**
+     * Sets the 'position' CSS property to 'sticky' on the current `AvitaElement` instance.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    sticky() {
+        this.element.style.position = "sticky"
+        return this
+    }
+
+    /**
+     * Sets the 'position' CSS property to 'static' on the current `AvitaElement` instance.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    static() {
+        this.element.style.position = "static"
         return this
     }
 
@@ -5866,6 +4955,37 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     fillOpacity(value: number): this {
         this.element.style.fillOpacity = value.toString()
+        return this
+    }
+
+    /**
+     * Sets the element to be a specific size relative to the screen.
+     * @param value - The size value to set, in viewport width (vw) and viewport height (vh) units.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    screen(value: number): this {
+        this.element.style.width = `${value}vw`
+        this.element.style.height = `${value}vh`
+        return this
+    }
+
+    /**
+     * Sets the element to be a specific width relative to the screen.
+     * @param value - The width value to set, in viewport width (vw) units.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    screenX(value: number): this {
+        this.element.style.width = `${value}vw`
+        return this
+    }
+
+    /**
+     * Sets the element to be full-height.
+     * @param value - The height value to set, in viewport height (vh) units.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    screenY(value: number): this {
+        this.element.style.height = `${value}vh`
         return this
     }
 
@@ -6395,9 +5515,50 @@ export default class Avita<T extends HTMLElement | SVGElement> {
 }
 
 /**
- * Like jQuery, this function finds all elements in the DOM based on the provided selector. Then
- * it wraps the element as an `Avita` element and returns it (or an array of `Avita` elements if multiple elements are found).
- * @param selector - The selector to use to find the element in the DOM.
- * @returns `Avita` element (list) wrapping the found element(s).
+ * Selects an HTML element or a collection of HTML elements matching the provided CSS selector.
+ * @param selector - The CSS selector to use for selecting the element(s).
+ * @param raw - If set to `true`, the function will return the raw HTMLElement or HTMLElement[] instead of an Avita instance.
+ * @returns The raw HTMLElement or HTMLElement[] if `raw` is `true` or an Avita instance if `raw` is `false`/`undefined`.
  */
-export const $ = Avita.find
+export function $<T extends HTMLElement>(selector: string, raw: true): T | T[]
+
+/**
+ * Selects an HTML element or a collection of HTML elements matching the provided CSS selector.
+ * @param selector - The CSS selector to use for selecting the element(s).
+ * @param raw - If set to `true`, the function will return the raw HTMLElement or HTMLElement[] instead of an Avita instance.
+ * @returns An `Avita` instance wrapping the selected element(s), or the raw HTMLElement or HTMLElement[] if `raw` is `true`.
+ */
+export function $<T extends HTMLElement>(
+    selector: string,
+    raw?: false
+): Avita<T>
+
+/**
+ * Selects an HTML element or a collection of HTML elements matching the provided CSS selector.
+ * @param selector - The CSS selector to use for selecting the element(s).
+ * @returns An `Avita` instance wrapping the selected element(s).
+ */
+export function $<T extends HTMLElement>(selector: string): Avita<T>
+
+/**
+ * Executes the provided callback function when the DOM is ready.
+ * @param callback - The function to execute when the DOM is ready.
+ */
+export function $(callback: () => void): void
+
+export function $<T extends HTMLElement>(
+    selectorOrCallback: string | (() => void),
+    raw?: boolean
+): Avita<T> | T | T[] | void {
+    if (typeof selectorOrCallback === "string") {
+        // Handle element selection
+        if (raw === true) {
+            return Avita.find<T>(selectorOrCallback, true)
+        } else {
+            return Avita.find<T>(selectorOrCallback)
+        }
+    } else if (typeof selectorOrCallback === "function") {
+        // Handle DOM ready event
+        Avita.ready(selectorOrCallback)
+    }
+}

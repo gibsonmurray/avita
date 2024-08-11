@@ -1,3 +1,4 @@
+import type * as AvitaTypes from "./types"
 import Avita from "./avita"
 
 /**
@@ -912,4 +913,19 @@ export function feDropShadow(): Avita<SVGFEDropShadowElement> {
  */
 export function feOffset(): Avita<SVGFEOffsetElement> {
     return new Avita<SVGFEOffsetElement>("feOffset")
+}
+
+
+// Custom Elements
+
+export function vstack(align: AvitaTypes.StackAlign = "center"): Avita<HTMLDivElement> {
+    return new Avita<HTMLDivElement>("div").vstack(align)
+}
+
+export function hstack(align: AvitaTypes.StackAlign = "center"): Avita<HTMLDivElement> {
+    return new Avita<HTMLDivElement>("div").hstack(align)
+}
+
+export function zstack(align: AvitaTypes.StackAlign = "center"): Avita<HTMLDivElement> {
+    return new Avita<HTMLDivElement>("div").zstack(align)
 }

@@ -123,6 +123,10 @@ export type BackgroundClip =
     | "content-box"
     | "initial"
     | "inherit"
+    | "text"
+    | "revert"
+    | "revert-layer"
+    | "unset"
 export type BackgroundOrigin = BackgroundClip
 export type BackgroundPosition =
     | PositionValue
@@ -650,4 +654,12 @@ export type PlaceSelf =
     | "initial"
     | "inherit"
 
-export type State = { [key: string]: any }
+export type StackAlign =
+    | "top"
+    | "center"
+    | "bottom"
+    | "left"
+    | "right"
+    | "between"
+    | "around"
+    | "evenly"
