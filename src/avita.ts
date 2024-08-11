@@ -721,12 +721,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     on(event: string, callback: (event: Event) => void) {
         this.element.addEventListener(event, callback)
-        if (this.elements.length > 1) {
-            if (this.elements.length > 0)
-                this.elements.forEach((element) => {
-                    element.addEventListener(event, callback)
-                })
-        }
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.addEventListener(event, callback)
+            })
         return this
     }
 
@@ -757,7 +755,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("mouseover", onMouseEnter)
 
-            if (this.elements.length > 1)
+            if (this.elements.length > 0)
                 this.elements.forEach((element) => {
                     if (element instanceof HTMLElement) {
                         element.addEventListener("mouseover", onMouseEnter)
@@ -770,7 +768,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
                 }
             })
 
-            if (this.elements.length > 1)
+            if (this.elements.length > 0)
                 this.elements.forEach((element) => {
                     if (element instanceof HTMLElement) {
                         element.addEventListener("mouseout", (event) => {
@@ -793,7 +791,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("click", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("click", callback)
@@ -811,7 +809,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("dblclick", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("dblclick", callback)
@@ -829,7 +827,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("copy", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("copy", callback)
@@ -847,7 +845,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("cut", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("cut", callback)
@@ -865,7 +863,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("paste", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("paste", callback)
@@ -883,7 +881,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("compositionstart", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("compositionstart", callback)
@@ -901,7 +899,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("compositionupdate", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("compositionupdate", callback)
@@ -919,7 +917,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("compositionend", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("compositionend", callback)
@@ -935,7 +933,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onChange(callback: (event: Event) => void) {
         this.element.addEventListener("change", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("change", callback)
@@ -951,7 +949,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onInput(callback: (event: Event) => void) {
         this.element.addEventListener("input", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("input", callback)
@@ -967,7 +965,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onSubmit(callback: (event: Event) => void) {
         this.element.addEventListener("submit", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("submit", callback)
             })
@@ -981,7 +979,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onInvalid(callback: (event: Event) => void) {
         this.element.addEventListener("invalid", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("invalid", callback)
             })
@@ -995,7 +993,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onReset(callback: (event: Event) => void) {
         this.element.addEventListener("reset", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("reset", callback)
             })
@@ -1011,7 +1009,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("keydown", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("keydown", callback)
@@ -1029,7 +1027,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("keypress", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("keypress", callback)
@@ -1047,7 +1045,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("keyup", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("keyup", callback)
@@ -1065,7 +1063,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("focus", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("focus", callback)
@@ -1083,7 +1081,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("blur", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("blur", callback)
@@ -1101,7 +1099,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("focusin", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("focusin", callback)
@@ -1119,7 +1117,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("focusout", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("focusout", callback)
@@ -1137,7 +1135,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("mousedown", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("mousedown", callback)
@@ -1155,7 +1153,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("mouseup", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("mouseup", callback)
@@ -1173,7 +1171,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("mouseenter", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("mouseenter", callback)
@@ -1191,7 +1189,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("mouseleave", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("mouseleave", callback)
@@ -1209,7 +1207,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("mousemove", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("mousemove", callback)
@@ -1227,7 +1225,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("mouseover", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("mouseover", callback)
@@ -1245,7 +1243,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("mouseout", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("mouseout", callback)
@@ -1263,7 +1261,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("contextmenu", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("contextmenu", callback)
@@ -1281,7 +1279,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("pointerover", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("pointerover", callback)
@@ -1299,7 +1297,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("pointerenter", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("pointerenter", callback)
@@ -1317,7 +1315,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("pointerleave", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("pointerleave", callback)
@@ -1335,7 +1333,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("pointermove", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("pointermove", callback)
@@ -1353,7 +1351,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("pointerdown", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("pointerdown", callback)
@@ -1371,7 +1369,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("pointerup", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("pointerup", callback)
@@ -1389,7 +1387,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("pointercancel", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("pointercancel", callback)
@@ -1407,7 +1405,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("pointerout", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("pointerout", callback)
@@ -1425,7 +1423,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("gotpointercapture", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("gotpointercapture", callback)
@@ -1443,7 +1441,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("lostpointercapture", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("lostpointercapture", callback)
@@ -1461,7 +1459,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("touchstart", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("touchstart", callback)
@@ -1479,7 +1477,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("touchmove", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("touchmove", callback)
@@ -1497,7 +1495,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("touchend", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("touchend", callback)
@@ -1515,7 +1513,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("touchcancel", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("touchcancel", callback)
@@ -1540,7 +1538,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onScroll(callback: (event: Event) => void) {
         this.element.addEventListener("scroll", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("scroll", callback)
             })
@@ -1565,7 +1563,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("resize", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("resize", callback)
@@ -1583,7 +1581,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("wheel", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("wheel", callback)
@@ -1601,7 +1599,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("drag", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("drag", callback)
@@ -1619,7 +1617,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("dragend", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("dragend", callback)
@@ -1637,7 +1635,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("dragenter", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("dragenter", callback)
@@ -1655,7 +1653,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("dragleave", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("dragleave", callback)
@@ -1673,7 +1671,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("dragover", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("dragover", callback)
@@ -1691,7 +1689,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("dragstart", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("dragstart", callback)
@@ -1709,7 +1707,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("drop", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("drop", callback)
@@ -1725,7 +1723,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onAbort(callback: (event: Event) => void) {
         this.element.addEventListener("abort", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("abort", callback)
             })
@@ -1739,7 +1737,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onCanPlay(callback: (event: Event) => void) {
         this.element.addEventListener("canplay", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("canplay", callback)
             })
@@ -1753,7 +1751,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onCanPlayThrough(callback: (event: Event) => void) {
         this.element.addEventListener("canplaythrough", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("canplaythrough", callback)
             })
@@ -1767,7 +1765,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onDurationChange(callback: (event: Event) => void) {
         this.element.addEventListener("durationchange", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("durationchange", callback)
             })
@@ -1781,7 +1779,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onEmptied(callback: (event: Event) => void) {
         this.element.addEventListener("emptied", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("emptied", callback)
             })
@@ -1795,7 +1793,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onEncrypted(callback: (event: Event) => void) {
         this.element.addEventListener("encrypted", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("encrypted", callback)
             })
@@ -1809,7 +1807,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onEnded(callback: (event: Event) => void) {
         this.element.addEventListener("ended", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("ended", callback)
             })
@@ -1823,7 +1821,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onLoadedData(callback: (event: Event) => void) {
         this.element.addEventListener("loadeddata", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("loadeddata", callback)
             })
@@ -1837,7 +1835,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onLoadedMetadata(callback: (event: Event) => void) {
         this.element.addEventListener("loadedmetadata", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("loadedmetadata", callback)
             })
@@ -1851,7 +1849,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onLoadStart(callback: (event: Event) => void) {
         this.element.addEventListener("loadstart", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("loadstart", callback)
             })
@@ -1865,7 +1863,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onPause(callback: (event: Event) => void) {
         this.element.addEventListener("pause", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("pause", callback)
             })
@@ -1879,7 +1877,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onPlay(callback: (event: Event) => void) {
         this.element.addEventListener("play", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("play", callback)
             })
@@ -1893,7 +1891,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onPlaying(callback: (event: Event) => void) {
         this.element.addEventListener("playing", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("playing", callback)
             })
@@ -1909,7 +1907,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("progress", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("progress", callback)
@@ -1925,7 +1923,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onRateChange(callback: (event: Event) => void) {
         this.element.addEventListener("ratechange", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("ratechange", callback)
             })
@@ -1939,7 +1937,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onSeeked(callback: (event: Event) => void) {
         this.element.addEventListener("seeked", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("seeked", callback)
             })
@@ -1953,7 +1951,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onSeeking(callback: (event: Event) => void) {
         this.element.addEventListener("seeking", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("seeking", callback)
             })
@@ -1967,7 +1965,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onStalled(callback: (event: Event) => void) {
         this.element.addEventListener("stalled", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("stalled", callback)
             })
@@ -1981,7 +1979,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onSuspend(callback: (event: Event) => void) {
         this.element.addEventListener("suspend", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("suspend", callback)
             })
@@ -1995,7 +1993,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onTimeUpdate(callback: (event: Event) => void) {
         this.element.addEventListener("timeupdate", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("timeupdate", callback)
             })
@@ -2009,7 +2007,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onVolumeChange(callback: (event: Event) => void) {
         this.element.addEventListener("volumechange", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("volumechange", callback)
             })
@@ -2023,7 +2021,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onWaiting(callback: (event: Event) => void) {
         this.element.addEventListener("waiting", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("waiting", callback)
             })
@@ -2037,7 +2035,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onLoad(callback: (event: Event) => void) {
         this.element.addEventListener("load", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("load", callback)
             })
@@ -2060,7 +2058,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onError(callback: (event: Event) => void) {
         this.element.addEventListener("error", callback)
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.addEventListener("error", callback)
             })
@@ -2076,7 +2074,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("animationstart", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("animationstart", callback)
@@ -2094,7 +2092,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("animationend", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("animationend", callback)
@@ -2112,7 +2110,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("animationiteration", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("animationiteration", callback)
@@ -2130,7 +2128,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("transitionstart", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("transitionstart", callback)
@@ -2148,7 +2146,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         if (this.element instanceof HTMLElement) {
             this.element.addEventListener("transitionend", callback)
         }
-        if (this.elements.length > 1)
+        if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 if (element instanceof HTMLElement) {
                     element.addEventListener("transitionend", callback)
@@ -2496,6 +2494,21 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     bg = this.background
 
     /**
+     * Sets the 'backgroundColor' CSS property on the current `AvitaElement` instance and all its child elements to the specified value.
+     * @param value - The value to set for the 'backgroundColor' CSS property. Can be a string representing a valid CSS color value.
+     * @returns The current `AvitaElement` instance for chaining.
+     * @deprecated Use the `bg()` method instead.
+     */
+    bgColor(value: string) {
+        this.element.style.backgroundColor = value
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.style.backgroundColor = value
+            })
+        return this
+    }
+
+    /**
      * Sets the 'backgroundClip' CSS property on the current `AvitaElement` instance and all its child elements to the specified value.
      * @param value - The value to set for the 'backgroundClip' CSS property. Can be a string representing a valid CSS background-clip value.
      * @returns The current `AvitaElement` instance for chaining.
@@ -2603,26 +2616,129 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'background' CSS property on the current `AvitaElement` instance using a gradient.
-     * @param type - The type of gradient to use, can be "linear", "radial", "conic", "repeating-linear", or "repeating-radial". Defaults to "linear".
+     * Applies a linear gradient as the background of the current `AvitaElement` instance and its child elements.
+     * @param angle - The angle of the gradient in degrees. Defaults to 0 (horizontal).
      * @param colors - An array of CSS color values to use in the gradient.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    bgGradient(
-        type:
-            | "linear"
-            | "radial"
-            | "conic"
-            | "repeating-linear"
-            | "repeating-radial" = "linear",
-        ...colors: string[]
-    ) {
-        const gradient = `${type}-gradient(${colors.join(", ")})`
-        this.element.style.background = gradient
+    bgLinearGradient(angle: number = 0, ...colors: string[]) {
+        const gradient = `linear-gradient(${angle}deg, ${colors.join(", ")})`
+        this.bg(gradient)
         if (this.elements.length > 0)
             this.elements.forEach((element) => {
                 element.style.background = gradient
             })
+        return this
+    }
+
+    /**
+     * Applies a radial gradient as the background of the current `AvitaElement` instance and its child elements.
+     * @param shape - The shape of the gradient, can be 'circle', 'ellipse', 'closest-side' or a shape with location.
+     * @param colors - An array of CSS color values to use in the gradient.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    bgRadialGradient(shape: string, ...colors: string[]) {
+        const gradient = `radial-gradient(${shape}, ${colors.join(", ")})`
+        this.bg(gradient)
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.style.background = gradient
+            })
+        return this
+    }
+
+    /**
+     * Provides a shorthand for calling the `bgLinearGradient` method on the current `AvitaElement` instance.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    bgLinGrad = this.bgLinearGradient
+
+    /**
+     * Applies a horizontal text-masked linear gradient effect to the current `AvitaElement` instance and its child elements.
+     * @param colors - An array of CSS color values to use in the gradient.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    textGradientX(...colors: string[]) {
+        this.bgLinGrad(90, ...colors)
+        this.textMask()
+        this.color("transparent")
+        return this
+    }
+
+    /**
+     * Applies a vertical text-masked linear gradient effect to the current `AvitaElement` instance and its child elements.
+     * @param colors - An array of CSS color values to use in the gradient.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    textGradientY(...colors: string[]) {
+        this.bgLinGrad(0, ...colors)
+        this.textMask()
+        this.color("transparent")
+        return this
+    }
+
+    /**
+     * Applies a 45-degree text-masked linear gradient effect to the current `AvitaElement` instance and its child elements.
+     * @param colors - An array of CSS color values to use in the gradient.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    textGradient45(...colors: string[]) {
+        this.bgLinGrad(45, ...colors)
+        this.textMask()
+        this.color("transparent")
+        return this
+    }
+
+    /**
+     * Applies a 135-degree text-masked linear gradient effect to the current `AvitaElement` instance and its child elements.
+     * @param colors - An array of CSS color values to use in the gradient.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    textGradient135(...colors: string[]) {
+        this.bgLinGrad(135, ...colors)
+        this.textMask()
+        this.color("transparent")
+        return this
+    }
+
+    /**
+     * Applies a 225-degree text-masked linear gradient effect to the current `AvitaElement` instance and its child elements.
+     * @param colors - An array of CSS color values to use in the gradient.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    textGradient225(...colors: string[]) {
+        this.bgLinGrad(225, ...colors)
+        this.textMask()
+        this.color("transparent")
+        return this
+    }
+
+    /**
+     * Applies a 315-degree text-masked linear gradient effect to the current `AvitaElement` instance and its child elements.
+     * @param colors - An array of CSS color values to use in the gradient.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    textGradient315(...colors: string[]) {
+        this.bgLinGrad(315, ...colors)
+        this.textMask()
+        this.color("transparent")
+        return this
+    }
+
+    /**
+     * Shorthands the text-masked linear gradient effect to be horizontal on the current `AvitaElement` instance.
+     * See `textGradientX` for more details.
+     * @param colors - An array of CSS color values to use in the gradient.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    textGradient = this.textGradientX
+
+    /**
+     * Sets the 'backgroundClip' CSS property on the current `AvitaElement` instance and all its child elements to 'text', clipping the background to the text content.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    textMask() {
+        this.bgClip("text")
         return this
     }
 
@@ -3549,6 +3665,12 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Shorthand for setting the 'fontFamily' CSS property on the current `AvitaElement` instance.
+     * @returns The current 'fontFamily' CSS property value.
+     */
+    fam = this.family
+
+    /**
      * Sets the 'fontSize' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'fontSize' CSS property. Can be a valid CSS font-size value, either a string or a number representing pixels.
      * @returns The current `AvitaElement` instance for chaining.
@@ -3924,7 +4046,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'inlineSize' CSS property. Can be a valid CSS inline-size value.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    inlineSz(value: string | number) {
+    inlineSize(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         this.element.style.inlineSize = String(value) + unit
         if (this.elements.length > 0)
@@ -4400,16 +4522,16 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * Sets the 'maxHeight' and 'maxWidth' CSS properties on the current `AvitaElement` instance.
      * @param value - The value to set for the 'maxHeight' and 'maxWidth' CSS properties. Must be a valid CSS length value e.g. '100px 200px'.
      */
-    maxSz(value: string): this
+    maxSize(value: string): this
 
     /**
      * Sets the 'maxHeight' and 'maxWidth' CSS properties on the current `AvitaElement` instance.
      * @param width - The value to set for the 'maxWidth' CSS property. If number, it will be interpreted as pixels.
      * @param height - The value to set for the 'maxHeight' CSS property. If number, it will be interpreted as pixels.
      */
-    maxSz(width: string | number, height: string | number): this
+    maxSize(width: string | number, height: string | number): this
 
-    maxSz(valueOrW: string | number, height?: string | number): this {
+    maxSize(valueOrW: string | number, height?: string | number): this {
         if (typeof valueOrW === "string" && !height) {
             const valueArr = valueOrW.split(" ")
             if (valueArr.length === 2) {
@@ -4422,7 +4544,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
                     })
             } else {
                 throw new Error(
-                    "Invalid value for maxSz(). Must be a valid CSS length value e.g. '100px 200px'."
+                    "Invalid value for maxSize(). Must be a valid CSS length value e.g. '100px 200px'."
                 )
             }
         }
@@ -4545,9 +4667,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the 'objectFit' CSS property on the current `AvitaElement` instance.
+     * Sets the 'objectFit' CSS property on the current `AvitaElement` instance to the specified value.
      * @param value - The value to set for the 'objectFit' CSS property. Must be a valid CSS `object-fit` value.
      * @returns The current `AvitaElement` instance for chaining.
+     * @deprecated Use shorthand methods like `cover()` or `contain()` instead.
      */
     objFit(value: string) {
         this.element.style.objectFit = value
@@ -4558,6 +4681,57 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         return this
     }
 
+    /**
+     * Sets the 'objectFit' CSS property on the current `AvitaElement` instance and all its child elements to 'none'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    none() {
+        this.element.style.objectFit = "none"
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.style.objectFit = "none"
+            })
+        return this
+    }
+
+    /**
+     * Sets the 'objectFit' CSS property on the current `AvitaElement` instance to 'scale-down'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    scaleDown() {
+        this.element.style.objectFit = "scale-down"
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.style.objectFit = "scale-down"
+            })
+        return this
+    }
+
+    /**
+     * Sets the 'objectFit' CSS property on the current `AvitaElement` instance to 'cover'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    cover() {
+        this.element.style.objectFit = "cover"
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.style.objectFit = "cover"
+            })
+        return this
+    }
+
+    /**
+     * Sets the 'objectFit' CSS property on the current `AvitaElement` instance to 'contain'.
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    contain() {
+        this.element.style.objectFit = "contain"
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.style.objectFit = "contain"
+            })
+        return this
+    }
     /**
      * Sets the 'objectPosition' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'objectPosition' CSS property. Must be a valid CSS `object-position` value.
@@ -5580,7 +5754,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         return this
     }
 
-    clipTxt() {
+    clipText() {
         this.element.style.textOverflow = "clip"
         if (this.elements.length > 0)
             this.elements.forEach((element) => {
@@ -6232,16 +6406,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     center(type: "self"): this
 
     /**
-     * Centers the child elements vertically by setting the 'display' CSS property to 'flex' and setting the 'alignItems' CSS property to 'center'.
+     * Centers the child elements by setting the 'display' CSS property to 'flex' and setting the 'justifyContent' and 'alignItems' CSS properties to 'center'.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    center(type: "vertical"): this
-
-    /**
-     * Centers the child elements horizontally by setting the 'display' CSS property to 'flex' and setting the 'justifyContent' CSS property to 'center'.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    center(type: "horizontal"): this
+    center(type: "flex"): this
 
     /**
      * Centers the element itself by setting its position to absolute and transforming its position.
@@ -6250,22 +6418,17 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     center(type: "absolute"): this
 
-    center(type?: "self" | "vertical" | "horizontal" | "absolute"): this {
-        if (!type) {
-            // Center child elements both vertically and horizontally
-            this.center()
-        } else if (type === "self") {
+    center(type: "self" | "flex" | "absolute" = "flex"): this {
+        if (type === "self") {
             // Center the element itself using margin auto
             this.margin("auto")
-        } else if (type === "vertical") {
-            // Center child elements vertically
-            this.flex()
-            this.aItems("center")
-        } else if (type === "horizontal") {
-            // Center child elements horizontally
+        } else if (type === "flex") {
+            // Center child elements using flexbox
             this.flex()
             this.jContent("center")
+            this.aItems("center")
         } else if (type === "absolute") {
+            // Center the element itself using absolute positioning
             this.absolute()
             this.top("50%")
             this.left("50%")
@@ -6564,7 +6727,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The CSS value to set as the stroke linecap (e.g., "butt", "round", "square").
      * @returns The current `AvitaElement` instance for chaining.
      */
-    linecap(value: "butt" | "round" | "square"): this {
+    linecap(value: string): this {
         this.element.style.strokeLinecap = value
         if (this.elements.length > 0)
             this.elements.forEach((element) => {
@@ -6578,7 +6741,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The CSS value to set as the stroke linejoin (e.g., "miter", "round", "bevel").
      * @returns The current `AvitaElement` instance for chaining.
      */
-    linejoin(value: "miter" | "round" | "bevel"): this {
+    linejoin(value: string): this {
         this.element.style.strokeLinejoin = value
         if (this.elements.length > 0)
             this.elements.forEach((element) => {
@@ -6645,16 +6808,32 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the fill color of the element.
-     * @param value - The CSS color value to set as the fill.
+     * Sets the object fit property of the element to fill.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    fill(value: string) {
-        this.element.style.fill = value
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.style.fill = value
-            })
+    fill(): this
+
+    /**
+     * Sets the fill of the element.
+     * @param value - The fill value to set. If not provided, the element's object-fit will be set to "fill".
+     * @returns The current `AvitaElement` instance for chaining.
+     */
+    fill(value: string): this
+
+    fill(value?: string) {
+        if (!value) {
+            this.element.style.objectFit = "fill"
+            if (this.elements.length > 0)
+                this.elements.forEach((element) => {
+                    element.style.objectFit = "fill"
+                })
+        } else {
+            this.element.style.fill = value
+            if (this.elements.length > 0)
+                this.elements.forEach((element) => {
+                    element.style.fill = value
+                })
+        }
         return this
     }
 
