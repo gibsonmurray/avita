@@ -3517,6 +3517,16 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         return this
     }
 
+    blur(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        this.element.style.filter = `blur(${value}${unit})`
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.style.filter = `blur(${value}${unit})`
+            })
+        return this
+    }
+
     /**
      * Sets the 'flex' CSS property on the current `AvitaElement` instance.
      * @param value - The value to set for the 'flex' CSS property. Can be a valid CSS flex value.
