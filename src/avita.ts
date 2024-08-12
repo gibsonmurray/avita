@@ -93,12 +93,12 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns The raw HTML element(s) matching the selector.
      * @throws {Error} If no element is found with the given selector.
      */
-    static find<T extends HTMLElement>(selector: string, raw: true): T | T[]
+    static find<T extends HTMLElement>(selector: string, raw?: boolean): T | T[]
 
     static find<T extends HTMLElement>(
         selector: string,
         raw?: boolean
-    ): Avita<T> | T | T[] {
+    ): Avita<T> | T | T[] | null {
         const elements = document.querySelectorAll(selector) as NodeListOf<T>
 
         if (raw) {
@@ -118,9 +118,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
             }
         }
 
-        throw new Error(
-            `Element(s) with selector: '${selector}' not found in DOM tree`
-        )
+        return null
     }
 
     /**
@@ -7543,14 +7541,9 @@ export function $(callback: () => void): void
 export function $<T extends HTMLElement>(
     selectorOrCallback: string | (() => void),
     raw?: boolean
-): Avita<T> | T | T[] | void {
+): Avita<T> | T | T[] | null | void {
     if (typeof selectorOrCallback === "string") {
-        // Handle element selection
-        if (raw === true) {
-            return Avita.find<T>(selectorOrCallback, true)
-        } else {
-            return Avita.find<T>(selectorOrCallback)
-        }
+        return Avita.find<T>(selectorOrCallback, raw)
     } else if (typeof selectorOrCallback === "function") {
         // Handle DOM ready event
         Avita.ready(selectorOrCallback)
