@@ -534,27 +534,49 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Appends the current `Avita` instance to the provided `Avita` instance.
-     * @param element - The `Avita` instance to append the current instance to.
+     * Appends the provided `Avita` instance to the current `Avita` instance.
+     * @param child - The `Avita` instance to append to the current instance.
      * @returns The current `Avita` instance for chaining.
      */
-    append(element: Avita<T>) {
-        this.element.appendChild(element.element)
-        this.elements.forEach((el) => {
-            el.appendChild(element.element)
+    append(child: Avita<T>): this
+
+    /**
+     * Appends one or more `Avita` instances to the current `Avita` instance.
+     * @param children - The `Avita` instances to append to the current instance.
+     * @returns The current `Avita` instance for chaining.
+     */
+    append(...children: Avita<T>[]): this
+
+    append(...children: Avita<T>[]): this {
+        children.forEach((child) => {
+            this.element.append(child.element)
+            this.elements.forEach((el) => { // no clue why u would want to do this but here it is
+                el.append(child.element)
+            })
         })
         return this
     }
 
     /**
-     * Prepends the current `Avita` instance to the provided `Avita` instance.
-     * @param element - The `Avita` instance to prepend the current instance to.
+     * Prepends the provided `Avita` instance to the current `Avita` instance.
+     * @param child - The `Avita` instance to prepend to the current instance.
      * @returns The current `Avita` instance for chaining.
      */
-    prepend(element: Avita<T>) {
-        this.element.prepend(element.element)
-        this.elements.forEach((el) => {
-            el.prepend(element.element)
+    prepend(child: Avita<T>): this
+
+    /**
+     * Prepends one or more `Avita` instances to the current `Avita` instance.
+     * @param children - The `Avita` instances to prepend to the current instance.
+     * @returns The current `Avita` instance for chaining.
+     */
+    prepend(...children: Avita<T>[]): this
+
+    prepend(...children: Avita<T>[]): this {
+        children.forEach((child) => {
+            this.element.prepend(child.element)
+            this.elements.forEach((el) => {
+                el.prepend(child.element)
+            })
         })
         return this
     }
