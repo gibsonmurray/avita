@@ -6906,46 +6906,30 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Sets the element to be a specific size relative to the screen.
-     * @param value - The size value to set, in viewport width (vw) and viewport height (vh) units.
+     * Sets the element to be the full size of the viewport.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    screen(value: number): this {
-        this.element.style.width = `${value}vw`
-        this.element.style.height = `${value}vh`
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.style.width = `${value}vw`
-                element.style.height = `${value}vh`
-            })
+    screen() {
+        this.screenW()
+        this.screenH()
         return this
     }
 
     /**
-     * Sets the element to be a specific width relative to the screen.
-     * @param value - The width value to set, in viewport width (vw) units.
+     * Sets the element to be the width of the viewport.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    screenX(value: number): this {
-        this.element.style.width = `${value}vw`
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.style.width = `${value}vw`
-            })
+    screenW() {
+        this.w("100vw")
         return this
     }
 
     /**
-     * Sets the element to be full-height.
-     * @param value - The height value to set, in viewport height (vh) units.
+     * Sets the element to be height of the viewport.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    screenY(value: number): this {
-        this.element.style.height = `${value}vh`
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.style.height = `${value}vh`
-            })
+    screenH() {
+        this.h("100vh")
         return this
     }
 
@@ -6954,13 +6938,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns The current `AvitaElement` instance for chaining.
      */
     full() {
-        this.element.style.width = "100%"
-        this.element.style.height = "100%"
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.style.width = "100%"
-                element.style.height = "100%"
-            })
+        this.fullW()
+        this.fullH()
         return this
     }
 
@@ -6968,12 +6947,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * Sets the element to be full-width.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    fullX() {
-        this.element.style.width = "100%"
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.style.width = "100%"
-            })
+    fullW() {
+        this.w("100%")
         return this
     }
 
@@ -6981,12 +6956,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * Sets the element to be full-height.
      * @returns The current `AvitaElement` instance for chaining.
      */
-    fullY() {
-        this.element.style.height = "100%"
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.style.height = "100%"
-            })
+    fullH() {
+        this.h("100%")
         return this
     }
 
