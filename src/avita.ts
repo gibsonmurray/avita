@@ -730,6 +730,26 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Returns a new `Avita` instance with the first element from the current `Avita` instance.
+     * Typically only used with `find()`.
+     * @returns A new `Avita` instance with the first element.
+     */
+    first() {
+        return new Avita(this.elements[0])
+    }
+
+    /**
+     * Returns a new `Avita` instance with the last element from the current `Avita` instance.
+     * Typically only used with `find()`.
+     * @returns A new `Avita` instance with the last element.
+     */
+    last() {
+        return new Avita(this.elements[this.elements.length - 1])
+    }
+
+    // Event Listeners
+
+    /**
      * Attaches an event listener to the current `Avita` instance. Works with both single and multiple elements.
      * @param event - The name of the event to listen for.
      * @param callback - The callback function to be executed when the event is triggered.
@@ -1290,7 +1310,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns The current `Avita` instance for chaining.
      */
     onCanPlayThrough(callback: EL) {
-       return this.on("canplaythrough", callback)
+        return this.on("canplaythrough", callback)
     }
 
     /**
@@ -1335,7 +1355,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns The current `Avita` instance for chaining.
      */
     onLoadedData(callback: EL) {
-       return this.on("loadeddata", callback)
+        return this.on("loadeddata", callback)
     }
 
     /**
@@ -1549,7 +1569,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param props - The CSS properties to apply to the element when hovered over.
      * @returns The current `Avita` instance for chaining.
      */
-    onHoverCSS(props: Partial<CSSStyleDeclaration>): this
+    hover(props: Partial<CSSStyleDeclaration>): this
 
     /**
      * Attaches a CSS hover effect to the current `Avita` instance.
@@ -1559,9 +1579,9 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the CSS property.
      * @returns The current `Avita` instance for chaining.
      */
-    onHoverCSS(property: string, value: string): this
+    hover(property: string, value: string): this
 
-    onHoverCSS(
+    hover(
         propsOrProperty: Partial<CSSStyleDeclaration> | string,
         value?: string
     ): this {
@@ -1575,7 +1595,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param props - The CSS properties to apply to the element when it is active.
      * @returns The current `Avita` instance for chaining.
      */
-    onActiveCSS(props: Partial<CSSStyleDeclaration>): this
+    active(props: Partial<CSSStyleDeclaration>): this
 
     /**
      * Attaches a CSS active effect to the current `Avita` instance.
@@ -1585,9 +1605,9 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the CSS property.
      * @returns The current `Avita` instance for chaining.
      */
-    onActiveCSS(property: string, value: string): this
+    active(property: string, value: string): this
 
-    onActiveCSS(
+    active(
         propsOrProperty: Partial<CSSStyleDeclaration> | string,
         value?: string
     ): this {
@@ -1601,7 +1621,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param props - The CSS properties to apply to the element when it is focused.
      * @returns The current `Avita` instance for chaining.
      */
-    onFocusCSS(props: Partial<CSSStyleDeclaration>): this
+    focus(props: Partial<CSSStyleDeclaration>): this
 
     /**
      * Attaches a CSS focus effect to the current `Avita` instance.
@@ -1611,39 +1631,13 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the CSS property.
      * @returns The current `Avita` instance for chaining.
      */
-    onFocusCSS(property: string, value: string): this
+    focus(property: string, value: string): this
 
-    onFocusCSS(
+    focus(
         propsOrProperty: Partial<CSSStyleDeclaration> | string,
         value?: string
     ): this {
         return this.applyPseudoClassCSS("focus", propsOrProperty, value)
-    }
-
-    /**
-     * Attaches a CSS focus-within effect to the current `Avita` instance.
-     * The focus-within effect is defined by the provided CSS properties or a single property-value pair.
-     * A unique CSS class is generated and applied to the element to scope the focus-within effect.
-     * @param props - The CSS properties to apply to the element when it or one of its descendants is focused.
-     * @returns The current `Avita` instance for chaining.
-     */
-    onFocusWithinCSS(props: Partial<CSSStyleDeclaration>): this
-
-    /**
-     * Attaches a CSS focus-within effect to the current `Avita` instance.
-     * The focus-within effect is defined by the provided CSS property and value.
-     * A unique CSS class is generated and applied to the element to scope the focus-within effect.
-     * @param property - The CSS property to apply to the element when it or one of its descendants is focused.
-     * @param value - The value to set for the CSS property.
-     * @returns The current `Avita` instance for chaining.
-     */
-    onFocusWithinCSS(property: string, value: string): this
-
-    onFocusWithinCSS(
-        propsOrProperty: Partial<CSSStyleDeclaration> | string,
-        value?: string
-    ): this {
-        return this.applyPseudoClassCSS("focus-within", propsOrProperty, value)
     }
 
     /**
