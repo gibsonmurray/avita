@@ -6,6 +6,8 @@ import {
     numberToSeconds,
 } from "./utils"
 
+type EL = EventListenerOrEventListenerObject
+
 export default class Avita<T extends HTMLElement | SVGElement> {
     private element: T
     private elements: T[] = [] // mostly used when querying for multiple elements, otherwise empty
@@ -550,7 +552,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     append(...children: Avita<T>[]): this {
         children.forEach((child) => {
             this.element.append(child.element)
-            this.elements.forEach((el) => { // no clue why u would want to do this but here it is
+            this.elements.forEach((el) => {
+                // no clue why u would want to do this but here it is
                 el.append(child.element)
             })
         })
@@ -732,12 +735,13 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the event is triggered.
      * @returns The current `Avita` instance for chaining.
      */
-    on(event: string, callback: (event: Event) => void) {
+    on(event: string, callback: EL): this {
         this.element.addEventListener(event, callback)
-        if (this.elements.length > 0)
+        if (this.elements && this.elements.length > 0) {
             this.elements.forEach((element) => {
                 element.addEventListener(event, callback)
             })
+        }
         return this
     }
 
@@ -747,7 +751,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param onMouseEnter - The callback function to be executed when the mouse enters the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onHover(onMouseEnter: (event: MouseEvent) => void): this
+    onHover(onMouseEnter: EL): this
 
     /**
      * Attaches hover event listeners to the current `Avita` instance.
@@ -756,41 +760,12 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param onMouseLeave - The callback function to be executed when the mouse leaves the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onHover(
-        onMouseEnter: (event: MouseEvent) => void,
-        onMouseLeave: (event: MouseEvent) => void
-    ): this
+    onHover(onMouseEnter: EL, onMouseLeave: EL): this
 
-    onHover(
-        onMouseEnter: (event: MouseEvent) => void,
-        onMouseLeave?: (event: MouseEvent) => void
-    ): this {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("mouseover", onMouseEnter)
-
-            if (this.elements.length > 0)
-                this.elements.forEach((element) => {
-                    if (element instanceof HTMLElement) {
-                        element.addEventListener("mouseover", onMouseEnter)
-                    }
-                })
-
-            this.element.addEventListener("mouseout", (event) => {
-                if (onMouseLeave) {
-                    onMouseLeave(event)
-                }
-            })
-
-            if (this.elements.length > 0)
-                this.elements.forEach((element) => {
-                    if (element instanceof HTMLElement) {
-                        element.addEventListener("mouseout", (event) => {
-                            if (onMouseLeave) {
-                                onMouseLeave(event)
-                            }
-                        })
-                    }
-                })
+    onHover(onMouseEnter: EL, onMouseLeave?: EL): this {
+        this.on("mouseover", onMouseEnter)
+        if (onMouseLeave) {
+            this.on("mouseout", onMouseLeave)
         }
         return this
     }
@@ -800,17 +775,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is clicked.
      * @returns The current `Avita` instance for chaining.
      */
-    onClick(callback: (event: MouseEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("click", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("click", callback)
-                }
-            })
-        return this
+    onClick(callback: EL) {
+        return this.on("click", callback)
     }
 
     /**
@@ -818,17 +784,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is double clicked.
      * @returns The current `Avita` instance for chaining.
      */
-    onDoubleClick(callback: (event: MouseEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("dblclick", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("dblclick", callback)
-                }
-            })
-        return this
+    onDblClick(callback: EL) {
+        return this.on("dblclick", callback)
     }
 
     /**
@@ -836,17 +793,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is copied.
      * @returns The current `Avita` instance for chaining.
      */
-    onCopy(callback: (event: ClipboardEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("copy", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("copy", callback)
-                }
-            })
-        return this
+    onCopy(callback: EL) {
+        return this.on("copy", callback)
     }
 
     /**
@@ -854,17 +802,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is cut.
      * @returns The current `Avita` instance for chaining.
      */
-    onCut(callback: (event: ClipboardEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("cut", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("cut", callback)
-                }
-            })
-        return this
+    onCut(callback: EL) {
+        return this.on("cut", callback)
     }
 
     /**
@@ -872,17 +811,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is pasted to.
      * @returns The current `Avita` instance for chaining.
      */
-    onPaste(callback: (event: ClipboardEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("paste", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("paste", callback)
-                }
-            })
-        return this
+    onPaste(callback: EL) {
+        return this.on("paste", callback)
     }
 
     /**
@@ -890,17 +820,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the composition starts on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onCompositionStart(callback: (event: CompositionEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("compositionstart", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("compositionstart", callback)
-                }
-            })
-        return this
+    onCompositionStart(callback: EL) {
+        return this.on("compositionstart", callback)
     }
 
     /**
@@ -908,17 +829,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the composition is updated on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onCompositionUpdate(callback: (event: CompositionEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("compositionupdate", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("compositionupdate", callback)
-                }
-            })
-        return this
+    onCompositionUpdate(callback: EL) {
+        return this.on("compositionupdate", callback)
     }
 
     /**
@@ -926,17 +838,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the composition ends on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onCompositionEnd(callback: (event: CompositionEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("compositionend", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("compositionend", callback)
-                }
-            })
-        return this
+    onCompositionEnd(callback: EL) {
+        return this.on("compositionend", callback)
     }
 
     /**
@@ -944,15 +847,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element's value changes.
      * @returns The current `Avita` instance for chaining.
      */
-    onChange(callback: (event: Event) => void) {
-        this.element.addEventListener("change", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("change", callback)
-                }
-            })
-        return this
+    onChange(callback: EL) {
+        return this.on("change", callback)
     }
 
     /**
@@ -960,15 +856,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element's value is input.
      * @returns The current `Avita` instance for chaining.
      */
-    onInput(callback: (event: Event) => void) {
-        this.element.addEventListener("input", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("input", callback)
-                }
-            })
-        return this
+    onInput(callback: EL) {
+        return this.on("input", callback)
     }
 
     /**
@@ -976,13 +865,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is submitted.
      * @returns The current `Avita` instance for chaining.
      */
-    onSubmit(callback: (event: Event) => void) {
-        this.element.addEventListener("submit", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("submit", callback)
-            })
-        return this
+    onSubmit(callback: EL) {
+        return this.on("submit", callback)
     }
 
     /**
@@ -990,13 +874,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is invalid.
      * @returns The current `Avita` instance for chaining.
      */
-    onInvalid(callback: (event: Event) => void) {
-        this.element.addEventListener("invalid", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("invalid", callback)
-            })
-        return this
+    onInvalid(callback: EL) {
+        return this.on("invalid", callback)
     }
 
     /**
@@ -1004,13 +883,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is reset.
      * @returns The current `Avita` instance for chaining.
      */
-    onReset(callback: (event: Event) => void) {
-        this.element.addEventListener("reset", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("reset", callback)
-            })
-        return this
+    onReset(callback: EL) {
+        return this.on("reset", callback)
     }
 
     /**
@@ -1018,17 +892,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when a key is pressed down on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onKeyDown(callback: (event: KeyboardEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("keydown", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("keydown", callback)
-                }
-            })
-        return this
+    onKeyDown(callback: EL) {
+        return this.on("keydown", callback)
     }
 
     /**
@@ -1036,17 +901,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when a key is pressed on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onKeyPress(callback: (event: KeyboardEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("keypress", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("keypress", callback)
-                }
-            })
-        return this
+    onKeyPress(callback: EL) {
+        return this.on("keypress", callback)
     }
 
     /**
@@ -1054,17 +910,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when a key is released on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onKeyUp(callback: (event: KeyboardEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("keyup", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("keyup", callback)
-                }
-            })
-        return this
+    onKeyUp(callback: EL) {
+        return this.on("keyup", callback)
     }
 
     /**
@@ -1072,17 +919,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element receives focus.
      * @returns The current `Avita` instance for chaining.
      */
-    onFocus(callback: (event: FocusEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("focus", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("focus", callback)
-                }
-            })
-        return this
+    onFocus(callback: EL) {
+        return this.on("focus", callback)
     }
 
     /**
@@ -1090,17 +928,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element loses focus.
      * @returns The current `Avita` instance for chaining.
      */
-    onBlur(callback: (event: FocusEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("blur", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("blur", callback)
-                }
-            })
-        return this
+    onBlur(callback: EL) {
+        return this.on("blur", callback)
     }
 
     /**
@@ -1108,17 +937,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element receives focus.
      * @returns The current `Avita` instance for chaining.
      */
-    onFocusIn(callback: (event: FocusEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("focusin", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("focusin", callback)
-                }
-            })
-        return this
+    onFocusIn(callback: EL) {
+        return this.on("focusin", callback)
     }
 
     /**
@@ -1126,17 +946,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element loses focus.
      * @returns The current `Avita` instance for chaining.
      */
-    onFocusOut(callback: (event: FocusEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("focusout", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("focusout", callback)
-                }
-            })
-        return this
+    onFocusOut(callback: EL) {
+        return this.on("focusout", callback)
     }
 
     /**
@@ -1144,17 +955,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the mouse button is pressed down on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onMouseDown(callback: (event: MouseEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("mousedown", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("mousedown", callback)
-                }
-            })
-        return this
+    onMouseDown(callback: EL) {
+        return this.on("mousedown", callback)
     }
 
     /**
@@ -1162,17 +964,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the mouse button is released on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onMouseUp(callback: (event: MouseEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("mouseup", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("mouseup", callback)
-                }
-            })
-        return this
+    onMouseUp(callback: EL) {
+        return this.on("mouseup", callback)
     }
 
     /**
@@ -1180,17 +973,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the mouse pointer enters the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onMouseEnter(callback: (event: MouseEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("mouseenter", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("mouseenter", callback)
-                }
-            })
-        return this
+    onMouseEnter(callback: EL) {
+        return this.on("mouseenter", callback)
     }
 
     /**
@@ -1198,17 +982,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the mouse pointer leaves the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onMouseLeave(callback: (event: MouseEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("mouseleave", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("mouseleave", callback)
-                }
-            })
-        return this
+    onMouseLeave(callback: EL) {
+        return this.on("mouseleave", callback)
     }
 
     /**
@@ -1216,17 +991,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the mouse pointer is moved over the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onMouseMove(callback: (event: MouseEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("mousemove", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("mousemove", callback)
-                }
-            })
-        return this
+    onMouseMove(callback: EL) {
+        return this.on("mousemove", callback)
     }
 
     /**
@@ -1234,17 +1000,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the mouse pointer moves over the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onMouseOver(callback: (event: MouseEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("mouseover", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("mouseover", callback)
-                }
-            })
-        return this
+    onMouseOver(callback: EL) {
+        return this.on("mouseover", callback)
     }
 
     /**
@@ -1252,17 +1009,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the mouse pointer leaves the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onMouseOut(callback: (event: MouseEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("mouseout", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("mouseout", callback)
-                }
-            })
-        return this
+    onMouseOut(callback: EL) {
+        return this.on("mouseout", callback)
     }
 
     /**
@@ -1270,17 +1018,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the user right-clicks or otherwise triggers the contextmenu event on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onContextMenu(callback: (event: MouseEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("contextmenu", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("contextmenu", callback)
-                }
-            })
-        return this
+    onContextMenu(callback: EL) {
+        return this.on("contextmenu", callback)
     }
 
     /**
@@ -1288,17 +1027,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the pointer moves over the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onPointerOver(callback: (event: PointerEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("pointerover", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("pointerover", callback)
-                }
-            })
-        return this
+    onPointerOver(callback: EL) {
+        return this.on("pointerover", callback)
     }
 
     /**
@@ -1306,17 +1036,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the pointer enters the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onPointerEnter(callback: (event: PointerEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("pointerenter", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("pointerenter", callback)
-                }
-            })
-        return this
+    onPointerEnter(callback: EL) {
+        return this.on("pointerenter", callback)
     }
 
     /**
@@ -1324,17 +1045,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the pointer leaves the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onPointerLeave(callback: (event: PointerEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("pointerleave", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("pointerleave", callback)
-                }
-            })
-        return this
+    onPointerLeave(callback: EL) {
+        return this.on("pointerleave", callback)
     }
 
     /**
@@ -1342,17 +1054,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the pointer moves over the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onPointerMove(callback: (event: PointerEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("pointermove", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("pointermove", callback)
-                }
-            })
-        return this
+    onPointerMove(callback: EL) {
+        return this.on("pointermove", callback)
     }
 
     /**
@@ -1360,17 +1063,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the pointer is pressed down on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onPointerDown(callback: (event: PointerEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("pointerdown", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("pointerdown", callback)
-                }
-            })
-        return this
+    onPointerDown(callback: EL) {
+        return this.on("pointerdown", callback)
     }
 
     /**
@@ -1378,17 +1072,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the pointer is released on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onPointerUp(callback: (event: PointerEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("pointerup", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("pointerup", callback)
-                }
-            })
-        return this
+    onPointerUp(callback: EL) {
+        return this.on("pointerup", callback)
     }
 
     /**
@@ -1396,17 +1081,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the pointer interaction is canceled on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onPointerCancel(callback: (event: PointerEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("pointercancel", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("pointercancel", callback)
-                }
-            })
-        return this
+    onPointerCancel(callback: EL) {
+        return this.on("pointercancel", callback)
     }
 
     /**
@@ -1414,17 +1090,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the pointer leaves the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onPointerOut(callback: (event: PointerEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("pointerout", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("pointerout", callback)
-                }
-            })
-        return this
+    onPointerOut(callback: EL) {
+        return this.on("pointerout", callback)
     }
 
     /**
@@ -1432,17 +1099,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the pointer capture is gained on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onGotPointerCapture(callback: (event: PointerEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("gotpointercapture", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("gotpointercapture", callback)
-                }
-            })
-        return this
+    onGotPointerCapture(callback: EL) {
+        return this.on("gotpointercapture", callback)
     }
 
     /**
@@ -1450,17 +1108,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the pointer capture is lost on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onLostPointerCapture(callback: (event: PointerEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("lostpointercapture", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("lostpointercapture", callback)
-                }
-            })
-        return this
+    onLostPointerCapture(callback: EL) {
+        return this.on("lostpointercapture", callback)
     }
 
     /**
@@ -1468,17 +1117,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the touch starts on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onTouchStart(callback: (event: TouchEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("touchstart", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("touchstart", callback)
-                }
-            })
-        return this
+    onTouchStart(callback: EL) {
+        return this.on("touchstart", callback)
     }
 
     /**
@@ -1486,17 +1126,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the touch moves on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onTouchMove(callback: (event: TouchEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("touchmove", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("touchmove", callback)
-                }
-            })
-        return this
+    onTouchMove(callback: EL) {
+        return this.on("touchmove", callback)
     }
 
     /**
@@ -1504,17 +1135,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the touch ends on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onTouchEnd(callback: (event: TouchEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("touchend", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("touchend", callback)
-                }
-            })
-        return this
+    onTouchEnd(callback: EL) {
+        return this.on("touchend", callback)
     }
 
     /**
@@ -1522,17 +1144,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the touch is canceled on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onTouchCancel(callback: (event: TouchEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("touchcancel", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("touchcancel", callback)
-                }
-            })
-        return this
+    onTouchCancel(callback: EL) {
+        return this.on("touchcancel", callback)
     }
 
     /**
@@ -1540,7 +1153,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is scrolled.
      * @returns The current `Avita` instance for chaining.
      */
-    static onScroll(callback: (event: Event) => void) {
+    static onScroll(callback: EL) {
         window.addEventListener("scroll", callback)
     }
 
@@ -1550,15 +1163,11 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param thisElement - If true, the listener will be attached to the element itself.
      * @returns The current `Avita` instance for chaining.
      */
-    onScroll(callback: (event: Event) => void, thisElement?: boolean) {
-        const elToListen = thisElement ? this.element : window
-        // defaults to window if thisElement is not provided
-        elToListen.addEventListener("scroll", callback)
-
-        if (this.elements.length > 0 && thisElement)
-            this.elements.forEach((element) => {
-                element.addEventListener("scroll", callback)
-            })
+    onScroll(callback: EL, thisElement?: boolean) {
+        if (thisElement) {
+            return this.on("scroll", callback)
+        }
+        window.addEventListener("scroll", callback)
         return this
     }
 
@@ -1567,25 +1176,21 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the window is resized.
      * @returns The current `Avita` instance for chaining.
      */
-    static onResize(callback: (event: Event) => void) {
+    static onResize(callback: EL) {
         window.addEventListener("resize", callback)
     }
 
     /**
-     * Attaches a resize event listener to the current `Avita` instance.
-     * @param callback - The callback function to be executed when the element is resized.
+     * Attaches a resize event listener to the current `Avita` instance if `thisElement` is true, otherwise attaches it to the window.
+     * @param callback - The callback function to be executed when the element or window is resized.
+     * @param thisElement - If true, the listener will be attached to the element itself. If false or not provided, the listener will be attached to the window.
      * @returns The current `Avita` instance for chaining.
      */
-    onResize(callback: (event: UIEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("resize", callback)
+    onResize(callback: EL, thisElement?: boolean) {
+        if (thisElement) {
+            return this.on("resize", callback)
         }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("resize", callback)
-                }
-            })
+        window.addEventListener("resize", callback)
         return this
     }
 
@@ -1594,17 +1199,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the wheel is scrolled on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onWheel(callback: (event: WheelEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("wheel", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("wheel", callback)
-                }
-            })
-        return this
+    onWheel(callback: EL) {
+        return this.on("wheel", callback)
     }
 
     /**
@@ -1612,17 +1208,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is dragged.
      * @returns The current `Avita` instance for chaining.
      */
-    onDrag(callback: (event: DragEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("drag", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("drag", callback)
-                }
-            })
-        return this
+    onDrag(callback: EL) {
+        return this.on("drag", callback)
     }
 
     /**
@@ -1630,17 +1217,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the drag operation is completed on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onDragEnd(callback: (event: DragEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("dragend", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("dragend", callback)
-                }
-            })
-        return this
+    onDragEnd(callback: EL) {
+        return this.on("dragend", callback)
     }
 
     /**
@@ -1648,17 +1226,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is entered during a drag operation.
      * @returns The current `Avita` instance for chaining.
      */
-    onDragEnter(callback: (event: DragEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("dragenter", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("dragenter", callback)
-                }
-            })
-        return this
+    onDragEnter(callback: EL) {
+        return this.on("dragenter", callback)
     }
 
     /**
@@ -1666,17 +1235,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is left during a drag operation.
      * @returns The current `Avita` instance for chaining.
      */
-    onDragLeave(callback: (event: DragEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("dragleave", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("dragleave", callback)
-                }
-            })
-        return this
+    onDragLeave(callback: EL) {
+        return this.on("dragleave", callback)
     }
 
     /**
@@ -1684,17 +1244,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is dragged over.
      * @returns The current `Avita` instance for chaining.
      */
-    onDragOver(callback: (event: DragEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("dragover", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("dragover", callback)
-                }
-            })
-        return this
+    onDragOver(callback: EL) {
+        return this.on("dragover", callback)
     }
 
     /**
@@ -1702,17 +1253,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the drag operation starts on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onDragStart(callback: (event: DragEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("dragstart", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("dragstart", callback)
-                }
-            })
-        return this
+    onDragStart(callback: EL) {
+        return this.on("dragstart", callback)
     }
 
     /**
@@ -1720,17 +1262,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is dropped.
      * @returns The current `Avita` instance for chaining.
      */
-    onDrop(callback: (event: DragEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("drop", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("drop", callback)
-                }
-            })
-        return this
+    onDrop(callback: EL) {
+        return this.on("drop", callback)
     }
 
     /**
@@ -1738,13 +1271,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is aborted.
      * @returns The current `Avita` instance for chaining.
      */
-    onAbort(callback: (event: Event) => void) {
-        this.element.addEventListener("abort", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("abort", callback)
-            })
-        return this
+    onAbort(callback: EL) {
+        return this.on("abort", callback)
     }
 
     /**
@@ -1752,13 +1280,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is able to start playing.
      * @returns The current `Avita` instance for chaining.
      */
-    onCanPlay(callback: (event: Event) => void) {
-        this.element.addEventListener("canplay", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("canplay", callback)
-            })
-        return this
+    onCanPlay(callback: EL) {
+        return this.on("canplay", callback)
     }
 
     /**
@@ -1766,13 +1289,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is able to play through without interruption.
      * @returns The current `Avita` instance for chaining.
      */
-    onCanPlayThrough(callback: (event: Event) => void) {
-        this.element.addEventListener("canplaythrough", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("canplaythrough", callback)
-            })
-        return this
+    onCanPlayThrough(callback: EL) {
+       return this.on("canplaythrough", callback)
     }
 
     /**
@@ -1780,13 +1298,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the duration of the element changes.
      * @returns The current `Avita` instance for chaining.
      */
-    onDurationChange(callback: (event: Event) => void) {
-        this.element.addEventListener("durationchange", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("durationchange", callback)
-            })
-        return this
+    onDurationChange(callback: EL) {
+        return this.on("durationchange", callback)
     }
 
     /**
@@ -1794,13 +1307,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is emptied.
      * @returns The current `Avita` instance for chaining.
      */
-    onEmptied(callback: (event: Event) => void) {
-        this.element.addEventListener("emptied", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("emptied", callback)
-            })
-        return this
+    onEmptied(callback: EL) {
+        return this.on("emptied", callback)
     }
 
     /**
@@ -1808,13 +1316,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is encrypted.
      * @returns The current `Avita` instance for chaining.
      */
-    onEncrypted(callback: (event: Event) => void) {
-        this.element.addEventListener("encrypted", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("encrypted", callback)
-            })
-        return this
+    onEncrypted(callback: EL) {
+        return this.on("encrypted", callback)
     }
 
     /**
@@ -1822,13 +1325,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element has finished playing.
      * @returns The current `Avita` instance for chaining.
      */
-    onEnded(callback: (event: Event) => void) {
-        this.element.addEventListener("ended", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("ended", callback)
-            })
-        return this
+    onEnded(callback: EL) {
+        return this.on("ended", callback)
     }
 
     /**
@@ -1836,13 +1334,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element's media data has finished loading.
      * @returns The current `Avita` instance for chaining.
      */
-    onLoadedData(callback: (event: Event) => void) {
-        this.element.addEventListener("loadeddata", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("loadeddata", callback)
-            })
-        return this
+    onLoadedData(callback: EL) {
+       return this.on("loadeddata", callback)
     }
 
     /**
@@ -1850,13 +1343,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element's media metadata has finished loading.
      * @returns The current `Avita` instance for chaining.
      */
-    onLoadedMetadata(callback: (event: Event) => void) {
-        this.element.addEventListener("loadedmetadata", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("loadedmetadata", callback)
-            })
-        return this
+    onLoadedMetadata(callback: EL) {
+        return this.on("loadedmetadata", callback)
     }
 
     /**
@@ -1864,13 +1352,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element starts loading.
      * @returns The current `Avita` instance for chaining.
      */
-    onLoadStart(callback: (event: Event) => void) {
-        this.element.addEventListener("loadstart", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("loadstart", callback)
-            })
-        return this
+    onLoadStart(callback: EL) {
+        return this.on("loadstart", callback)
     }
 
     /**
@@ -1878,13 +1361,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is paused.
      * @returns The current `Avita` instance for chaining.
      */
-    onPause(callback: (event: Event) => void) {
-        this.element.addEventListener("pause", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("pause", callback)
-            })
-        return this
+    onPause(callback: EL) {
+        return this.on("pause", callback)
     }
 
     /**
@@ -1892,13 +1370,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element starts playing.
      * @returns The current `Avita` instance for chaining.
      */
-    onPlay(callback: (event: Event) => void) {
-        this.element.addEventListener("play", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("play", callback)
-            })
-        return this
+    onPlay(callback: EL) {
+        return this.on("play", callback)
     }
 
     /**
@@ -1906,13 +1379,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element starts playing.
      * @returns The current `Avita` instance for chaining.
      */
-    onPlaying(callback: (event: Event) => void) {
-        this.element.addEventListener("playing", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("playing", callback)
-            })
-        return this
+    onPlaying(callback: EL) {
+        return this.on("playing", callback)
     }
 
     /**
@@ -1920,17 +1388,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element's media data is being loaded.
      * @returns The current `Avita` instance for chaining.
      */
-    onProgress(callback: (event: ProgressEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("progress", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("progress", callback)
-                }
-            })
-        return this
+    onProgress(callback: EL) {
+        return this.on("progress", callback)
     }
 
     /**
@@ -1938,13 +1397,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element's playback rate changes.
      * @returns The current `Avita` instance for chaining.
      */
-    onRateChange(callback: (event: Event) => void) {
-        this.element.addEventListener("ratechange", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("ratechange", callback)
-            })
-        return this
+    onRateChange(callback: EL) {
+        return this.on("ratechange", callback)
     }
 
     /**
@@ -1952,13 +1406,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element has finished seeking.
      * @returns The current `Avita` instance for chaining.
      */
-    onSeeked(callback: (event: Event) => void) {
-        this.element.addEventListener("seeked", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("seeked", callback)
-            })
-        return this
+    onSeeked(callback: EL) {
+        return this.on("seeked", callback)
     }
 
     /**
@@ -1966,13 +1415,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element starts seeking.
      * @returns The current `Avita` instance for chaining.
      */
-    onSeeking(callback: (event: Event) => void) {
-        this.element.addEventListener("seeking", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("seeking", callback)
-            })
-        return this
+    onSeeking(callback: EL) {
+        return this.on("seeking", callback)
     }
 
     /**
@@ -1980,13 +1424,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element's media data loading has been interrupted.
      * @returns The current `Avita` instance for chaining.
      */
-    onStalled(callback: (event: Event) => void) {
-        this.element.addEventListener("stalled", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("stalled", callback)
-            })
-        return this
+    onStalled(callback: EL) {
+        return this.on("stalled", callback)
     }
 
     /**
@@ -1994,13 +1433,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element's media data loading has been suspended.
      * @returns The current `Avita` instance for chaining.
      */
-    onSuspend(callback: (event: Event) => void) {
-        this.element.addEventListener("suspend", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("suspend", callback)
-            })
-        return this
+    onSuspend(callback: EL) {
+        return this.on("suspend", callback)
     }
 
     /**
@@ -2008,13 +1442,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element's playback position changes.
      * @returns The current `Avita` instance for chaining.
      */
-    onTimeUpdate(callback: (event: Event) => void) {
-        this.element.addEventListener("timeupdate", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("timeupdate", callback)
-            })
-        return this
+    onTimeUpdate(callback: EL) {
+        return this.on("timeupdate", callback)
     }
 
     /**
@@ -2022,13 +1451,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element's volume has changed.
      * @returns The current `Avita` instance for chaining.
      */
-    onVolumeChange(callback: (event: Event) => void) {
-        this.element.addEventListener("volumechange", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("volumechange", callback)
-            })
-        return this
+    onVolumeChange(callback: EL) {
+        return this.on("volumechange", callback)
     }
 
     /**
@@ -2036,13 +1460,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element is waiting for media data to be available.
      * @returns The current `Avita` instance for chaining.
      */
-    onWaiting(callback: (event: Event) => void) {
-        this.element.addEventListener("waiting", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("waiting", callback)
-            })
-        return this
+    onWaiting(callback: EL) {
+        return this.on("waiting", callback)
     }
 
     /**
@@ -2050,13 +1469,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the element has finished loading.
      * @returns The current `Avita` instance for chaining.
      */
-    onLoad(callback: (event: Event) => void) {
-        this.element.addEventListener("load", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("load", callback)
-            })
-        return this
+    onLoad(callback: EL) {
+        return this.on("load", callback)
     }
 
     /**
@@ -2064,7 +1478,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when a global error occurs.
      * @returns The current `Avita` instance for chaining.
      */
-    static onError(callback: (event: Event) => void) {
+    static onError(callback: EL) {
         window.addEventListener("error", callback)
     }
 
@@ -2073,12 +1487,11 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when an error occurs.
      * @returns The current `Avita` instance for chaining.
      */
-    onError(callback: (event: Event) => void) {
-        this.element.addEventListener("error", callback)
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.addEventListener("error", callback)
-            })
+    onError(callback: EL, thisElement?: boolean) {
+        if (thisElement) {
+            return this.on("error", callback)
+        }
+        window.addEventListener("error", callback)
         return this
     }
 
@@ -2087,17 +1500,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when an animation starts on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onAnimationStart(callback: (event: AnimationEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("animationstart", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("animationstart", callback)
-                }
-            })
-        return this
+    onAnimationStart(callback: EL) {
+        return this.on("animationstart", callback)
     }
 
     /**
@@ -2105,17 +1509,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when an animation ends on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onAnimationEnd(callback: (event: AnimationEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("animationend", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("animationend", callback)
-                }
-            })
-        return this
+    onAnimationEnd(callback: EL) {
+        return this.on("animationend", callback)
     }
 
     /**
@@ -2123,17 +1518,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when an animation iteration occurs on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onAnimationIteration(callback: (event: AnimationEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("animationiteration", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("animationiteration", callback)
-                }
-            })
-        return this
+    onAnimationIteration(callback: EL) {
+        return this.on("animationiteration", callback)
     }
 
     /**
@@ -2141,17 +1527,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when a transition starts on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onTransitionStart(callback: (event: TransitionEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("transitionstart", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("transitionstart", callback)
-                }
-            })
-        return this
+    onTransitionStart(callback: EL) {
+        return this.on("transitionstart", callback)
     }
 
     /**
@@ -2159,17 +1536,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when a transition ends on the element.
      * @returns The current `Avita` instance for chaining.
      */
-    onTransitionEnd(callback: (event: TransitionEvent) => void) {
-        if (this.element instanceof HTMLElement) {
-            this.element.addEventListener("transitionend", callback)
-        }
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                if (element instanceof HTMLElement) {
-                    element.addEventListener("transitionend", callback)
-                }
-            })
-        return this
+    onTransitionEnd(callback: EL) {
+        return this.on("transitionend", callback)
     }
 
     // Pseudoclasses onEventCSS methods
