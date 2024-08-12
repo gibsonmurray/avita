@@ -187,9 +187,9 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     id(): string
 
     /**
-     * Sets the ID of the current Avita element.
-     * @param id - The new ID to set for the Avita element.
-     * @returns The current Avita instance for chaining.
+     * Sets the ID of the current `Avita` element.
+     * @param id - The new ID to set for the `Avita` element.
+     * @returns The current `Avita` instance for chaining.
      */
     id(id: string): this
 
@@ -200,33 +200,26 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         this.element.id = id
         return this
     }
-
     /**
-     * Gets the CSS class(es) of the first element.
+     * Gets the CSS class(es) of the `Avita` instance.
      * @returns The current CSS classes as a string.
      */
     class(): string
 
     /**
-     * Sets the CSS class(es) of the element(s), concatenating them with the existing classes.
+     * Sets the CSS class(es) of the `Avita` instance, concatenating them with the existing classes.
      * @param className - The CSS class(es) to add to the element(s).
      * @returns The current Avita instance for chaining.
      */
-    class(className: string): this
+    class(...classNames: string[]): this
 
-    // Implementation
-    class(className?: string): string | this {
-        if (!className) {
+    class(...classNames: string[]) {
+        if (classNames.length === 0) {
             // Getter: Return the class names as a string
             return this.element.className
         } else {
             // Setter: Add the new classes
-            const classNames = className.split(" ")
-            this.element.classList.add(...classNames)
-            if (this.elements.length > 0)
-                this.elements.forEach((element) => {
-                    element.classList.add(...classNames)
-                })
+            this.addClass(...classNames)
             return this
         }
     }
@@ -7535,12 +7528,47 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Toggles the specified CSS class on the element.
-     * @param className - The CSS class to toggle on the element.
+     * Toggles the specified CSS class on the current element/all elements in the collection.
+     * @param className - The CSS class to toggle.
      * @returns The current `Avita` instance for chaining.
      */
     toggleClass(className: string): this {
         this.element.classList.toggle(className)
+        if (this.elements.length > 0) {
+            this.elements.forEach((element) => {
+                element.classList.toggle(className)
+            })
+        }
+        return this
+    }
+
+    /**
+     * Adds the specified CSS class(es) to the current element/all elements in the collection.
+     * @param classNames - The CSS class(es) to add.
+     * @returns The current `Avita` instance for chaining.
+     */
+    addClass(...classNames: string[]): this {
+        this.element.classList.add(...classNames)
+        if (this.elements.length > 0) {
+            this.elements.forEach((element) => {
+                element.classList.add(...classNames)
+            })
+        }
+        return this
+    }
+
+    /**
+     * Removes the specified CSS class(es) from the current element/all elements in the collection.
+     * @param classNames - The CSS class(es) to remove.
+     * @returns The current `Avita` instance for chaining.
+     */
+    removeClass(...classNames: string[]): this {
+        this.element.classList.remove(...classNames)
+        if (this.elements.length > 0) {
+            this.elements.forEach((element) => {
+                element.classList.remove(...classNames)
+            })
+        }
         return this
     }
 }
