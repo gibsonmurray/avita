@@ -7508,6 +7508,31 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         }
         return this
     }
+
+    /**
+     * Returns a new `Avita` instance wrapping the parent element of the current element.
+     * @returns A new `Avita` instance wrapping the parent element of the current element.
+     */
+    parent(): Avita<T> {
+        return new Avita(this.element.parentElement as T)
+    }
+
+    /**
+     * Returns a new `Avita` instance wrapping the sibling elements of the current element.
+     * @returns A new `Avita` instance wrapping the sibling elements of the current element, or `null` if the current element has no parent.
+     */
+    siblings(): Avita<T> | null {
+        const elmt = this.element as HTMLElement
+        const parent = elmt.parentElement
+
+        if (!parent) return null
+
+        const siblings = Array.from(parent.children).filter(
+            (child) => child !== elmt
+        )
+
+        return new Avita<T>(siblings.map((sibling) => sibling as T))
+    }
 }
 
 /**
