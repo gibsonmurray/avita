@@ -188,10 +188,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
 
     /**
      * Sets the ID of the current Avita element.
-     * @param value - The new ID to set for the Avita element.
+     * @param id - The new ID to set for the Avita element.
      * @returns The current Avita instance for chaining.
      */
-    id(value: string): this
+    id(id: string): this
 
     id(id?: string) {
         if (!id) {
@@ -209,19 +209,19 @@ export default class Avita<T extends HTMLElement | SVGElement> {
 
     /**
      * Sets the CSS class(es) of the element(s), concatenating them with the existing classes.
-     * @param value - The CSS class(es) to add to the element(s).
+     * @param className - The CSS class(es) to add to the element(s).
      * @returns The current Avita instance for chaining.
      */
-    class(value: string): this
+    class(className: string): this
 
     // Implementation
-    class(value?: string): string | this {
-        if (!value) {
+    class(className?: string): string | this {
+        if (!className) {
             // Getter: Return the class names as a string
             return this.element.className
         } else {
             // Setter: Add the new classes
-            const classNames = value.split(" ")
+            const classNames = className.split(" ")
             this.element.classList.add(...classNames)
             if (this.elements.length > 0)
                 this.elements.forEach((element) => {
@@ -7532,6 +7532,16 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         )
 
         return new Avita<T>(siblings.map((sibling) => sibling as T))
+    }
+
+    /**
+     * Toggles the specified CSS class on the element.
+     * @param className - The CSS class to toggle on the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    toggleClass(className: string): this {
+        this.element.classList.toggle(className)
+        return this
     }
 }
 
