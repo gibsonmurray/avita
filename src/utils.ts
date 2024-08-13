@@ -38,18 +38,6 @@ export function defaultStyles() {
 }
 
 /**
- * Converts a number to a string representation with a 'seconds' unit.
- * @param n - The number to convert to a string with 'seconds' unit.
- * @returns A string representation of the input number with 'seconds' unit.
- */
-export function numberToSeconds(n: number | string): string {
-    if (typeof n === "number") {
-        return `${n}s`
-    }
-    return n
-}
-
-/**
  * Generates a unique class name string.
  * @returns A unique class name string in the format `class-{randomString}`.
  */
