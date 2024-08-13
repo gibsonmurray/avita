@@ -3114,8 +3114,8 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Shorthand for setting the 'margin-left' and 'margin-right' CSS properties on the current `Avita` instance.
-     * @param value - The value to set for the 'margin-left' and 'margin-right' CSS properties. Can be a valid CSS margin value, either a string or a number (which will be interpreted as pixels).
+     * Shorthand for setting the 'margin-top' and 'margin-bottom' CSS properties on the current `Avita` instance.
+     * @param value - The value to set for the 'margin-top' and 'margin-bottom' CSS properties. Can be a valid CSS margin value, either a string or a number (which will be interpreted as pixels).
      * @returns The current `Avita` instance for chaining.
      */
     my = this.marginY
@@ -3966,6 +3966,74 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     scrollM = this.scrollMargin
 
     /**
+     * Sets the 'scrollMarginTop' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'scrollMarginTop' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollMarginTop(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.css("scrollMarginTop", `${value}${unit}`)
+    }
+
+    /**
+     * Shorthands for setting the 'scrollMarginTop' CSS property on the current `Avita` instance. See `scrollMarginTop()` for details.
+     * @param value - The value to set for the 'scrollMarginTop' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollMT = this.scrollMarginTop
+
+    /**
+     * Sets the 'scrollMarginBottom' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'scrollMarginBottom' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollMarginBottom(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.css("scrollMarginBottom", `${value}${unit}`)
+    }
+
+    /**
+     * Shorthands for setting the 'scrollMarginBottom' CSS property on the current `Avita` instance. See `scrollMarginBottom()` for details.
+     * @param value - The value to set for the 'scrollMarginBottom' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollMB = this.scrollMarginBottom
+
+    /**
+     * Sets the 'scrollMarginLeft' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'scrollMarginLeft' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollMarginLeft(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.css("scrollMarginLeft", `${value}${unit}`)
+    }
+
+    /**
+     * Shorthands for setting the 'scrollMarginLeft' CSS property on the current `Avita` instance. See `scrollMarginLeft()` for details.
+     * @param value - The value to set for the 'scrollMarginLeft' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollML = this.scrollMarginLeft
+
+    /**
+     * Sets the 'scrollMarginRight' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'scrollMarginRight' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollMarginRight(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.css("scrollMarginRight", `${value}${unit}`)
+    }
+
+    /**
+     * Shorthands for setting the 'scrollMarginRight' CSS property on the current `Avita` instance. See `scrollMarginRight()` for details.
+     * @param value - The value to set for the 'scrollMarginRight' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollMR = this.scrollMarginRight
+
+    /**
      * Sets the 'scrollPadding' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'scrollPadding' CSS property. Can be a string or number value.
      * @returns The current `Avita` instance for chaining.
@@ -3974,6 +4042,81 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         const unit = typeof value === "string" ? "" : "px"
         return this.css("scrollPadding", `${value}${unit}`)
     }
+
+    /**
+     * Shorthands for setting the 'scrollPadding' CSS property on the current `Avita` instance. See `scrollPadding()` for details.
+     * @param value - The value to set for the 'scrollPadding' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollP = this.scrollPadding
+
+    /**
+     * Sets the 'scrollPaddingTop' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'scrollPaddingTop' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollPaddingTop(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.css("scrollPaddingTop", `${value}${unit}`)
+    }
+
+    /**
+     * Shorthands for setting the 'scrollPaddingTop' CSS property on the current `Avita` instance. See `scrollPaddingTop()` for details.
+     * @param value - The value to set for the 'scrollPaddingTop' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollPT = this.scrollPaddingTop
+
+    /**
+     * Sets the 'scrollPaddingBottom' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'scrollPaddingBottom' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollPaddingBottom(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.css("scrollPaddingBottom", `${value}${unit}`)
+    }
+
+    /**
+     * Shorthands for setting the 'scrollPaddingBottom' CSS property on the current `Avita` instance. See `scrollPaddingBottom()` for details.
+     * @param value - The value to set for the 'scrollPaddingBottom' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollPB = this.scrollPaddingBottom
+
+    /**
+     * Sets the 'scrollPaddingLeft' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'scrollPaddingLeft' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollPaddingLeft(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.css("scrollPaddingLeft", `${value}${unit}`)
+    }
+
+    /**
+     * Shorthands for setting the 'scrollPaddingLeft' CSS property on the current `Avita` instance. See `scrollPaddingLeft()` for details.
+     * @param value - The value to set for the 'scrollPaddingLeft' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollPL = this.scrollPaddingLeft
+
+    /**
+     * Sets the 'scrollPaddingRight' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'scrollPaddingRight' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollPaddingRight(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.css("scrollPaddingRight", `${value}${unit}`)
+    }
+
+    /**
+     * Shorthands for setting the 'scrollPaddingRight' CSS property on the current `Avita` instance. See `scrollPaddingRight()` for details.
+     * @param value - The value to set for the 'scrollPaddingRight' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollPR = this.scrollPaddingRight
 
     /**
      * Sets the 'scrollSnapAlign' CSS property on the current `Avita` instance to 'start', aligning the element to the start of the scroll container.
@@ -4450,6 +4593,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     whiteSpace(value: string) {
         return this.css("whiteSpace", value)
+    }
+
+    textWrap() {
+        return this.whiteSpace("pre-wrap")
     }
 
     /**
@@ -5337,10 +5484,127 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     /**
      * Scrolls the current element or elements in the collection into the visible area of the browser window.
      * @param behavior - The behavior for the scroll operation. Can be either "auto" (default) or "smooth".
+     * @param block - The block to align the element to. Can be either "start", "center", "nearest", or "end".
      * @returns The current `Avita` instance for chaining.
      */
-    scrollIntoView(behavior: "auto" | "smooth" = "auto"): this {
-        this.element.scrollIntoView({ behavior })
+    scrollIntoView(
+        behavior: "auto" | "smooth" = "auto",
+        block: "start" | "center" | "nearest" | "end" = "start"
+    ): this {
+        this.element.scrollIntoView({ block, behavior })
+        return this
+    }
+    /**
+     * Scrolls the window to the x and y coordinates.
+     * @param y - The y coordinate to scroll to.
+     * @param x - (optional) The x coordinate to scroll to.
+     */
+    static scroll(y: number, x?: number): void
+
+    /**
+     * Scrolls the window using the specified options.
+     * @param options - The y coordinate to scroll to, or an object containing options for the scroll operation.
+     */
+    static scroll(options: ScrollToOptions): void
+
+    static scroll(yOrOptions: number | ScrollToOptions, x?: number): void {
+        if (typeof yOrOptions === "number") {
+            window.scroll(x || 0, yOrOptions)
+        } else if (typeof yOrOptions === "object") {
+            window.scroll(yOrOptions)
+        }
+    }
+
+    /**
+     * Scrolls the window to the specified x and y coordinates.
+     * @param y - The y coordinate to scroll to.
+     * @param x - (optional) The x coordinate to scroll to.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scroll(y: number, x?: number): void
+
+    /**
+     * Scrolls the window using the specified options
+     * @param options - The options to use for the scroll operation.
+     */
+    scroll(options: ScrollToOptions): void
+
+    scroll(yOrOptions: number | ScrollToOptions, x?: number) {
+        if (x === undefined && typeof yOrOptions === "object") {
+            Avita.scroll(yOrOptions as ScrollToOptions)
+        } else if (typeof yOrOptions === "number") {
+            Avita.scroll(yOrOptions, x)
+        }
+        return this
+    }
+
+    /**
+     * Scrolls the window to the top of the page.
+     * @param smooth - If set to `true`, the scroll will be animated smoothly. Otherwise, it will scroll instantly.
+     */
+    static scrollToTop(smooth: boolean = false): void {
+        Avita.scroll({
+            top: 0,
+            behavior: smooth ? "smooth" : "instant",
+        })
+    }
+
+    /**
+     * Scrolls the window to the top of the page.
+     * @param smooth - If set to `true`, the scroll will be animated smoothly. Otherwise, it will scroll instantly.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollToTop(smooth: boolean = false) {
+        Avita.scrollToTop(smooth)
+        return this
+    }
+
+    /**
+     * Scrolls the window to the bottom of the page.
+     * @param smooth - If set to `true`, the scroll will be animated smoothly. Otherwise, it will scroll instantly.
+     */
+    static scrollToBottom(smooth: boolean = true): void {
+        Avita.scroll({
+            top: document.body.scrollHeight,
+            behavior: smooth ? "smooth" : "instant",
+        })
+    }
+
+    /**
+     * Scrolls the window to the bottom of the page.
+     * @param smooth - If set to `true`, the scroll will be animated smoothly. Otherwise, it will scroll instantly.
+     * @returns The current `Avita` instance, allowing for method chaining.
+     */
+    scrollToBottom(smooth: boolean = true) {
+        Avita.scrollToBottom(smooth)
+        return this
+    }
+
+    /**
+     * Returns the bounding rectangle of the document element.
+     * @returns The bounding rectangle of the document element.
+     */
+    static rect(): DOMRect {
+        return document.documentElement.getBoundingClientRect()
+    }
+
+    /**
+     * Returns the bounding rectangle of the current Avita instance's element.
+     * @returns The bounding rectangle of the current Avita instance's element.
+     */
+    rect(): DOMRect {
+        return this.element.getBoundingClientRect()
+    }
+
+    /**
+     * Iterates over the elements in the current Avita instance and calls the provided callback function for each element.
+     * @param callback - The function to call for each element. The function will receive the Avita instance for the current element and the index of the element.
+     * @returns The current Avita instance, allowing for method chaining.
+     */
+    each(callback: (element: Avita<T>, index: number) => void): this {
+        this.elements.forEach((element, index) => {
+            callback(new Avita(element), index)
+        })
         return this
     }
 }

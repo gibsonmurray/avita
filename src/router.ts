@@ -59,6 +59,7 @@ export default class AvitaRouter {
      * @param path - The URL path to load.
      */
     private loadRoute(path: string) {
+        Avita.scrollToTop()
         const route = this.routes[path]
         if (route) {
             this.clearRoot()
