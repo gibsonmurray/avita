@@ -93,11 +93,11 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     static find<T extends HTMLElement | SVGElement>(
         selector: string,
         raw: boolean
-    ): T | T[]
+    ): Avita<T> | T | T[]
 
     static find<T extends HTMLElement | SVGElement>(
         selector: string,
-        raw?: boolean
+        raw: boolean = false
     ): Avita<T> | T | T[] | null {
         const elements = document.querySelectorAll(selector) as NodeListOf<T>
 
@@ -148,11 +148,14 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns The raw HTML element(s) matching the selector.
      * @throws {Error} If no element is found with the given selector.
      */
-    find<T extends HTMLElement>(selector: string, raw: true): T | T[]
+    find<T extends HTMLElement>(
+        selector: string,
+        raw: boolean
+    ): Avita<T> | T | T[]
 
     find<T extends HTMLElement>(
         selector: string,
-        raw?: boolean
+        raw: boolean = false
     ): Avita<T> | T | T[] {
         const elements = this.element.querySelectorAll(
             selector
@@ -5664,13 +5667,11 @@ export default class Avita<T extends HTMLElement | SVGElement> {
 /**
  * Selects an HTML element or a collection of HTML elements matching the provided CSS selector.
  * @param selector - The CSS selector to use for selecting the element(s).
- * @param raw - If set to `true`, the function will return the raw HTMLElement or HTMLElement[] instead of an Avita instance.
- * @returns The raw HTMLElement or HTMLElement[] if `raw` is `true` or an Avita instance if `raw` is `false`/`undefined`.
+ * @returns An `Avita` instance wrapping the selected element(s), or the raw HTMLElement or HTMLElement[] if `raw` is `true`.
  */
 export function $<T extends HTMLElement | SVGElement>(
-    selector: string,
-    raw: true
-): T | T[]
+    selector: string
+): Avita<T>
 
 /**
  * Selects an HTML element or a collection of HTML elements matching the provided CSS selector.
@@ -5680,17 +5681,8 @@ export function $<T extends HTMLElement | SVGElement>(
  */
 export function $<T extends HTMLElement | SVGElement>(
     selector: string,
-    raw: false
-): Avita<T>
-
-/**
- * Selects an HTML element or a collection of HTML elements matching the provided CSS selector.
- * @param selector - The CSS selector to use for selecting the element(s).
- * @returns An `Avita` instance wrapping the selected element(s).
- */
-export function $<T extends HTMLElement | SVGElement>(
-    selector: string
-): Avita<T>
+    raw: boolean
+): Avita<T> | T | T[]
 
 /**
  * Executes the provided callback function when the DOM is ready.
