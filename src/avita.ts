@@ -92,7 +92,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     static find<T extends HTMLElement | SVGElement>(
         selector: string,
-        raw?: boolean
+        raw: boolean
     ): T | T[]
 
     static find<T extends HTMLElement | SVGElement>(
@@ -5680,7 +5680,7 @@ export function $<T extends HTMLElement | SVGElement>(
  */
 export function $<T extends HTMLElement | SVGElement>(
     selector: string,
-    raw?: false
+    raw: false
 ): Avita<T>
 
 /**
@@ -5700,7 +5700,7 @@ export function $(callback: () => void): void
 
 export function $<T extends HTMLElement | SVGElement>(
     selectorOrCallback: string | (() => void),
-    raw?: boolean
+    raw: boolean = false
 ): Avita<T> | T | T[] | null | void {
     if (typeof selectorOrCallback === "string") {
         return Avita.find<T>(selectorOrCallback, raw)
