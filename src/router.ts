@@ -3,10 +3,10 @@ import { div } from "./elements"
 
 export default class AvitaRouter {
     private routes: {
-        [path: string]: { element: Avita<HTMLElement>; title?: string }
+        [path: string]: { element: Avita<HTMLElement | SVGElement>; title?: string }
     } = {}
-    private root: Avita<HTMLElement> | null = null
-    private notFoundPath: { element: Avita<HTMLElement>; title?: string } | null = null
+    private root: Avita<HTMLElement | SVGElement> | null = null
+    private notFoundPath: { element: Avita<HTMLElement | SVGElement>; title?: string } | null = null
 
     /**
      * Constructs a new AvitaRouter instance and sets the root element for rendering.
@@ -33,7 +33,7 @@ export default class AvitaRouter {
      * @param path - The URL path to associate with the Avita element.
      * @param avitaElement - The Avita element to render when the specified path is navigated to.
      */
-    register(path: string, avitaElement: Avita<HTMLElement>, title?: string) {
+    register(path: string, avitaElement: Avita<HTMLElement | SVGElement>, title?: string) {
         this.routes[path] = { element: avitaElement, title: title }
     }
 
@@ -41,7 +41,7 @@ export default class AvitaRouter {
      * Sets the not found path for the router.
      * @param avitaElement - The Avita element to render when a route is not found.
      */
-    setNotFound(avitaElement: Avita<HTMLElement>, title?: string) {
+    setNotFound(avitaElement: Avita<HTMLElement | SVGElement>, title?: string) {
         this.notFoundPath = { element: avitaElement, title: title }
     }
 

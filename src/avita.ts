@@ -52,7 +52,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param selector - (optional) The CSS selector for the root element in the DOM. Default is '#root'.
      * @throws {Error} If the root element with the ID 'root' is not found in the HTML.
      */
-    static render<T extends HTMLElement>(
+    static render<T extends HTMLElement | SVGElement>(
         children: Avita<T>,
         selector: string = "#root",
         options: {
@@ -81,7 +81,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns An Avita instance matching the selector.
      * @throws {Error} If no element is found with the given selector.
      */
-    static find<T extends HTMLElement>(selector: string): Avita<T>
+    static find<T extends HTMLElement | SVGElement>(selector: string): Avita<T>
 
     /**
      * Finds the element(s) with the given selector in the DOM tree.
@@ -90,9 +90,12 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @returns The raw HTML element(s) matching the selector.
      * @throws {Error} If no element is found with the given selector.
      */
-    static find<T extends HTMLElement>(selector: string, raw?: boolean): T | T[]
+    static find<T extends HTMLElement | SVGElement>(
+        selector: string,
+        raw?: boolean
+    ): T | T[]
 
-    static find<T extends HTMLElement>(
+    static find<T extends HTMLElement | SVGElement>(
         selector: string,
         raw?: boolean
     ): Avita<T> | T | T[] | null {
@@ -5615,7 +5618,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
  * @param raw - If set to `true`, the function will return the raw HTMLElement or HTMLElement[] instead of an Avita instance.
  * @returns The raw HTMLElement or HTMLElement[] if `raw` is `true` or an Avita instance if `raw` is `false`/`undefined`.
  */
-export function $<T extends HTMLElement>(selector: string, raw: true): T | T[]
+export function $<T extends HTMLElement | SVGElement>(
+    selector: string,
+    raw: true
+): T | T[]
 
 /**
  * Selects an HTML element or a collection of HTML elements matching the provided CSS selector.
@@ -5623,7 +5629,7 @@ export function $<T extends HTMLElement>(selector: string, raw: true): T | T[]
  * @param raw - If set to `true`, the function will return the raw HTMLElement or HTMLElement[] instead of an Avita instance.
  * @returns An `Avita` instance wrapping the selected element(s), or the raw HTMLElement or HTMLElement[] if `raw` is `true`.
  */
-export function $<T extends HTMLElement>(
+export function $<T extends HTMLElement | SVGElement>(
     selector: string,
     raw?: false
 ): Avita<T>
@@ -5633,7 +5639,9 @@ export function $<T extends HTMLElement>(
  * @param selector - The CSS selector to use for selecting the element(s).
  * @returns An `Avita` instance wrapping the selected element(s).
  */
-export function $<T extends HTMLElement>(selector: string): Avita<T>
+export function $<T extends HTMLElement | SVGElement>(
+    selector: string
+): Avita<T>
 
 /**
  * Executes the provided callback function when the DOM is ready.
@@ -5641,7 +5649,7 @@ export function $<T extends HTMLElement>(selector: string): Avita<T>
  */
 export function $(callback: () => void): void
 
-export function $<T extends HTMLElement>(
+export function $<T extends HTMLElement | SVGElement>(
     selectorOrCallback: string | (() => void),
     raw?: boolean
 ): Avita<T> | T | T[] | null | void {
