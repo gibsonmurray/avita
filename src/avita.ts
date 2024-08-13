@@ -2291,6 +2291,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         return this.css("cursor", "wait")
     }
 
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'cell'.
+     * @returns The current `Avita` instance for chaining.
+     */
     cell() {
         return this.css("cursor", "cell")
     }
@@ -2359,6 +2363,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         return this.css("cursor", "not-allowed")
     }
 
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'grab'.
+     * @returns The current `Avita` instance for chaining.
+     */
     grab() {
         return this.css("cursor", "grab")
     }
@@ -2509,6 +2517,11 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         return this.css("filter", value)
     }
 
+    /**
+     * Sets the 'filter' CSS property on the current `Avita` instance to apply a blur effect.
+     * @param value - The value to set for the 'filter' CSS property. Can be a valid CSS blur value, either a string or a number representing the blur radius in pixels.
+     * @returns The current `Avita` instance for chaining.
+     */
     blur(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         return this.css("filter", `blur(${value}${unit})`)
