@@ -4714,6 +4714,14 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Toggles the visibility of the element by setting the 'display' CSS property to either 'none' or the previously set value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    toggle() {
+        return this.css("display") === "none" ? this.show() : this.hide()
+    }
+
+    /**
      * Centers the child elements by setting the 'display' CSS property to 'flex' and setting the 'justifyContent' and 'alignItems' CSS properties to 'center'.
      * @returns The current `Avita` instance for chaining.
      */
@@ -5610,6 +5618,34 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         })
         return this
     }
+
+    /**
+     * Returns the current height of the window.
+     * @returns The current height of the window in pixels.
+     */
+    static height(): number {
+        return window.innerHeight
+    }
+
+    /**
+     * Shorthand that returns the current height of the window.
+     * @returns The current height of the window in pixels.
+     */
+    static h = Avita.height
+
+    /**
+     * Returns the current width of the window.
+     * @returns The current width of the window in pixels.
+     */
+    static width(): number {
+        return window.innerWidth
+    }
+
+    /**
+     * Shorthand that returns the current width of the window.
+     * @returns The current width of the window in pixels.
+     */
+    static w = Avita.width
 }
 
 /**
