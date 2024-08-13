@@ -1,9 +1,5 @@
 import { span, style } from "./elements"
-import {
-    camelToKebab,
-    defaultStyles,
-    generateClass,
-} from "./utils"
+import { camelToKebab, defaultStyles, generateClass } from "./utils"
 
 type EL = EventListenerOrEventListenerObject
 
@@ -1938,7 +1934,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         const gradient = `linear-gradient(${angle}${unit}, ${colors.join(
             ", "
         )})`
-        return this.css("backgroundImage", gradient)
+        return this.bg(gradient).textMask().color("transparent")
     }
 
     /**
