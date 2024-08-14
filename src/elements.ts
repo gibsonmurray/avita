@@ -921,7 +921,17 @@ export function feOffset(): Avita<SVGFEOffsetElement> {
  * @param align - The alignment of the stack, defaults to "center".
  * @returns A new `Avita<HTMLDivElement>` element with a vertical stack layout.
  */
-export function vstack(align: string = "center"): Avita<HTMLDivElement> {
+export function vstack(
+    align:
+        | "top"
+        | "center"
+        | "bottom"
+        | "left"
+        | "right"
+        | "between"
+        | "around"
+        | "evenly" = "center"
+): Avita<HTMLDivElement> {
     return new Avita<HTMLDivElement>("div").vstack(align)
 }
 
@@ -930,7 +940,17 @@ export function vstack(align: string = "center"): Avita<HTMLDivElement> {
  * @param align - The alignment of the stack, defaults to "center".
  * @returns A new `Avita<HTMLDivElement>` element with a horizontal stack layout.
  */
-export function hstack(align: string = "center"): Avita<HTMLDivElement> {
+export function hstack(
+    align:
+        | "top"
+        | "center"
+        | "bottom"
+        | "left"
+        | "right"
+        | "between"
+        | "around"
+        | "evenly" = "center"
+): Avita<HTMLDivElement> {
     return new Avita<HTMLDivElement>("div").hstack(align)
 }
 
@@ -939,6 +959,16 @@ export function hstack(align: string = "center"): Avita<HTMLDivElement> {
  * @param align - The alignment of the stack, defaults to "center".
  * @returns A new `Avita<HTMLDivElement>` element with a z-axis stack layout.
  */
-export function zstack(align: string = "center"): Avita<HTMLDivElement> {
+export function zstack(
+    align:
+        | "top"
+        | "center"
+        | "bottom"
+        | "left"
+        | "right"
+        | "between"
+        | "around"
+        | "evenly" = "center"
+): Avita<HTMLDivElement> {
     return new Avita<HTMLDivElement>("div").zstack(align)
 }
