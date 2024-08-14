@@ -844,7 +844,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     on(event: string, callback: EL, options?: AddEventListenerOptions): this {
         this.element.addEventListener(event, callback, options)
-        if (this.elements && this.elements.length > 0) {
+        if (this.elements.length > 0) {
             this.elements.forEach((element) => {
                 element.addEventListener(event, callback, options)
             })
@@ -862,12 +862,27 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     off(event: string, callback: EL, options?: AddEventListenerOptions): this {
         this.element.removeEventListener(event, callback, options)
-        if (this.elements && this.elements.length > 0) {
+        if (this.elements.length > 0) {
             this.elements.forEach((element) => {
                 element.removeEventListener(event, callback, options)
             })
         }
         return this
+    }
+
+    /**
+     * Triggers the specified event on the current `Avita` instance and all its elements.
+     * This allows programmatically dispatching events on the elements.
+     * @param event - The name of the event to trigger.
+     * @returns The current `Avita` instance for chaining.
+     */
+    trigger(event: string) {
+        this.element.dispatchEvent(new Event(event))
+        if (this.elements.length > 0) {
+            this.elements.forEach((element) => {
+                element.dispatchEvent(new Event(event))
+            })
+        }
     }
 
     /**
