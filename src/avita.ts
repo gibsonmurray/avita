@@ -1777,7 +1777,9 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     hover(property: keyof CSSStyleDeclaration, value: string): this
 
     hover(
-        propsOrProperty: Partial<CSSStyleDeclaration> | keyof CSSStyleDeclaration,
+        propsOrProperty:
+            | Partial<CSSStyleDeclaration>
+            | keyof CSSStyleDeclaration,
         value?: string
     ): this {
         return this.applyPseudoClassCSS("hover", propsOrProperty, value)
@@ -1803,7 +1805,9 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     active(property: keyof CSSStyleDeclaration, value: string): this
 
     active(
-        propsOrProperty: Partial<CSSStyleDeclaration> | keyof CSSStyleDeclaration,
+        propsOrProperty:
+            | Partial<CSSStyleDeclaration>
+            | keyof CSSStyleDeclaration,
         value?: string
     ): this {
         return this.applyPseudoClassCSS("active", propsOrProperty, value)
@@ -1829,7 +1833,9 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     focus(property: keyof CSSStyleDeclaration, value: string): this
 
     focus(
-        propsOrProperty: Partial<CSSStyleDeclaration> | keyof CSSStyleDeclaration,
+        propsOrProperty:
+            | Partial<CSSStyleDeclaration>
+            | keyof CSSStyleDeclaration,
         value?: string
     ): this {
         return this.applyPseudoClassCSS("focus", propsOrProperty, value)
@@ -1844,7 +1850,9 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     private applyPseudoClassCSS(
         pseudoClass: string,
-        propsOrProperty: Partial<CSSStyleDeclaration> | keyof CSSStyleDeclaration,
+        propsOrProperty:
+            | Partial<CSSStyleDeclaration>
+            | keyof CSSStyleDeclaration,
         value?: string
     ): this {
         const uniqueClass = generateClass()
@@ -3479,7 +3487,6 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         return this.css("maxWidth", `${value}${unit}`)
     }
 
-
     /**
      * Sets the 'minHeight' and 'minWidth' CSS properties on the current `Avita` instance.
      * @param value - The value to set for the 'minHeight' and 'minWidth' CSS properties. Must be a valid CSS length value e.g. '100px 200px'.
@@ -4081,7 +4088,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * Sets the 'resize' CSS property on the current `Avita` instance to 'both', allowing the element to be resized in both horizontal and vertical directions.
      * @returns The current `Avita` instance for chaining.
      */
-    resize() {
+    resizable() {
         return this.css("resize", "both")
     }
 
@@ -4099,6 +4106,14 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     resizeY() {
         return this.css("resize", "vertical")
+    }
+
+    /**
+     * Sets the 'resize' CSS property on the current `Avita` instance to 'none', preventing the element from being resized.
+     * @returns The current `Avita` instance for chaining.
+     */
+    unresizable() {
+        return this.css("resize", "none")
     }
 
     /**
@@ -4216,6 +4231,24 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     smoothScroll() {
         return this.css("scrollBehavior", "smooth")
+    }
+
+    /**
+     * Sets the 'scrollSnapType' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'scrollSnapType' CSS property.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollSnapType(value: string) {
+        return this.css("scrollSnapType", value)
+    }
+
+    /**
+     * Sets the 'scrollSnapAlign' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'scrollSnapAlign' CSS property.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollSnapAlign(value: string) {
+        return this.css("scrollSnapAlign", value)
     }
 
     /**
