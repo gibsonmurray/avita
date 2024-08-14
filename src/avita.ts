@@ -3678,6 +3678,22 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Sets the 'overflow' CSS property on the current `Avita` instance to 'hidden', preventing any overflow content from being visible.
+     * @returns The current `Avita` instance for chaining.
+     */
+    noOverflow() {
+        return this.css("overflow", "hidden")
+    }
+
+    /**
+     * Sets the 'overflow' CSS property on the current `Avita` instance to 'visible', allowing any overflow content to be visible.
+     * @returns The current `Avita` instance for chaining.
+     */
+    allowOverflow() {
+        return this.css("overflow", "visible")
+    }
+
+    /**
      * Sets the 'overflowWrap' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'overflowWrap' CSS property. Must be a valid CSS `overflow-wrap` value.
      * @returns The current `Avita` instance for chaining.
