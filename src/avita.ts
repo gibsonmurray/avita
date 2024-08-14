@@ -4559,6 +4559,11 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         return this.css("textOverflow", "ellipsis")
     }
 
+    /**
+     * This will cause any overflowing text to be clipped and not display an ellipsis.
+     * Sets the 'textOverflow' CSS property on the current `Avita` instance to 'clip'.
+     * @returns The current `Avita` instance for chaining.
+     */
     clipText() {
         return this.css("textOverflow", "clip")
     }
@@ -4817,7 +4822,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'translateX' transform. Can be a string or number value.
      * @returns The current `Avita` instance for chaining.
      */
-    transX = this.translateX
+    tx = this.translateX
 
     /**
      * Sets the 'translateY' CSS translate property on the current `Avita` instance.
@@ -4835,7 +4840,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'translateY' transform. Can be a string or number value.
      * @returns The current `Avita` instance for chaining.
      */
-    transY = this.translateY
+    ty = this.translateY
 
     /**
      * Sets the 'translateZ' CSS translate property on the current `Avita` instance.
@@ -4853,7 +4858,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the 'translateZ' transform. Can be a string or number value.
      * @returns The current `Avita` instance for chaining.
      */
-    transZ = this.translateZ
+    tz = this.translateZ
 
     /**
      * Sets the 'userSelect' CSS property on the current `Avita` instance to 'auto', allowing the element to be selectable.
@@ -4898,8 +4903,20 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         return this.css("whiteSpace", value)
     }
 
+    /**
+     * Sets the 'whiteSpace' CSS property on the current `Avita` instance to 'pre-wrap', which allows the text to wrap but preserves newlines and other whitespace.
+     * @returns The current `Avita` instance for chaining.
+     */
     textWrap() {
         return this.whiteSpace("pre-wrap")
+    }
+
+    /**
+     * Sets the 'whiteSpace' CSS property on the current `Avita` instance to 'nowrap', which prevents the text from wrapping.
+     * @returns The current `Avita` instance for chaining.
+     */
+    textNoWrap() {
+        return this.whiteSpace("nowrap")
     }
 
     /**
@@ -4998,11 +5015,11 @@ export default class Avita<T extends HTMLElement | SVGElement> {
 
     /**
      * Shows the element by setting the 'display' CSS property to the specified value.
-     * @param display - The value to set for the 'display' CSS property. Defaults to 'flex'.
+     * @param value - The value to set for the 'display' CSS property. Defaults to 'flex'.
      * @returns The current `Avita` instance for chaining.
      */
-    show(display: string = "flex") {
-        return this.css("display", display)
+    show(value: string = "flex") {
+        return this.css("display", value)
     }
 
     /**
@@ -5014,11 +5031,12 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Toggles the visibility of the element by setting the 'display' CSS property to either 'none' or the previously set value.
+     * Toggles the visibility of the element by setting the 'display' CSS property to either the specified value or 'none'.
+     * @param value - The value to set for the 'display' CSS property if the element is currently hidden. Defaults to 'flex'.
      * @returns The current `Avita` instance for chaining.
      */
-    toggle() {
-        return this.css("display") === "none" ? this.show() : this.hide()
+    toggle(value: string = "flex") {
+        return this.css("display") === "none" ? this.show(value) : this.hide()
     }
 
     /**
@@ -5040,13 +5058,19 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     center(type: "flex"): this
 
     /**
+     * Centers the child elements by setting the 'display' CSS property to 'grid' and setting the 'placeItems' CSS properties to 'center'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    center(type: "grid"): this
+
+    /**
      * Centers the element itself by setting its position to absolute and transforming its position.
      * @param type - Type of centering.
      * @returns The current `Avita` instance for chaining.
      */
     center(type: "absolute"): this
 
-    center(type: "self" | "flex" | "absolute" = "flex"): this {
+    center(type: "self" | "flex" | "grid" | "absolute" = "flex"): this {
         if (type === "self") {
             // Center the element itself using margin auto
             this.margin("auto")
@@ -5055,6 +5079,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
             this.flex()
             this.jContent("center")
             this.aItems("center")
+        } else if (type === "grid") {
+            // Center child elements using grid
+            this.grid()
+            this.placeItems("center")
         } else if (type === "absolute") {
             // Center the element itself using absolute positioning
             this.absolute()
@@ -5071,7 +5099,17 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param align - The alignment of the children along the vertical axis. Defaults to 'center'.
      * @returns The current `Avita` instance for chaining.
      */
-    vstack(align: string = "center") {
+    vstack(
+        align:
+            | "top"
+            | "center"
+            | "bottom"
+            | "left"
+            | "right"
+            | "between"
+            | "around"
+            | "evenly" = "center"
+    ) {
         this.full()
         this.center()
         this.flexCol()
@@ -5110,7 +5148,17 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param align - The alignment of the children along the horizontal axis. Defaults to 'center'.
      * @returns The current `Avita` instance for chaining.
      */
-    hstack(align: string = "center") {
+    hstack(
+        align:
+            | "top"
+            | "center"
+            | "bottom"
+            | "left"
+            | "right"
+            | "between"
+            | "around"
+            | "evenly" = "center"
+    ) {
         this.full()
         this.center()
         switch (align) {
@@ -5148,7 +5196,17 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param align - The alignment of the children along the vertical axis. Defaults to 'center'.
      * @returns The current `Avita` instance for chaining.
      */
-    zstack(align: string = "center") {
+    zstack(
+        align:
+            | "top"
+            | "center"
+            | "bottom"
+            | "left"
+            | "right"
+            | "between"
+            | "around"
+            | "evenly" = "center"
+    ) {
         this.relative()
         this.hstack(align)
         $(() => this.avitaChildren.forEach((child) => child.absolute()))
@@ -5195,6 +5253,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         return this.css("position", "static")
     }
 
+    /**
+     * Sets the display property of the current `Avita` instance to 'block'.
+     * @returns The current `Avita` instance for chaining.
+     */
     block() {
         return this.css("display", "block")
     }
@@ -5213,6 +5275,22 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     grid() {
         return this.css("display", "grid")
+    }
+
+    /**
+     * Sets the display property of the current `Avita` instance to 'inline'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    inline() {
+        return this.css("display", "inline")
+    }
+
+    /**
+     * Sets the display property of the current `Avita` instance to 'inline-block'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    inlineBlock() {
+        return this.css("display", "inline-block")
     }
 
     /**
@@ -5303,6 +5381,27 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Sets the stroke dash offset of the element.
+     * @param value - The CSS value to set as the stroke dash offset.
+     * @returns The current `Avita` instance for chaining.
+     */
+    dashoffset(value: string) {
+        return this.css("strokeDashoffset", value)
+    }
+
+    /**
+     * Sets the skew transformation of the element along both the X and Y axes.
+     * @param x - The skew angle in degrees or a string value along the X-axis.
+     * @param y - The optional skew angle in degrees or a string value along the Y-axis.
+     * @returns The current `Avita` instance for chaining.
+     */
+    skew(x: string | number, y?: string | number) {
+        const unitX = typeof x === "string" ? "" : "deg"
+        const unitY = typeof y === "string" ? "" : "deg"
+        return (this.element.style.transform += `skew(${x}${unitX}, ${y}${unitY}) `)
+    }
+
+    /**
      * Sets the skew transformation angle of the element along the X-axis.
      * @param value - The skew angle in degrees.
      * @returns The current `Avita` instance for chaining.
@@ -5336,8 +5435,42 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The CSS transform matrix value to set.
      * @returns The current `Avita` instance for chaining.
      */
-    matrix(value: string): this {
-        return this.css("transform", value)
+    matrix(value: string): this
+
+    /**
+     * Sets the transformation matrix of the element.
+     * @param a - The first linear transformation value.
+     * @param b - The second linear transformation value.
+     * @param c - The third linear transformation value.
+     * @param d - The fourth linear transformation value.
+     * @param tx - The translation value along the X-axis.
+     * @param ty - The translation value along the Y-axis.
+     * @returns The current `Avita` instance for chaining.
+     */
+    matrix(
+        a: number | string,
+        b: number | string,
+        c: number | string,
+        d: number | string,
+        tx: number | string,
+        ty: number | string
+    ): this
+
+    matrix(
+        aOrValue: number | string,
+        b?: number | string,
+        c?: number | string,
+        d?: number | string,
+        tx?: number | string,
+        ty?: number | string
+    ): this {
+        if (typeof aOrValue === "string" && aOrValue.includes(",")) {
+            return this.css("transform", aOrValue)
+        }
+        return this.css(
+            "transform",
+            `matrix(${aOrValue}, ${b}, ${c}, ${d}, ${tx}, ${ty})`
+        )
     }
 
     /**
@@ -5369,7 +5502,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The fill opacity value to set (between 0 and 1).
      * @returns The current `Avita` instance for chaining.
      */
-    fillOpacity(value: number): this {
+    fillOpacity(value: number | string): this {
         return this.css("fillOpacity", String(Number(value)))
     }
 
@@ -5589,15 +5722,14 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Executes the provided callback function when the current viewport width is at least 640px.
+     * Applies the provided CSS properties when the current viewport width is at least 640px.
      * @param props - The CSS properties to apply to the element when the viewport width is at least 640px.
-     * @param value - The value to set for the CSS property
      * @returns The current `Avita` instance for chaining.
      */
     sm(props: Partial<CSSStyleDeclaration>): this
 
     /**
-     * Executes the provided callback function when the current viewport width is at least 640px.
+     * Applies the provided CSS property and value when the current viewport width is at least 640px.
      * @param property - The CSS property to apply to the element when the viewport width is at least 640px.
      * @param value - The value to set for the CSS property
      * @returns The current `Avita` instance for chaining.
@@ -5723,11 +5855,12 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Returns a new `Avita` instance wrapping the parent element of the current element.
-     * @returns A new `Avita` instance wrapping the parent element of the current element.
+     * Returns a new `Avita` instance wrapping the parent element of the current element or `null` if the parent element does not exist.
+     * @returns A new `Avita` instance wrapping the parent element of the current element or `null` if the parent element does not exist.
      */
-    parent(): Avita<T> {
-        return new Avita(this.element.parentElement as T)
+    parent(): Avita<T> | null {
+        const parent = this.element.parentElement
+        return parent ? new Avita(parent as T) : null
     }
 
     /**
@@ -5790,6 +5923,15 @@ export default class Avita<T extends HTMLElement | SVGElement> {
             })
         }
         return this
+    }
+
+    /**
+     * Checks if the current element or any elements in the collection have the specified CSS class.
+     * @param className - The CSS class to check for.
+     * @returns `true` if the element or any elements in the collection have the specified class, `false` otherwise.
+     */
+    hasClass(className: string): boolean {
+        return this.element.classList.contains(className)
     }
 
     /**
@@ -5874,7 +6016,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * Scrolls the window to the bottom of the page.
      * @param smooth - If set to `true`, the scroll will be animated smoothly. Otherwise, it will scroll instantly.
      */
-    static scrollToBottom(smooth: boolean = true): void {
+    static scrollToBottom(smooth: boolean = false): void {
         Avita.scroll({
             top: document.body.scrollHeight,
             behavior: smooth ? "smooth" : "instant",
@@ -5886,8 +6028,51 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param smooth - If set to `true`, the scroll will be animated smoothly. Otherwise, it will scroll instantly.
      * @returns The current `Avita` instance, allowing for method chaining.
      */
-    scrollToBottom(smooth: boolean = true) {
+    scrollToBottom(smooth: boolean = false) {
         Avita.scrollToBottom(smooth)
+        return this
+    }
+
+    /**
+     * Scrolls the window to the right edge of the page.
+     * @param smooth - If set to `true`, the scroll will be animated smoothly. Otherwise, it will scroll instantly.
+     */
+    static scrollToRight(smooth: boolean = false) {
+        Avita.scroll({
+            left: document.body.scrollWidth,
+            behavior: smooth ? "smooth" : "instant",
+        })
+    }
+
+    /**
+     * Scrolls the window to the right edge of the page.
+     * @param smooth - If set to `true`, the scroll will be animated smoothly. Otherwise, it will scroll instantly.
+     * @returns The current `Avita` instance, allowing for method chaining.
+     */
+    scrollToRight(smooth: boolean = false) {
+        Avita.scrollToRight(smooth)
+        return this
+    }
+
+    /**
+     * Scrolls the window to the left edge of the page.
+     * @param smooth - If set to `true`, the scroll will be animated smoothly. Otherwise, it will scroll instantly.
+     */
+    static scrollToLeft(smooth: boolean = false) {
+        Avita.scroll({
+            left: 0,
+            behavior: smooth ? "smooth" : "instant",
+        })
+        return this
+    }
+
+    /**
+     * Scrolls the window to the left edge of the page.
+     * @param smooth - If set to `true`, the scroll will be animated smoothly. Otherwise, it will scroll instantly.
+     * @returns The current `Avita` instance, allowing for method chaining.
+     */
+    scrollToLeft(smooth: boolean = false) {
+        Avita.scrollToLeft(smooth)
         return this
     }
 
