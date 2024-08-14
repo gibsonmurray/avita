@@ -3940,6 +3940,15 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Sets the 'perspectiveOrigin' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'perspectiveOrigin' CSS property.
+     * @returns The current `Avita` instance for chaining.
+     */
+    perspectiveOrigin(value: string) {
+        return this.css("perspectiveOrigin", value)
+    }
+
+    /**
      * Sets the 'perspective' CSS property on the current `Avita` instance to a value of "100px".
      * @returns The current `Avita` instance for chaining.
      */
@@ -3985,20 +3994,6 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     further() {
         return this.perspective("2000px")
-    }
-
-    /**
-     * Sets the 'perspectiveOrigin' CSS property on the current `Avita` instance.
-     * @param value - The value to set for the 'perspectiveOrigin' CSS property. Can be a string value.
-     * @returns The current `Avita` instance for chaining.
-     */
-    perspectiveOrigin(value: string) {
-        this.element.style.perspectiveOrigin = value
-        if (this.elements.length > 0)
-            this.elements.forEach((element) => {
-                element.style.perspectiveOrigin = value
-            })
-        return this
     }
 
     /**
