@@ -3960,7 +3960,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * Sets the 'perspective' CSS property on the current `Avita` instance to a value of "250px".
      * @returns The current `Avita` instance for chaining.
      */
-    close() {
+    tight() {
         return this.perspective("250px")
     }
 
