@@ -498,15 +498,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     title(value: string): this
 
     title(value?: string): string | this | undefined {
-        if (value !== undefined) {
-            // Set the title attribute
-            return this.attr("title", value)
+        if (value === undefined) {
+            return this.attr("title")
         }
-        // Get the title attribute
-        if (this.element instanceof HTMLElement) {
-            return this.element.title || undefined
-        }
-        return undefined
+        return this.attr("title", value)
     }
 
     /**
@@ -687,7 +682,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * Gets the value of the current `Avita` instance if it is an `HTMLInputElement`.
      * @returns The value of the current `Avita` instance if it is an `HTMLInputElement`. Otherwise, returns an empty string.
      */
-    value(): string
+    value(): string | undefined
 
     /**
      * Sets the value of the current `Avita` instance if it is an `HTMLInputElement`.
@@ -696,19 +691,68 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     value(value: string): this
 
-    value(value?: string): string | this {
-        if (!(this.element instanceof HTMLInputElement)) {
-            // Return an empty string if the element is not an HTMLInputElement when getting
-            return value === undefined ? "" : this
-        }
-
+    value(value?: string): string | this | undefined {
         if (value === undefined) {
-            // Getter: return the current value of the HTMLInputElement
-            return this.element.value
+            return this.attr("value")
         }
+        this.attr("value", value)
+    }
 
-        // Setter: set the value and return `this` for chaining
-        this.element.value = value
+    /**
+     * Gets the checked state of the current `Avita` instance if it is an `HTMLInputElement`.
+     * @returns The checked state of the input element, or `undefined` if it is not an `HTMLInputElement`.
+     */
+    checked(): boolean | undefined
+
+    /**
+     * Sets the checked state of the current `Avita` instance if it is an `HTMLInputElement`.
+     * @param value - The boolean value to set the checked state to.
+     * @returns The current `Avita` instance for chaining.
+     */
+    checked(value: boolean): this
+
+    checked(value?: boolean): boolean | this | undefined {
+        if (value === undefined) {
+            return this.attr("checked") === "checked"
+        }
+        this.attr("checked", String(value))
+    }
+
+    /**
+     * Toggles the checked state of the current `Avita` instance if it is an `HTMLInputElement`.
+     * @returns The current `Avita` instance for chaining.
+     */
+    toggleChecked() {
+        this.checked(!this.checked())
+        return this
+    }
+
+    /**
+     * Gets the disabled state of the current `Avita` instance if it is an `HTMLInputElement`.
+     * @returns The disabled state of the input element, or `undefined` if it is not an `HTMLInputElement`.
+     */
+    disabled(): boolean | undefined
+
+    /**
+     * Sets the disabled state of the current `Avita` instance if it is an `HTMLInputElement`.
+     * @param value - The boolean value to set the disabled state to.
+     * @returns The current `Avita` instance for chaining.
+     */
+    disabled(value: boolean): this
+
+    disabled(value?: boolean): boolean | this | undefined {
+        if (value === undefined) {
+            return this.attr("disabled") === "disabled"
+        }
+        this.attr("disabled", String(value))
+    }
+
+    /**
+     * Toggles the disabled state of the current `Avita` instance if it is an `HTMLInputElement`.
+     * @returns The current `Avita` instance for chaining.
+     */
+    toggleDisabled() {
+        this.disabled(!this.disabled())
         return this
     }
 
@@ -726,17 +770,50 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     placeholder(value: string): this
 
     placeholder(value?: string): string | this | undefined {
-        if (!(this.element instanceof HTMLInputElement)) {
-            // Return undefined if the element is not an HTMLInputElement when getting
-            return value === undefined ? undefined : this
-        }
         if (value === undefined) {
-            // Getter: return the current placeholder text of the HTMLInputElement
-            return this.element.placeholder || undefined
+            return this.attr("placeholder")
         }
-        // Setter: set the placeholder text and return `this` for chaining
-        this.element.placeholder = value
-        return this
+        this.attr("placeholder", value)
+    }
+
+    /**
+     * Returns the type of the current `Avita` instance if it is an `HTMLInputElement`.
+     * @returns The type of the input element, or `undefined` if the current instance is not an `HTMLInputElement`.
+     */
+    type(): string | undefined
+
+    /**
+     * Sets the type of the current `Avita` instance if it is an `HTMLInputElement`.
+     * @param value - The new type to set for the input element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    type(value: string): this
+
+    type(value?: string): string | this | undefined {
+        if (value === undefined) {
+            return this.attr("type")
+        }
+        this.attr("type", value)
+    }
+
+    /**
+     * Returns the name of the current `Avita` instance.
+     * @returns The name of the element, or `undefined` if the name is not set.
+     */
+    name(): string | undefined
+
+    /**
+     * Sets the name of the current `Avita` instance.
+     * @param value - The new name to set for the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    name(value: string): this
+
+    name(value?: string): string | this | undefined {
+        if (value === undefined) {
+            return this.attr("name")
+        }
+        this.attr("name", value)
     }
 
     /**
