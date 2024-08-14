@@ -853,6 +853,24 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Removes an event listener from the current `Avita` instance.
+     * Works with both single and multiple elements.
+     * @param event - The name of the event to remove the listener for.
+     * @param callback - The callback function to be removed.
+     * @param options - The options object passed to the original `addEventListener` call.
+     * @returns The current `Avita` instance for chaining.
+     */
+    off(event: string, callback: EL, options?: AddEventListenerOptions): this {
+        this.element.removeEventListener(event, callback, options)
+        if (this.elements && this.elements.length > 0) {
+            this.elements.forEach((element) => {
+                element.removeEventListener(event, callback, options)
+            })
+        }
+        return this
+    }
+
+    /**
      * Attaches hover event listeners to the current `Avita` instance.
      * Restores the original state when the mouse leaves the element.
      * @param onMouseEnter - The callback function to be executed when the mouse enters the element.
