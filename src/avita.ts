@@ -3694,6 +3694,14 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Sets the 'overflow' CSS property on the current `Avita` instance to 'scroll', allowing any overflow content to be scrollable.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollOverflow() {
+        return this.css("overflow", "scroll")
+    }
+
+    /**
      * Sets the 'overflowWrap' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'overflowWrap' CSS property. Must be a valid CSS `overflow-wrap` value.
      * @returns The current `Avita` instance for chaining.
