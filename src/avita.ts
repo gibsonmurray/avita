@@ -1774,10 +1774,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the CSS property.
      * @returns The current `Avita` instance for chaining.
      */
-    hover(property: string, value: string): this
+    hover(property: keyof CSSStyleDeclaration, value: string): this
 
     hover(
-        propsOrProperty: Partial<CSSStyleDeclaration> | string,
+        propsOrProperty: Partial<CSSStyleDeclaration> | keyof CSSStyleDeclaration,
         value?: string
     ): this {
         return this.applyPseudoClassCSS("hover", propsOrProperty, value)
@@ -1800,10 +1800,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the CSS property.
      * @returns The current `Avita` instance for chaining.
      */
-    active(property: string, value: string): this
+    active(property: keyof CSSStyleDeclaration, value: string): this
 
     active(
-        propsOrProperty: Partial<CSSStyleDeclaration> | string,
+        propsOrProperty: Partial<CSSStyleDeclaration> | keyof CSSStyleDeclaration,
         value?: string
     ): this {
         return this.applyPseudoClassCSS("active", propsOrProperty, value)
@@ -1826,10 +1826,10 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param value - The value to set for the CSS property.
      * @returns The current `Avita` instance for chaining.
      */
-    focus(property: string, value: string): this
+    focus(property: keyof CSSStyleDeclaration, value: string): this
 
     focus(
-        propsOrProperty: Partial<CSSStyleDeclaration> | string,
+        propsOrProperty: Partial<CSSStyleDeclaration> | keyof CSSStyleDeclaration,
         value?: string
     ): this {
         return this.applyPseudoClassCSS("focus", propsOrProperty, value)
@@ -1844,7 +1844,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     private applyPseudoClassCSS(
         pseudoClass: string,
-        propsOrProperty: Partial<CSSStyleDeclaration> | string,
+        propsOrProperty: Partial<CSSStyleDeclaration> | keyof CSSStyleDeclaration,
         value?: string
     ): this {
         const uniqueClass = generateClass()
