@@ -842,11 +842,11 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * @param callback - The callback function to be executed when the event is triggered.
      * @returns The current `Avita` instance for chaining.
      */
-    on(event: string, callback: EL): this {
-        this.element.addEventListener(event, callback)
+    on(event: string, callback: EL, options?: AddEventListenerOptions): this {
+        this.element.addEventListener(event, callback, options)
         if (this.elements && this.elements.length > 0) {
             this.elements.forEach((element) => {
-                element.addEventListener(event, callback)
+                element.addEventListener(event, callback, options)
             })
         }
         return this
