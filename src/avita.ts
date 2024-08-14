@@ -1989,7 +1989,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * Sets the 'backfaceVisibility' CSS property on the current `Avita` instance to 'hidden', making the element double-sided.
      * @returns The current `Avita` instance for chaining.
      */
-    doubleSided() {
+    dblSided() {
         //todo double check
         return this.css("backfaceVisibility", "hidden")
     }
@@ -3477,6 +3477,45 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     maxW(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
         return this.css("maxWidth", `${value}${unit}`)
+    }
+
+
+    /**
+     * Sets the 'minHeight' and 'minWidth' CSS properties on the current `Avita` instance.
+     * @param value - The value to set for the 'minHeight' and 'minWidth' CSS properties. Must be a valid CSS length value e.g. '100px 200px'.
+     */
+    minSize(value: string): this
+
+    /**
+     * Sets the 'minHeight' and 'minWidth' CSS properties on the current `Avita` instance.
+     * @param width - The value to set for the 'minWidth' CSS property. If number, it will be interpreted as pixels.
+     * @param height - The value to set for the 'minHeight' CSS property. If number, it will be interpreted as pixels.
+     */
+    minSize(width: string | number, height: string | number): this
+
+    minSize(valueOrW: string | number, height?: string | number): this {
+        if (typeof valueOrW === "string" && height === undefined) {
+            const valueArr = valueOrW.split(" ")
+            if (valueArr.length === 2) {
+                return this.css("minWidth", valueArr[0]).css(
+                    "minHeight",
+                    valueArr[1]
+                )
+            } else {
+                throw new Error(
+                    "Invalid value for minSize(). Must be a valid CSS length value e.g. '100px 200px' or a number for both width and height."
+                )
+            }
+        }
+        if (valueOrW && height) {
+            if (typeof valueOrW === "number") valueOrW = `${valueOrW}px`
+            if (typeof height === "number") height = `${height}px`
+            return this.css("minWidth", valueOrW).css("minHeight", height)
+        } else {
+            throw new Error(
+                "Invalid value for minSize(). Must be a valid CSS length value e.g. '100px 200px' or a number for both width and height."
+            )
+        }
     }
 
     /**
