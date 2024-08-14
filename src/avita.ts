@@ -874,15 +874,17 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      * Triggers the specified event on the current `Avita` instance and all its elements.
      * This allows programmatically dispatching events on the elements.
      * @param event - The name of the event to trigger.
+     * @param options - Additional data to include in the event object.
      * @returns The current `Avita` instance for chaining.
      */
-    trigger(event: string) {
-        this.element.dispatchEvent(new Event(event))
+    trigger(event: string, options?: EventInit): this {
+        this.element.dispatchEvent(new Event(event, options))
         if (this.elements.length > 0) {
             this.elements.forEach((element) => {
-                element.dispatchEvent(new Event(event))
+                element.dispatchEvent(new Event(event, options))
             })
         }
+        return this
     }
 
     /**
