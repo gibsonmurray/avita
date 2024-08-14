@@ -1084,6 +1084,15 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Attaches a focuswithin event listener to the current `Avita` instance.
+     * @param callback - The callback function to be executed when the element or any of its descendants receives focus.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onFocusWithin(callback: EL) {
+        return this.on("focuswithin", callback)
+    }
+
+    /**
      * Attaches a focusout event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element loses focus.
      * @returns The current `Avita` instance for chaining.
