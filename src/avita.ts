@@ -1300,6 +1300,33 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
+     * Attaches a touchenter event listener to the current `Avita` instance.
+     * @param callback - The callback function to be executed when the touch enters the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onTouchEnter(callback: EL) {
+        return this.on("touchenter", callback)
+    }
+
+    /**
+     * Attaches a touchleave event listener to the current `Avita` instance.
+     * @param callback - The callback function to be executed when the touch leaves the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onTouchLeave(callback: EL) {
+        return this.on("touchleave", callback)
+    }
+
+    /**
+     * Attaches a touchstationary event listener to the current `Avita` instance.
+     * @param callback - The callback function to be executed when the touch is stationary on the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onTouchStationary(callback: EL) {
+        return this.on("touchstationary", callback)
+    }
+
+    /**
      * Attaches a scroll event listener to the window.
      * @param callback - The callback function to be executed when the element is scrolled.
      * @returns The current `Avita` instance for chaining.
@@ -1689,6 +1716,43 @@ export default class Avita<T extends HTMLElement | SVGElement> {
      */
     onTransitionEnd(callback: EL) {
         return this.on("transitionend", callback)
+    }
+
+    // todo no clue if the rest of these work lol
+    /**
+     * Attaches a transitionrun event listener to the current `Avita` instance.
+     * @param callback - The callback function to be executed when a transition runs on the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onTransitionRun(callback: EL) {
+        return this.on("transitionrun", callback)
+    }
+
+    /**
+     * Attaches a transitioncancel event listener to the current `Avita` instance.
+     * @param callback - The callback function to be executed when a transition is canceled on the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onTransitionCancel(callback: EL) {
+        return this.on("transitioncancel", callback)
+    }
+
+    /**
+     * Attaches a transitionpaused event listener to the current `Avita` instance.
+     * @param callback - The callback function to be executed when a transition is paused on the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onTransitionPaused(callback: EL) {
+        return this.on("transitionpaused", callback)
+    }
+
+    /**
+     * Attaches a transition event listener to the current `Avita` instance.
+     * @param callback - The callback function to be executed when a transition occurs on the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onTransition(callback: EL) {
+        return this.on("transition", callback)
     }
 
     // Pseudoclasses onEventCSS methods
