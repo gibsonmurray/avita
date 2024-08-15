@@ -505,6 +505,15 @@ export function br(): Avita<HTMLBRElement> {
 }
 
 /**
+ * Creates a new `Avita<hr>` element. Has properties of AvitaElement
+ * to allow for seamless DOM manipulation.
+ * @returns {Avita<HTMLHRElement>} A new `Avita<hr>` element.
+ */
+export function hr(): Avita<HTMLHRElement> {
+    return new Avita<HTMLHRElement>("hr")
+}
+
+/**
  * Creates a new `Avita<sup>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
  * @returns {Avita<HTMLElement>} A new `Avita<sup>` element.
