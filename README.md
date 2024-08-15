@@ -38,7 +38,8 @@ npm install avita
 ## Latest Updates
 _Crossed out means deprecated._
 
--   **v1.2.0** - MASSIVE Changes to Avita (official release), Aug 15, 2024
+-   **v1.2.1** - Added CDN support (official release), Aug 15, 2024
+-   ~~**v1.2.0**~~ - MASSIVE Changes to Avita, Aug 15, 2024
 -   ~~**v1.1.2**~~ - First stable release of Avita, Aug 9, 2024
 -   ~~**v1.1.x**~~ - Fixed some bugs from v1, Aug 7, 2024
 -   ~~**v1.0.x**~~ - Initial release, Aug 6, 2024
