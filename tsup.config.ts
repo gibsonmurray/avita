@@ -2,13 +2,14 @@ import { defineConfig } from "tsup"
 
 export default defineConfig({
     entry: {
-        "avita/index": "src/index.ts",
-        "avita/router": "src/router.ts",
+        index: "src/index.ts",
+        router: "src/router.ts",
     },
     format: ["esm", "cjs", "iife"],
+    globalName: "Avita",
     dts: true,
     clean: true,
-    shims: true,
+    sourcemap: true,
     skipNodeModulesBundle: true,
     target: "esnext",
     minify: true,

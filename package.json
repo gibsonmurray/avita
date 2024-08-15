@@ -1,11 +1,9 @@
 {
     "name": "avita",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "author": "Gibson Murray",
-    "description": "A simpler UI component library",
     "main": "dist/index.cjs",
     "module": "dist/index.js",
-    "types": "dist/index.d.ts",
     "devDependencies": {
         "@types/bun": "latest",
         "tsup": "^8.2.4"
@@ -13,6 +11,23 @@
     "peerDependencies": {
         "typescript": "^5.5.4"
     },
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs",
+            "browser": "./dist/index.global.js",
+            "types" : "./dist/index.d.ts",
+            "unpkg": "./dist/index.global.js."
+        },
+        "./router": {
+            "import": "./dist/router.js",
+            "require": "./dist/router.cjs",
+            "browser": "./dist/router.global.js",
+            "types" : "./dist/router.d.ts",
+            "unpkg": "./dist/router.global.js"
+        }
+    },
+    "description": "A simpler UI component library",
     "keywords": [
         "avita",
         "avitajs",
@@ -29,14 +44,5 @@
         "docs": "bun typedoc"
     },
     "type": "module",
-    "exports": {
-        ".": [
-            "./dist/avita/index.js",
-            "./dist/avita/index.cjs",
-            "./dist/avita/index.global.js",
-            "./dist/avita/index.d.ts",
-            "./dist/avita/index.d.cts"
-        ],
-        "./router": "./dist/avita/router.js"
-    }
+    "types": "dist/index.d.ts"
 }
