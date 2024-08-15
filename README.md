@@ -35,6 +35,14 @@ npm install avita
 
 ---
 
+## Latest Updates
+_Crossed out means deprecated._
+
+-   **v1.2.0** - MASSIVE Changes to Avita (official release), Aug 15, 2024
+-   ~~**v1.1.2**~~ - First stable release of Avita, Aug 9, 2024
+-   ~~**v1.1.x**~~ - Fixed some bugs from v1, Aug 7, 2024
+-   ~~**v1.0.x**~~ - Initial release, Aug 6, 2024
+
 ## Quick Start
 
 ```javascript
@@ -45,9 +53,9 @@ const app = div().children(
     p().text("A simpler JS framework for building user interfaces"),
     button()
         .text("Click me")
-        .backgroundColor(AvitaColor.blue)
-        .color(AvitaColor.white)
-        .padding(10)
+        .bg("blue")
+        .color("white")
+        .p(10)
         .onClick(() => alert("Button clicked!"))
 )
 
@@ -89,21 +97,21 @@ import { AvitaColor, button, span, li } from "avita"
 
 export default function Todo(todo) {
     const todoDiv = li()
-        .margin("10px")
-        .padding("10px")
+        .m(10)
+        .p(10)
         .border("1px solid black")
-        .borderRadius("5px")
-        .cursor("pointer")
+        .rounded(5)
+        .pointer()
         .children(
             span().text(todo),
             button()
                 .text("X")
-                .margin("10px")
-                .padding("10px")
+                .m(10)
+                .p(10)
                 .border("1px solid black")
-                .backgroundColor(AvitaColor.red)
-                .borderRadius("5px")
-                .cursor("pointer")
+                .bg("red")
+                .rounded(5)
+                .pointer()
                 .onClick(() => {
                     todoDiv.remove()
                 })
@@ -119,12 +127,7 @@ export default function Todo(todo) {
 import { ul } from "avita"
 
 export default function Todos() {
-    return ul()
-        .id("todos")
-        .display("flex")
-        .flexDirection("column")
-        .justifyContent("center")
-        .alignItems("center")
+    return ul().id("todos").vstack()
 }
 ```
 
@@ -138,20 +141,18 @@ export default function AddTodo() {
     let todo = ""
 
     return div()
-        .width("100%")
-        .display("flex")
-        .justifyContent("center")
-        .alignItems("center")
+        .fullW()
+        .center()
         .children(
             input()
-                .width("100%")
-                .height("100%")
+                .fullW()
+                .fullH()
                 .border("none")
-                .borderRadius("5px")
-                .padding("10px")
-                .margin("10px")
-                .backgroundColor(AvitaColor.white)
-                .color(AvitaColor.black)
+                .rounded(5)
+                .p(10)
+                .m(10)
+                .backgroundColor("white")
+                .color("black")
                 .fontSize("1.2rem")
                 .placeholder("Add a todo...")
                 .onChange((e) => {
@@ -176,13 +177,10 @@ import Todos from "./components/Todos"
 
 export default function App() {
     const app = div()
-        .width("100vw")
-        .height("100vh")
-        .backgroundColor(AvitaColor.white)
-        .display("flex")
-        .justifyContent("center")
-        .alignItems("center")
-        .flexDirection("column")
+        .screen()
+        .bg("white")
+        .center()
+        .flexCol()
         .children(
             h1().color(AvitaColor.black).fontSize("2rem").text("TODO"),
             AddTodo(),
@@ -210,13 +208,13 @@ Congrats! You've built a simple todo app using Avita.
 
 ## TODO
 
--   [ ] Add more comprehensive documentation
 -   [ ] animation integration with GSAP
 -   [ ] Prettier plugin
 -   [ ] Icon integration
 -   [ ] Markdown support
 -   [ ] Tailwind integration
 -   [ ] Improve state management?
+-   [x] Add more comprehensive documentation
 -   [x] `vstack`, `hstack`, and `zstack` both elements and css properties
 -   [x] Add routing
 -   [x] generated `@media` queries
