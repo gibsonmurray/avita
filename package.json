@@ -16,7 +16,7 @@
             "import": "./dist/index.js",
             "require": "./dist/index.cjs",
             "browser": "./dist/index.global.js",
-            "types" : "./dist/index.d.ts",
+            "types": "./dist/index.d.ts",
             "unpkg": "./dist/index.global.js."
         }
     },

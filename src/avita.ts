@@ -223,7 +223,12 @@ export default class Avita<T extends HTMLElement | SVGElement> {
             return this.element.className
         } else {
             // Setter: Add the new classes
-            this.addClass(...classNames)
+            classNames.forEach((className) => {
+                const splitName = className.split(" ")
+                splitName.forEach((name) => {
+                    this.addClass(name)
+                })
+            })
             return this
         }
     }
