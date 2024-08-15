@@ -39,55 +39,55 @@ export function input(): Avita<HTMLInputElement> {
 /**
  * Creates A new `Avita<h1>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<h1>` element.
+ * @returns {Avita<HTMLHeadingElement>} A new `Avita<h1>` element.
  */
-export function h1(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("h1")
+export function h1(): Avita<HTMLHeadingElement> {
+    return new Avita<HTMLHeadingElement>("h1")
 }
 
 /**
  * Creates A new `Avita<h2>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<h2>` element.
+ * @returns {Avita<HTMLHeadingElement>} A new `Avita<h2>` element.
  */
-export function h2(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("h2")
+export function h2(): Avita<HTMLHeadingElement> {
+    return new Avita<HTMLHeadingElement>("h2")
 }
 
 /**
  * Creates A new `Avita<h3>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<h3>` element.
+ * @returns {Avita<HTMLHeadingElement>} A new `Avita<h3>` element.
  */
-export function h3(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("h3")
+export function h3(): Avita<HTMLHeadingElement> {
+    return new Avita<HTMLHeadingElement>("h3")
 }
 
 /**
  * Creates A new `Avita<h4>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<h4>` element.
+ * @returns {Avita<HTMLHeadingElement>} A new `Avita<h4>` element.
  */
-export function h4(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("h4")
+export function h4(): Avita<HTMLHeadingElement> {
+    return new Avita<HTMLHeadingElement>("h4")
 }
 
 /**
  * Creates A new `Avita<h5>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<h5>` element.
+ * @returns {Avita<HTMLHeadingElement>} A new `Avita<h5>` element.
  */
-export function h5(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("h5")
+export function h5(): Avita<HTMLHeadingElement> {
+    return new Avita<HTMLHeadingElement>("h5")
 }
 
 /**
  * Creates A new `Avita<h6>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<h6>` element.
+ * @returns {Avita<HTMLHeadingElement>} A new `Avita<h6>` element.
  */
-export function h6(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("h6")
+export function h6(): Avita<HTMLHeadingElement> {
+    return new Avita<HTMLHeadingElement>("h6")
 }
 
 /**
@@ -102,28 +102,28 @@ export function p(): Avita<HTMLParagraphElement> {
 /**
  * Creates A new `Avita<ul>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<ul>` element.
+ * @returns {Avita<HTMLUListElement>} A new `Avita<ul>` element.
  */
-export function ul(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("ul")
+export function ul(): Avita<HTMLUListElement> {
+    return new Avita<HTMLUListElement>("ul")
 }
 
 /**
  * Creates A new `Avita<ol>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<ol>` element.
+ * @returns {Avita<HTMLOListElement>} A new `Avita<ol>` element.
  */
-export function ol(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("ol")
+export function ol(): Avita<HTMLOListElement> {
+    return new Avita<HTMLOListElement>("ol")
 }
 
 /**
  * Creates A new `Avita<li>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<li>` element.
+ * @returns {Avita<HTMLLIElement>} A new `Avita<li>` element.
  */
-export function li(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("li")
+export function li(): Avita<HTMLLIElement> {
+    return new Avita<HTMLLIElement>("li")
 }
 
 /**
@@ -210,46 +210,46 @@ export function table(): Avita<HTMLTableElement> {
 /**
  * Creates A new `Avita<thead>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<thead>` element.
+ * @returns {Avita<HTMLTableSectionElement>} A new `Avita<thead>` element.
  */
-export function thead(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("thead")
+export function thead(): Avita<HTMLTableSectionElement> {
+    return new Avita<HTMLTableSectionElement>("thead")
 }
 
 /**
  * Creates A new `Avita<tbody>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<tbody>` element.
+ * @returns {Avita<HTMLTableSectionElement>} A new `Avita<tbody>` element.
  */
-export function tbody(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("tbody")
+export function tbody(): Avita<HTMLTableSectionElement> {
+    return new Avita<HTMLTableSectionElement>("tbody")
 }
 
 /**
  * Creates A new `Avita<tr>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<tr>` element.
+ * @returns {Avita<HTMLTableRowElement>} A new `Avita<tr>` element.
  */
-export function tr(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("tr")
+export function tr(): Avita<HTMLTableRowElement> {
+    return new Avita<HTMLTableRowElement>("tr")
 }
 
 /**
  * Creates A new `Avita<th>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<th>` element.
+ * @returns {Avita<HTMLTableCellElement>} A new `Avita<th>` element.
  */
-export function th(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("th")
+export function th(): Avita<HTMLTableCellElement> {
+    return new Avita<HTMLTableCellElement>("th")
 }
 
 /**
  * Creates A new `Avita<td>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<td>` element.
+ * @returns {Avita<HTMLTableCellElement>} A new `Avita<td>` element.
  */
-export function td(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("td")
+export function td(): Avita<HTMLTableCellElement> {
+    return new Avita<HTMLTableCellElement>("td")
 }
 
 /**
@@ -616,10 +616,10 @@ export function q(): Avita<HTMLQuoteElement> {
 /**
  * Creates a new `Avita<time>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<time>` element.
+ * @returns {Avita<HTMLTimeElement>} A new `Avita<time>` element.
  */
-export function time(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("time")
+export function time(): Avita<HTMLTimeElement> {
+    return new Avita<HTMLTimeElement>("time")
 }
 
 /**
@@ -972,3 +972,118 @@ export function zstack(
 ): Avita<HTMLDivElement> {
     return new Avita<HTMLDivElement>("div").zstack(align)
 }
+
+// interface HTMLElementTagNameMap {
+//     "a": HTMLAnchorElement;
+//     "abbr": HTMLElement;
+//     "address": HTMLElement;
+//     "area": HTMLAreaElement;
+//     "article": HTMLElement;
+//     "aside": HTMLElement;
+//     "audio": HTMLAudioElement;
+//     "b": HTMLElement;
+//     "base": HTMLBaseElement;
+//     "bdi": HTMLElement;
+//     "bdo": HTMLElement;
+//     "blockquote": HTMLQuoteElement;
+//     "body": HTMLBodyElement;
+//     "br": HTMLBRElement;
+//     "button": HTMLButtonElement;
+//     "canvas": HTMLCanvasElement;
+//     "caption": HTMLTableCaptionElement;
+//     "cite": HTMLElement;
+//     "code": HTMLElement;
+//     "col": HTMLTableColElement;
+//     "colgroup": HTMLTableColElement;
+//     "data": HTMLDataElement;
+//     "datalist": HTMLDataListElement;
+//     "dd": HTMLElement;
+//     "del": HTMLModElement;
+//     "details": HTMLDetailsElement;
+//     "dfn": HTMLElement;
+//     "dialog": HTMLDialogElement;
+//     "div": HTMLDivElement;
+//     "dl": HTMLDListElement;
+//     "dt": HTMLElement;
+//     "em": HTMLElement;
+//     "embed": HTMLEmbedElement;
+//     "fieldset": HTMLFieldSetElement;
+//     "figcaption": HTMLElement;
+//     "figure": HTMLElement;
+//     "footer": HTMLElement;
+//     "form": HTMLFormElement;
+//     "h1": HTMLHeadingElement;
+//     "h2": HTMLHeadingElement;
+//     "h3": HTMLHeadingElement;
+//     "h4": HTMLHeadingElement;
+//     "h5": HTMLHeadingElement;
+//     "h6": HTMLHeadingElement;
+//     "head": HTMLHeadElement;
+//     "header": HTMLElement;
+//     "hgroup": HTMLElement;
+//     "hr": HTMLHRElement;
+//     "html": HTMLHtmlElement;
+//     "i": HTMLElement;
+//     "iframe": HTMLIFrameElement;
+//     "img": HTMLImageElement;
+//     "input": HTMLInputElement;
+//     "ins": HTMLModElement;
+//     "kbd": HTMLElement;
+//     "label": HTMLLabelElement;
+//     "legend": HTMLLegendElement;
+//     "li": HTMLLIElement;
+//     "link": HTMLLinkElement;
+//     "main": HTMLElement;
+//     "map": HTMLMapElement;
+//     "mark": HTMLElement;
+//     "menu": HTMLMenuElement;
+//     "meta": HTMLMetaElement;
+//     "meter": HTMLMeterElement;
+//     "nav": HTMLElement;
+//     "noscript": HTMLElement;
+//     "object": HTMLObjectElement;
+//     "ol": HTMLOListElement;
+//     "optgroup": HTMLOptGroupElement;
+//     "option": HTMLOptionElement;
+//     "output": HTMLOutputElement;
+//     "p": HTMLParagraphElement;
+//     "picture": HTMLPictureElement;
+//     "pre": HTMLPreElement;
+//     "progress": HTMLProgressElement;
+//     "q": HTMLQuoteElement;
+//     "rp": HTMLElement;
+//     "rt": HTMLElement;
+//     "ruby": HTMLElement;
+//     "s": HTMLElement;
+//     "samp": HTMLElement;
+//     "script": HTMLScriptElement;
+//     "search": HTMLElement;
+//     "section": HTMLElement;
+//     "select": HTMLSelectElement;
+//     "slot": HTMLSlotElement;
+//     "small": HTMLElement;
+//     "source": HTMLSourceElement;
+//     "span": HTMLSpanElement;
+//     "strong": HTMLElement;
+//     "style": HTMLStyleElement;
+//     "sub": HTMLElement;
+//     "summary": HTMLElement;
+//     "sup": HTMLElement;
+//     "table": HTMLTableElement;
+//     "tbody": HTMLTableSectionElement;
+//     "td": HTMLTableCellElement;
+//     "template": HTMLTemplateElement;
+//     "textarea": HTMLTextAreaElement;
+//     "tfoot": HTMLTableSectionElement;
+//     "th": HTMLTableCellElement;
+//     "thead": HTMLTableSectionElement;
+//     "time": HTMLTimeElement;
+//     "title": HTMLTitleElement;
+//     "tr": HTMLTableRowElement;
+//     "track": HTMLTrackElement;
+//     "u": HTMLElement;
+//     "ul": HTMLUListElement;
+//     "var": HTMLElement;
+//     "video": HTMLVideoElement;
+//     "wbr": HTMLElement;
+// }
