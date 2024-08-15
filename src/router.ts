@@ -3,10 +3,16 @@ import { div } from "./elements"
 
 export default class AvitaRouter {
     private routes: {
-        [path: string]: { element: Avita<HTMLElement | SVGElement>; title?: string }
+        [path: string]: {
+            element: Avita<HTMLElement | SVGElement>
+            title?: string
+        }
     } = {}
     private root: Avita<HTMLElement | SVGElement> | null = null
-    private notFoundPath: { element: Avita<HTMLElement | SVGElement>; title?: string } | null = null
+    private notFoundPath: {
+        element: Avita<HTMLElement | SVGElement>
+        title?: string
+    } | null = null
 
     /**
      * Constructs a new AvitaRouter instance and sets the root element for rendering.
@@ -33,7 +39,11 @@ export default class AvitaRouter {
      * @param path - The URL path to associate with the Avita element.
      * @param avitaElement - The Avita element to render when the specified path is navigated to.
      */
-    register(path: string, avitaElement: Avita<HTMLElement | SVGElement>, title?: string) {
+    register(
+        path: string,
+        avitaElement: Avita<HTMLElement | SVGElement>,
+        title?: string
+    ) {
         this.routes[path] = { element: avitaElement, title: title }
     }
 
@@ -52,6 +62,7 @@ export default class AvitaRouter {
     navigate(path: string) {
         window.history.pushState({}, path, window.location.origin + path)
         this.loadRoute(path)
+        window.dispatchEvent(new Event("popstate"))
     }
 
     /**
@@ -59,7 +70,6 @@ export default class AvitaRouter {
      * @param path - The URL path to load.
      */
     private loadRoute(path: string) {
-        Avita.scrollToTop()
         const route = this.routes[path]
         if (route) {
             this.clearRoot()
@@ -72,6 +82,7 @@ export default class AvitaRouter {
         } else {
             this.displayError(`No route found for path: ${path}`)
         }
+        Avita.scrollToTop()
     }
 
     /**

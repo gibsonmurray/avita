@@ -130,6 +130,7 @@ export default class Avita<T extends HTMLElement | SVGElement> {
             callback()
         } else {
             document.addEventListener("DOMContentLoaded", callback)
+            window.addEventListener("popstate", callback)
         }
     }
 
