@@ -1,7 +1,6 @@
 /src
 /node_modules
 /test
-/docs
 
 .env
 .DS_Store
@@ -11,3 +10,5 @@ tsup.config.ts
 .gitignore
 bun.lockb
 typedoc.json
+
+*.map

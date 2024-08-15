@@ -1,6 +1,6 @@
 {
     "name": "avita",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "author": "Gibson Murray",
     "main": "dist/index.cjs",
     "module": "dist/index.js",
@@ -18,13 +18,6 @@
             "browser": "./dist/index.global.js",
             "types" : "./dist/index.d.ts",
             "unpkg": "./dist/index.global.js."
-        },
-        "./router": {
-            "import": "./dist/router.js",
-            "require": "./dist/router.cjs",
-            "browser": "./dist/router.global.js",
-            "types" : "./dist/router.d.ts",
-            "unpkg": "./dist/router.global.js"
         }
     },
     "description": "A simpler UI component library",
