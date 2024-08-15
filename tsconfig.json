@@ -1,12 +1,10 @@
 {
     "compilerOptions": {
-
         // Enable latest features
         "lib": ["ESNext", "DOM"],
         "target": "ESNext",
         "module": "ESNext",
         "moduleDetection": "force",
-        "jsx": "react-jsx",
         "allowJs": true,
 
         // Bundler mode
@@ -22,8 +20,9 @@
         // Some stricter flags (disabled by default)
         "noUnusedLocals": false,
         "noUnusedParameters": false,
-        "noPropertyAccessFromIndexSignature": false
+        "noPropertyAccessFromIndexSignature": false,
+        "baseUrl": "."
     },
-    "include": ["src/**/*", "src/types/**/*"],
-    "exclude": ["deprecated/**/*", "test/**/*"]
+    "include": ["src/**/*"],
+    "exclude": ["test/**/*"]
 }

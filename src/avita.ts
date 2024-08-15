@@ -1,30 +1,48 @@
-import type * as AvitaTypes from "./types"
-import { span } from "./elements"
-import { defaultStyles, numberToSeconds } from "./utils"
+import { span, style } from "./elements"
+import { camelToKebab, defaultStyles, generateClass } from "./utils"
 
-export default class Avita<T extends HTMLElement> {
+type EL = EventListenerOrEventListenerObject
+
+export default class Avita<T extends HTMLElement | SVGElement> {
     private element: T
-    private avitaChildren: Avita<T>[]
+    private elements: T[] = [] // mostly used when querying for multiple elements, otherwise empty
+    private avitaChildren: Avita<T>[] = []
 
     /**
-     * Creates a new instance of the AvitaElement class.
+     * Creates a new instance of the Avita class.
      * @param tag - The tag name of the HTML element to create.
      */
     constructor(tag: string)
 
     /**
-     * Creates a new instance of the AvitaElement class.
+     * Creates a new instance of the Avita class.
      * @param element - The HTML element to wrap.
      */
     constructor(element: T)
 
-    constructor(tagOrElement: string | T) {
+    /**
+     * Creates a new instance of the Avita class.
+     * @param elements - The HTML elements to wrap.
+     */
+    constructor(elements: T[])
+
+    constructor(tagOrElement: string | T | T[]) {
         if (typeof tagOrElement === "string") {
-            this.element = document.createElement(tagOrElement) as T
+            this.element = document.createElementNS(
+                tagOrElement.startsWith("svg")
+                    ? "http://www.w3.org/2000/svg"
+                    : "http://www.w3.org/1999/xhtml",
+                tagOrElement
+            ) as T
+        } else if (Array.isArray(tagOrElement)) {
+            if (tagOrElement.length === 0) {
+                throw new Error("The elements array should not be empty.")
+            }
+            this.element = tagOrElement[0]
+            this.elements = tagOrElement
         } else {
             this.element = tagOrElement
         }
-        this.avitaChildren = []
     }
 
     /**
@@ -34,13 +52,20 @@ export default class Avita<T extends HTMLElement> {
      * @param selector - (optional) The CSS selector for the root element in the DOM. Default is '#root'.
      * @throws {Error} If the root element with the ID 'root' is not found in the HTML.
      */
-    static render<T extends HTMLElement>(
+    static render<T extends HTMLElement | SVGElement>(
         children: Avita<T>,
-        selector: string = "#root"
+        selector: string = "#root",
+        options: {
+            defaultStyles?: boolean
+        } = {
+            defaultStyles: true,
+        }
     ) {
         const root = document.querySelector(selector)
         if (root) {
-            defaultStyles()
+            if (options?.defaultStyles) {
+                defaultStyles()
+            }
             root.innerHTML = ""
             root.appendChild(children.element)
         } else {
@@ -51,135 +76,226 @@ export default class Avita<T extends HTMLElement> {
     }
 
     /**
-     * Finds the first element with the given selector in the DOM tree.
+     * Finds the element(s) with the given selector in the DOM tree.
      * @param selector - The CSS selector to match against.
-     * @returns An AvitaElement instance matching the selector.
+     * @returns An Avita instance matching the selector.
      * @throws {Error} If no element is found with the given selector.
      */
-    static find<T extends HTMLElement>(selector: string): Avita<T>
+    static find<T extends HTMLElement | SVGElement>(selector: string): Avita<T>
 
     /**
-     * Finds all elements with the given selector in the DOM tree.
+     * Finds the element(s) with the given selector in the DOM tree.
      * @param selector - The CSS selector to match against.
-     * @returns An array of AvitaElement instances matching the selector.
-     * @throws {Error} If no elements are found with the given selector.
+     * @param raw - A boolean indicating whether to return the raw HTML element(s).
+     * @returns The raw HTML element(s) matching the selector.
+     * @throws {Error} If no element is found with the given selector.
      */
-    static find<T extends HTMLElement>(selector: string): Avita<T>[]
+    static find<T extends HTMLElement | SVGElement>(
+        selector: string,
+        raw: boolean
+    ): Avita<T> | T | T[]
 
-    static find<T extends HTMLElement>(
-        selector: string
-    ): Avita<T> | Avita<T>[] {
+    static find<T extends HTMLElement | SVGElement>(
+        selector: string,
+        raw: boolean = false
+    ): Avita<T> | T | T[] | null {
         const elements = document.querySelectorAll(selector) as NodeListOf<T>
-        if (elements.length > 1) {
-            return Array.from(elements).map((element) => {
-                return new Avita<T>(element)
-            })
+
+        if (raw) {
+            // If the raw argument is provided and true
+            if (elements.length > 1) {
+                return Array.from(elements) // Return an array of raw elements
+            }
+            if (elements.length === 1) {
+                return elements[0] // Return the single raw element
+            }
+        } else {
+            if (elements.length > 1) {
+                return new Avita<T>(Array.from(elements)) // Return an Avita instance with multiple elements
+            }
+            if (elements.length === 1) {
+                return new Avita<T>(elements[0]) // Return an Avita instance with a single element
+            }
         }
-        if (elements.length === 1) {
-            return new Avita<T>(elements[0])
-        }
-        throw new Error(
-            `Element(s) with selector: '${selector}' not found in local DOM subtree`
-        )
+
+        return null
     }
 
     /**
-     * Finds the first element with the given selector in the Avita element's DOM subtree.
-     * @param selector - The CSS selector to match against.
-     * @returns An AvitaElement instance matching the selector.
-     * @throws {Error} If no element is found with the given selector.
+     * Waits for the DOM to be fully loaded and then executes the provided callback function.
+     * @param callback - The function to be executed when the DOM is ready.
      */
-    find(selector: string): Avita<T>
+    static ready(callback: () => void) {
+        if (document.readyState === "complete") {
+            callback()
+        } else {
+            document.addEventListener("DOMContentLoaded", callback)
+            window.addEventListener("popstate", callback)
+        }
+    }
 
     /**
-     * Finds all elements with the given selector in the Avita element's DOM subtree.
+     * Finds the element(s) with the given selector in the local DOM subtree.
      * @param selector - The CSS selector to match against.
-     * @returns An array of AvitaElement instances matching the selector.
-     * @throws {Error} If no elements are found with the given selector.
+     * @returns An Avita instance matching the selector.
+     * @throws {Error} If no element is found with the given selector.
      */
-    find(selector: string): Avita<T>[]
+    find<T extends HTMLElement>(selector: string): Avita<T>
 
-    find(selector: string): Avita<T> | Avita<T>[] {
+    /**
+     * Finds the element(s) with the given selector in the local DOM subtree.
+     * @param selector - The CSS selector to match against.
+     * @param raw - A boolean indicating whether to return the raw HTML element(s).
+     * @returns The raw HTML element(s) matching the selector.
+     * @throws {Error} If no element is found with the given selector.
+     */
+    find<T extends HTMLElement>(
+        selector: string,
+        raw: boolean
+    ): Avita<T> | T | T[]
+
+    find<T extends HTMLElement>(
+        selector: string,
+        raw: boolean = false
+    ): Avita<T> | T | T[] {
         const elements = this.element.querySelectorAll(
             selector
         ) as NodeListOf<T>
-        if (elements.length > 1) {
-            return Array.from(elements).map((element) => {
-                return new Avita<T>(element)
-            })
+
+        if (raw) {
+            // If the raw argument is provided and true
+            if (elements.length > 1) {
+                return Array.from(elements) // Return an array of raw elements
+            }
+            if (elements.length === 1) {
+                return elements[0] // Return the single raw element
+            }
+        } else {
+            if (elements.length > 1) {
+                return new Avita<T>(Array.from(elements)) // Return an Avita instance with multiple elements
+            }
+            if (elements.length === 1) {
+                return new Avita<T>(elements[0]) // Return an Avita instance with a single element
+            }
         }
-        if (elements.length === 1) {
-            return new Avita<T>(elements[0])
-        }
+
         throw new Error(
             `Element(s) with selector: '${selector}' not found in local DOM subtree`
         )
     }
 
-    // Element Properties
     /**
-     * Sets the id property of the element.
-     * @param id - The id to set on the element.
-     * @returns The current AvitaElement instance for chaining.
+     * Gets the ID of the current Avita element.
+     * @returns The ID of the current Avita element as a string.
      */
-    id(id: string) {
+    id(): string
+
+    /**
+     * Sets the ID of the current `Avita` element.
+     * @param id - The new ID to set for the `Avita` element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    id(id: string): this
+
+    id(id?: string) {
+        if (id === undefined) {
+            return this.element.id
+        }
         this.element.id = id
         return this
     }
+    /**
+     * Gets the CSS class(es) of the `Avita` instance.
+     * @returns The current CSS classes as a string.
+     */
+    class(): string
 
     /**
-     * Sets the CSS class(es) of the element.
-     * @param value - The CSS class(es) to add to the element.
-     * @returns The current AvitaElement instance for chaining.
+     * Sets the CSS class(es) of the `Avita` instance, concatenating them with the existing classes.
+     * @param className - The CSS class(es) to add to the element(s).
+     * @returns The current Avita instance for chaining.
      */
-    class(value: string) {
-        this.element.classList.add(value)
-        return this
+    class(...classNames: string[]): this
+
+    class(...classNames: string[]) {
+        if (classNames.length === 0) {
+            // Getter: Return the class names as a string
+            return this.element.className
+        } else {
+            // Setter: Add the new classes
+            this.addClass(...classNames)
+            return this
+        }
     }
 
     /**
-     * Gets the value of the specified css property of the element.
+     * Gets the CSS class(es) of the current Avita element.
+     * @returns The current CSS classes as a CSSStyleDeclaration object.
+     */
+    css(): CSSStyleDeclaration
+
+    /**
+     * Gets the value of the specified CSS property of the element(s).
+     * @note Use this method to get the value of multiple elements.
      * @param property - The CSS property to get the value of.
      * @returns The value of the specified CSS property.
      */
-    css(property: string): string | undefined
+    css(property: keyof CSSStyleDeclaration): string | undefined
 
     /**
-     * Sets the inline styles of the element.
+     * Sets the inline styles of the element(s).
+     * @note Use this method to set the value of a single property.
      * @param property - The CSS property to set.
      * @param value - The value to set for the CSS property.
-     * @returns The current AvitaElement instance for chaining.
+     * @returns The current Avita instance for chaining.
      */
-    css(property: string, value: string): this
+    css(property: keyof CSSStyleDeclaration, value: string): this
 
     /**
-     * Sets the inline styles of the element.
-     * @param value - An object containing the CSS styles to apply to the element.
-     * @returns The current AvitaElement instance for chaining.
+     * Sets the inline styles of the element(s).
+     * @note Use this method to set multiple properties at once.
+     * @param props - An object containing the CSS styles to apply to the element(s).
+     * @returns The current Avita instance for chaining.
      */
     css(props: Partial<CSSStyleDeclaration>): this
 
     css(
-        propertyOrProps: string | Partial<CSSStyleDeclaration>,
+        propertyOrProps?:
+            | keyof CSSStyleDeclaration
+            | Partial<CSSStyleDeclaration>,
         value?: string
-    ): string | this | undefined {
+    ): string | this | CSSStyleDeclaration | undefined {
+        const computedStyle = getComputedStyle(this.element)
+
+        if (propertyOrProps === undefined && value === undefined) {
+            // Return all computed styles when no arguments are provided
+            return computedStyle
+        }
+
         if (typeof propertyOrProps === "string") {
             if (value === undefined) {
-                // Get the value of a single property
-                const computedStyle = getComputedStyle(this.element)
+                // Get the value of a single CSS property
                 return (
                     computedStyle.getPropertyValue(propertyOrProps) || undefined
                 )
             } else {
-                // Set a single property
-                this.element.style[propertyOrProps as any] = value
+                // Set a single CSS property
+                this.applyStyle(
+                    propertyOrProps as keyof CSSStyleDeclaration,
+                    value
+                )
                 return this
             }
-        } else {
-            // Set multiple properties
+        }
+
+        if (typeof propertyOrProps === "object") {
+            // Set multiple CSS properties
             for (const [prop, val] of Object.entries(propertyOrProps)) {
                 if (val !== undefined) {
-                    this.element.style[prop as any] = String(val)
+                    this.applyStyle(
+                        prop as keyof CSSStyleDeclaration,
+                        String(val)
+                    )
                 }
             }
             return this
@@ -187,30 +303,43 @@ export default class Avita<T extends HTMLElement> {
     }
 
     /**
-     * Gets all attributes of the element.
-     * @returns {Object} The values of the specified attributes.
+     * Applies the specified CSS style property and value to the current element and all elements in the Avita instance.
+     * @param prop - The CSS property to apply.
+     * @param val - The value to set for the CSS property.
+     */
+    private applyStyle(prop: keyof CSSStyleDeclaration, val: string) {
+        if (this.element.style[prop] === undefined) return
+        this.element.style[prop as any] = val
+        this.elements.forEach((element) => {
+            element.style[prop as any] = val
+        })
+    }
+
+    /**
+     * Gets all attributes of the element(s).
+     * @returns The values of the specified attributes.
      */
     attr(): Record<string, string>
 
     /**
-     * Gets the specified attribute of the element.
+     * Gets the specified attribute of the element(s).
      * @param name - The name of the attribute to set.
      * @returns The value of the specified attribute.
      */
     attr(name: string): string | undefined
 
     /**
-     * Sets the specified attribute of the element.
+     * Sets the specified attribute of the element(s).
      * @param name - The name of the attribute to set.
      * @param value - The value to set for the attribute.
-     * @returns The current AvitaElement instance for chaining.
+     * @returns The current Avita instance for chaining.
      */
     attr(name: string, value: string): this
 
     /**
-     * Sets the specified attributes of the element.
-     * @param attributes - An object containing the attributes to set on the element.
-     * @returns The current AvitaElement instance for chaining.
+     * Sets the specified attributes of the element(s).
+     * @param attributes - An object containing the attributes to set on the element(s).
+     * @returns The current Avita instance for chaining.
      */
     attr(attributes: Record<string, string>): this
 
@@ -231,49 +360,33 @@ export default class Avita<T extends HTMLElement> {
                 // Get the value of the specified attribute
                 return this.element.getAttribute(nameOrAttributes) || undefined
             } else {
-                // Set the value of the specified attribute
-                this.element.setAttribute(nameOrAttributes, value)
+                // Set a single attribute
+                this.setAttr(nameOrAttributes, value)
                 return this
             }
         } else {
             // Set multiple attributes
             for (const [key, val] of Object.entries(nameOrAttributes)) {
-                this.element.setAttribute(key, val)
+                this.setAttr(key, val)
             }
             return this
         }
     }
 
     /**
-     * Sets the `src` attribute of the element if it is an `HTMLImageElement`, `HTMLIFrameElement`, or `HTMLScriptElement`.
-     * @param value - The URL to set as the `src` attribute of the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets an attribute on the main element and all other elements in the collection.
+     * @param name - The name of the attribute to set.
+     * @param value - The value to set for the attribute.
      */
-    src(value: string) {
-        if (
-            this.element instanceof HTMLImageElement ||
-            this.element instanceof HTMLIFrameElement ||
-            this.element instanceof HTMLScriptElement
-        ) {
-            this.element.src = value
+    private setAttr(name: string, value: string): void {
+        this.element.setAttribute(name, value)
+        if (this.elements.length > 0) {
+            this.elements.forEach((element) => {
+                element.setAttribute(name, value)
+            })
         }
-        return this
     }
 
-    /**
-     * Sets the `href` attribute of the element if it is an `HTMLAnchorElement` or `HTMLLinkElement`.
-     * @param value - The URL to set as the `href` attribute of the element.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    href(value: string) {
-        if (
-            this.element instanceof HTMLAnchorElement ||
-            this.element instanceof HTMLLinkElement
-        ) {
-            this.element.href = value
-        }
-        return this
-    }
     /**
      * Gets all data attributes of the element.
      * @returns An object containing all data attributes of the element.
@@ -291,14 +404,14 @@ export default class Avita<T extends HTMLElement> {
      * Sets a data attribute on the element.
      * @param key - The name of the data attribute to set.
      * @param value - The value to set for the data attribute.
-     * @returns The current AvitaElement instance for chaining.
+     * @returns The current Avita instance for chaining.
      */
     data(key: string, value: string): this
 
     /**
      * Sets multiple data attributes on the element.
      * @param dataAttributes - An object containing the data attributes to set on the element.
-     * @returns The current AvitaElement instance for chaining.
+     * @returns The current Avita instance for chaining.
      */
     data(dataAttributes: Record<string, string>): this
 
@@ -318,93 +431,174 @@ export default class Avita<T extends HTMLElement> {
                 // Get the value of the specified data attribute
                 return this.element.dataset[keyOrDataAttributes] || undefined
             } else {
-                // Set the value of the specified data attribute
-                this.element.dataset[keyOrDataAttributes] = value
+                // Set the value of the specified data attribute using the modularized method
+                this.setData(keyOrDataAttributes, value)
                 return this
             }
         } else {
-            // Set multiple data attributes
+            // Set multiple data attributes using the modularized method
             for (const [key, val] of Object.entries(keyOrDataAttributes)) {
-                this.element.dataset[key] = val
+                this.setData(key, val)
             }
             return this
         }
     }
 
     /**
+     * Sets a data attribute on the main element and all other elements in the collection.
+     * @param key - The name of the data attribute to set.
+     * @param value - The value to set for the data attribute.
+     */
+    private setData(key: string, value: string): void {
+        this.element.dataset[key] = value
+        if (this.elements.length > 0) {
+            this.elements.forEach((element) => {
+                element.dataset[key] = value
+            })
+        }
+    }
+
+    /**
+     * Sets the `src` attribute of the element.
+     * @param value - The URL to set as the `src` attribute of the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    src(value: string) {
+        return this.attr("src", value)
+    }
+
+    /**
+     * Sets the `href` attribute of the element.
+     * @param value - The URL to set as the `href` attribute of the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    href(value: string) {
+        return this.attr("href", value)
+    }
+
+    /**
      * Sets the `alt` attribute of the element if it is an `HTMLImageElement`.
      * @param value - The alternative text to set for the image.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     alt(value: string) {
-        if (this.element instanceof HTMLImageElement) {
-            this.element.alt = value
-        }
-        return this
+        return this.attr("alt", value)
     }
+
+    /**
+     * Gets the `title` attribute of the element.
+     * @returns The current `title` attribute value of the element or `undefined`.
+     */
+    title(): string | undefined
 
     /**
      * Sets the `title` attribute of the element.
      * @param value - The text to set as the `title` attribute of the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    title(value: string) {
-        this.element.title = value
-        return this
+    title(value: string): this
+
+    title(value?: string): string | this | undefined {
+        if (value === undefined) {
+            return this.attr("title")
+        }
+        return this.attr("title", value)
     }
 
     /**
      * Sets the text content of the element.
-     * @param value - The text to set as the content of the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @param value - The text content to set for the element.
+     * @returns The current `Avita` instance for chaining.
      */
     text(value: string) {
         this.element.textContent = value
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.textContent = value
+            })
         return this
     }
 
     /**
      * Sets the HTML content of the element.
      * @param value - The HTML content to set for the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     html(value: string) {
         this.element.innerHTML = value
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.innerHTML = value
+            })
         return this
     }
 
     /**
-     * Appends the current `AvitaElement` instance to the provided `AvitaElement` instance.
-     * @param element - The `AvitaElement` instance to append the current instance to.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Appends the provided `Avita` instance to the current `Avita` instance.
+     * @param child - The `Avita` instance to append to the current instance.
+     * @returns The current `Avita` instance for chaining.
      */
-    append(element: Avita<T>) {
-        this.element.appendChild(element.element)
-        return this
-    }
+    append(child: Avita<T>): this
 
     /**
-     * Prepends the current `AvitaElement` instance to the provided `AvitaElement` instance.
-     * @param element - The `AvitaElement` instance to prepend the current instance to.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Appends one or more `Avita` instances to the current `Avita` instance.
+     * @param children - The `Avita` instances to append to the current instance.
+     * @returns The current `Avita` instance for chaining.
      */
-    prepend(element: Avita<T>) {
-        this.element.prepend(element.element)
+    append(...children: Avita<T>[]): this
+
+    append(...children: Avita<T>[]): this {
+        children.forEach((child) => {
+            this.element.append(child.element)
+            this.elements.forEach((el) => {
+                // no clue why u would want to do this but here it is
+                el.append(child.element.cloneNode(true))
+            })
+        })
         return this
     }
 
     /**
-     * Removes the current `AvitaElement` instance from the DOM.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Prepends the provided `Avita` instance to the current `Avita` instance.
+     * @param child - The `Avita` instance to prepend to the current instance.
+     * @returns The current `Avita` instance for chaining.
+     */
+    prepend(child: Avita<T>): this
+
+    /**
+     * Prepends one or more `Avita` instances to the current `Avita` instance.
+     * @param children - The `Avita` instances to prepend to the current instance.
+     * @returns The current `Avita` instance for chaining.
+     */
+    prepend(...children: Avita<T>[]): this
+
+    prepend(...children: Avita<T>[]): this {
+        children.forEach((child) => {
+            this.element.prepend(child.element)
+            this.elements.forEach((el) => {
+                // once again why? because we can...
+                el.prepend(child.element.cloneNode(true))
+            })
+        })
+        return this
+    }
+
+    /**
+     * Removes the current `Avita` instance from the DOM.
+     * @returns The current `Avita` instance for chaining.
      */
     remove() {
         this.element.remove()
+        this.elements.forEach((el) => {
+            // todo double check
+            el.remove()
+        })
         return this
     }
 
     /**
-     * Empties the child elements of the current `AvitaElement` instance.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Empties the child elements of the current `Avita` instance.
+     * @returns The current `Avita` instance for chaining.
      */
     empty() {
         this.avitaChildren = []
@@ -413,37 +607,52 @@ export default class Avita<T extends HTMLElement> {
     }
 
     /**
-     * Gets the child elements of the current `AvitaElement` instance.
-     * @returns An array of `AvitaElement` instances representing the child elements.
+     * Gets the child elements of the current `Avita` instance.
+     * @returns An array of `Avita` instances representing the child elements.
      */
     children(): Avita<T>[]
 
     /**
-     * Sets the child elements of the current `AvitaElement` instance. This will remove any existing child elements.
-     * @param elements - An array of `AvitaElement` instances or strings to set as the child elements.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the child elements of the current `Avita` instance. This will remove any existing child elements.
+     * @param elements - An array of `Avita` instances or strings to set as the child elements.
+     * @returns The current `Avita` instance for chaining.
      */
     children(...elements: (Avita<T> | string)[]): this
 
     children(...elements: (Avita<T> | string)[]): Avita<T>[] | this {
-        this.avitaChildren = []
-        elements.forEach((element) => {
-            if (typeof element === "string") {
-                this.avitaChildren.push(span().text(element) as Avita<T>)
-            } else {
-                this.avitaChildren.push(element)
-            }
-        })
-        this.updateDOMChildren()
-        return this
+        if (elements.length === 0) {
+            // Getter logic
+            return this.avitaChildren
+        } else {
+            // Setter logic
+            this.avitaChildren = []
+            elements.forEach((element) => {
+                if (typeof element === "string") {
+                    this.avitaChildren.push(span().text(element) as Avita<T>)
+                } else {
+                    this.avitaChildren.push(element)
+                }
+            })
+            this.updateDOMChildren()
+            return this
+        }
     }
 
+    /**
+     * Removes the child element at the specified index from the current `Avita` instance.
+     * @param index - The index of the child element to remove.
+     * @returns The current `Avita` instance for chaining.
+     */
     removeChild(index: number) {
         this.avitaChildren.splice(index, 1)
         this.updateDOMChildren()
         return this
     }
 
+    /**
+     * Updates the DOM children of the current `Avita` instance to match the `avitaChildren` array.
+     * This removes any existing child nodes and appends the new child elements.
+     */
     private updateDOMChildren() {
         this.element.childNodes.forEach((child) => {
             child.remove()
@@ -454,4560 +663,5511 @@ export default class Avita<T extends HTMLElement> {
     }
 
     /**
-     * Replaces the current `AvitaElement` instance with the provided `AvitaElement` instance.
-     * @param element - The `AvitaElement` instance to replace the current instance with.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Replaces the current `Avita` instance's element with the provided `Avita` instance's element.
+     * @param element - The `Avita` instance to replace the current instance with.
+     * @returns The current `Avita` instance for chaining.
      */
-    replace(element: Avita<T>) {
+    replace(element: Avita<T>): this {
+        // Replace the main element
         this.element.replaceWith(element.element)
+
+        // who knows why u would want this bruh BUT ITS HERE
+        this.elements.forEach((el) => {
+            el.replaceWith(element.element.cloneNode(true))
+        })
+
         return this
     }
 
     /**
-     * Gets the value of the current `AvitaElement` instance if it is an `HTMLInputElement`.
-     * @returns The value of the current `AvitaElement` instance if it is an `HTMLInputElement`. Otherwise, returns an empty string.
+     * Gets the value of the current `Avita` instance if it is an `HTMLInputElement`.
+     * @returns The value of the current `Avita` instance if it is an `HTMLInputElement`. Otherwise, returns an empty string.
      */
-    value(): string
+    value(): string | undefined
 
     /**
-     * Sets the value of the current `AvitaElement` instance if it is an `HTMLInputElement`.
+     * Sets the value of the current `Avita` instance if it is an `HTMLInputElement`.
      * @param value - The value to set for the `HTMLInputElement`.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     value(value: string): this
 
-    value(value?: string): string | this {
+    value(value?: string): string | this | undefined {
         if (value === undefined) {
-            if (this.element instanceof HTMLInputElement) {
-                return this.element.value
-            }
-            return ""
-        } else {
-            if (this.element instanceof HTMLInputElement) {
-                this.element.value = value
-            }
-            return this
+            return this.attr("value")
         }
+        this.attr("value", value)
     }
 
     /**
-     * Gets the placeholder text of the current `AvitaElement` instance if it is an `HTMLInputElement`.
+     * Gets the checked state of the current `Avita` instance if it is an `HTMLInputElement`.
+     * @returns The checked state of the input element, or `undefined` if it is not an `HTMLInputElement`.
+     */
+    checked(): boolean | undefined
+
+    /**
+     * Sets the checked state of the current `Avita` instance if it is an `HTMLInputElement`.
+     * @param value - The boolean value to set the checked state to.
+     * @returns The current `Avita` instance for chaining.
+     */
+    checked(value: boolean): this
+
+    checked(value?: boolean): boolean | this | undefined {
+        if (value === undefined) {
+            return this.attr("checked") === "checked"
+        }
+        this.attr("checked", String(value))
+    }
+
+    /**
+     * Toggles the checked state of the current `Avita` instance if it is an `HTMLInputElement`.
+     * @returns The current `Avita` instance for chaining.
+     */
+    toggleChecked() {
+        this.checked(!this.checked())
+        return this
+    }
+
+    /**
+     * Gets the disabled state of the current `Avita` instance if it is an `HTMLInputElement`.
+     * @returns The disabled state of the input element, or `undefined` if it is not an `HTMLInputElement`.
+     */
+    disabled(): boolean | undefined
+
+    /**
+     * Sets the disabled state of the current `Avita` instance if it is an `HTMLInputElement`.
+     * @param value - The boolean value to set the disabled state to.
+     * @returns The current `Avita` instance for chaining.
+     */
+    disabled(value: boolean): this
+
+    disabled(value?: boolean): boolean | this | undefined {
+        if (value === undefined) {
+            return this.attr("disabled") === "disabled"
+        }
+        this.attr("disabled", String(value))
+    }
+
+    /**
+     * Toggles the disabled state of the current `Avita` instance if it is an `HTMLInputElement`.
+     * @returns The current `Avita` instance for chaining.
+     */
+    toggleDisabled() {
+        this.disabled(!this.disabled())
+        return this
+    }
+
+    /**
+     * Gets the placeholder text of the current `Avita` instance if it is an `HTMLInputElement`.
      * @returns The placeholder text of the input element, or `undefined` if it is not set.
      */
     placeholder(): string | undefined
 
     /**
-     * Sets the placeholder text of the current `AvitaElement` instance if it is an `HTMLInputElement`.
+     * Sets the placeholder text of the current `Avita` instance if it is an `HTMLInputElement`.
      * @param value - The placeholder text to set for the input element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     placeholder(value: string): this
 
     placeholder(value?: string): string | this | undefined {
         if (value === undefined) {
-            // Get the placeholder text
-            if (this.element instanceof HTMLInputElement) {
-                return this.element.placeholder || undefined
-            }
-            return undefined
-        } else {
-            // Set the placeholder text
-            if (this.element instanceof HTMLInputElement) {
-                this.element.placeholder = value
-            }
-            return this
+            return this.attr("placeholder")
         }
+        this.attr("placeholder", value)
     }
 
     /**
-     * Attaches a click event listener to the current `AvitaElement` instance.
+     * Returns the type of the current `Avita` instance if it is an `HTMLInputElement`.
+     * @returns The type of the input element, or `undefined` if the current instance is not an `HTMLInputElement`.
+     */
+    type(): string | undefined
+
+    /**
+     * Sets the type of the current `Avita` instance if it is an `HTMLInputElement`.
+     * @param value - The new type to set for the input element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    type(value: string): this
+
+    type(value?: string): string | this | undefined {
+        if (value === undefined) {
+            return this.attr("type")
+        }
+        this.attr("type", value)
+    }
+
+    /**
+     * Returns the name of the current `Avita` instance.
+     * @returns The name of the element, or `undefined` if the name is not set.
+     */
+    name(): string | undefined
+
+    /**
+     * Sets the name of the current `Avita` instance.
+     * @param value - The new name to set for the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    name(value: string): this
+
+    name(value?: string): string | this | undefined {
+        if (value === undefined) {
+            return this.attr("name")
+        }
+        this.attr("name", value)
+    }
+
+    /**
+     * Returns a new `Avita` instance with the first element from the current `Avita` instance.
+     * Typically only used with `find()`.
+     * @returns A new `Avita` instance with the first element.
+     */
+    first() {
+        return new Avita(this.elements[0])
+    }
+
+    /**
+     * Returns a new `Avita` instance with the last element from the current `Avita` instance.
+     * Typically only used with `find()`.
+     * @returns A new `Avita` instance with the last element.
+     */
+    last() {
+        return new Avita(this.elements[this.elements.length - 1])
+    }
+
+    // Event Listeners
+
+    /**
+     * Attaches an event listener to the current `Avita` instance. Works with both single and multiple elements.
+     * @param event - The name of the event to listen for.
+     * @param callback - The callback function to be executed when the event is triggered.
+     * @returns The current `Avita` instance for chaining.
+     */
+    on(event: string, callback: EL, options?: AddEventListenerOptions): this {
+        this.element.addEventListener(event, callback, options)
+        if (this.elements.length > 0) {
+            this.elements.forEach((element) => {
+                element.addEventListener(event, callback, options)
+            })
+        }
+        return this
+    }
+
+    /**
+     * Removes an event listener from the current `Avita` instance.
+     * Works with both single and multiple elements.
+     * @param event - The name of the event to remove the listener for.
+     * @param callback - The callback function to be removed.
+     * @param options - The options object passed to the original `addEventListener` call.
+     * @returns The current `Avita` instance for chaining.
+     */
+    off(event: string, callback: EL, options?: AddEventListenerOptions): this {
+        this.element.removeEventListener(event, callback, options)
+        if (this.elements.length > 0) {
+            this.elements.forEach((element) => {
+                element.removeEventListener(event, callback, options)
+            })
+        }
+        return this
+    }
+
+    /**
+     * Triggers the specified event on the current `Avita` instance and all its elements.
+     * This allows programmatically dispatching events on the elements.
+     * @param event - The name of the event to trigger.
+     * @param options - Additional data to include in the event object.
+     * @returns The current `Avita` instance for chaining.
+     */
+    trigger(event: string, options?: EventInit): this {
+        this.element.dispatchEvent(new Event(event, options))
+        if (this.elements.length > 0) {
+            this.elements.forEach((element) => {
+                element.dispatchEvent(new Event(event, options))
+            })
+        }
+        return this
+    }
+
+    /**
+     * Attaches hover event listeners to the current `Avita` instance.
+     * Restores the original state when the mouse leaves the element.
+     * @param onMouseEnter - The callback function to be executed when the mouse enters the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onHover(onMouseEnter: EL): this
+
+    /**
+     * Attaches hover event listeners to the current `Avita` instance.
+     * Executes the provided callbacks when the mouse enters and exits the element.
+     * @param onMouseEnter - The callback function to be executed when the mouse enters the element.
+     * @param onMouseLeave - The callback function to be executed when the mouse leaves the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onHover(onMouseEnter: EL, onMouseLeave: EL): this
+
+    onHover(onMouseEnter: EL, onMouseLeave?: EL): this {
+        this.on("mouseover", onMouseEnter)
+        if (onMouseLeave) {
+            this.on("mouseout", onMouseLeave)
+        }
+        return this
+    }
+
+    /**
+     * Attaches a click event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is clicked.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onClick(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("click", callback)
-        return this
+    onClick(callback: EL) {
+        return this.on("click", callback)
     }
 
     /**
-     * Attaches a double click event listener to the current `AvitaElement` instance.
+     * Attaches a double click event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is double clicked.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onDoubleClick(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("dblclick", callback)
-        return this
+    onDblClick(callback: EL) {
+        return this.on("dblclick", callback)
     }
 
     /**
-     * Attaches a copy event listener to the current `AvitaElement` instance.
+     * Attaches a copy event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is copied.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onCopy(callback: (event: ClipboardEvent) => void) {
-        this.element.addEventListener("copy", callback)
-        return this
+    onCopy(callback: EL) {
+        return this.on("copy", callback)
     }
 
     /**
-     * Attaches a cut event listener to the current `AvitaElement` instance.
+     * Attaches a cut event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is cut.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onCut(callback: (event: ClipboardEvent) => void) {
-        this.element.addEventListener("cut", callback)
-        return this
+    onCut(callback: EL) {
+        return this.on("cut", callback)
     }
 
     /**
-     * Attaches a paste event listener to the current `AvitaElement` instance.
+     * Attaches a paste event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is pasted to.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onPaste(callback: (event: ClipboardEvent) => void) {
-        this.element.addEventListener("paste", callback)
-        return this
+    onPaste(callback: EL) {
+        return this.on("paste", callback)
     }
 
     /**
-     * Attaches a composition start event listener to the current `AvitaElement` instance.
+     * Attaches a composition start event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the composition starts on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onCompositionStart(callback: (event: CompositionEvent) => void) {
-        this.element.addEventListener("compositionstart", callback)
-        return this
+    onCompositionStart(callback: EL) {
+        return this.on("compositionstart", callback)
     }
 
     /**
-     * Attaches a composition update event listener to the current `AvitaElement` instance.
+     * Attaches a composition update event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the composition is updated on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onCompositionUpdate(callback: (event: CompositionEvent) => void) {
-        this.element.addEventListener("compositionupdate", callback)
-        return this
+    onCompositionUpdate(callback: EL) {
+        return this.on("compositionupdate", callback)
     }
 
     /**
-     * Attaches a composition end event listener to the current `AvitaElement` instance.
+     * Attaches a composition end event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the composition ends on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onCompositionEnd(callback: (event: CompositionEvent) => void) {
-        this.element.addEventListener("compositionend", callback)
-        return this
+    onCompositionEnd(callback: EL) {
+        return this.on("compositionend", callback)
     }
 
     /**
-     * Attaches a change event listener to the current `AvitaElement` instance.
+     * Attaches a change event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element's value changes.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onChange(callback: (event: Event) => void) {
-        this.element.addEventListener("change", callback)
-        return this
+    onChange(callback: EL) {
+        return this.on("change", callback)
     }
 
     /**
-     * Attaches an input event listener to the current `AvitaElement` instance.
+     * Attaches an input event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element's value is input.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onInput(callback: (event: Event) => void) {
-        this.element.addEventListener("input", callback)
-        return this
+    onInput(callback: EL) {
+        return this.on("input", callback)
     }
 
     /**
-     * Attaches a submit event listener to the current `AvitaElement` instance.
+     * Attaches a submit event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is submitted.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onSubmit(callback: (event: Event) => void) {
-        this.element.addEventListener("submit", callback)
-        return this
+    onSubmit(callback: EL) {
+        return this.on("submit", callback)
     }
 
     /**
-     * Attaches an invalid event listener to the current `AvitaElement` instance.
+     * Attaches an invalid event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is invalid.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onInvalid(callback: (event: Event) => void) {
-        this.element.addEventListener("invalid", callback)
-        return this
+    onInvalid(callback: EL) {
+        return this.on("invalid", callback)
     }
 
     /**
-     * Attaches a reset event listener to the current `AvitaElement` instance.
+     * Attaches a reset event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is reset.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onReset(callback: (event: Event) => void) {
-        this.element.addEventListener("reset", callback)
-        return this
+    onReset(callback: EL) {
+        return this.on("reset", callback)
     }
 
     /**
-     * Attaches a keydown event listener to the current `AvitaElement` instance.
+     * Attaches a keydown event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when a key is pressed down on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onKeyDown(callback: (event: KeyboardEvent) => void) {
-        this.element.addEventListener("keydown", callback)
-        return this
+    onKeyDown(callback: EL) {
+        return this.on("keydown", callback)
     }
 
     /**
-     * Attaches a keypress event listener to the current `AvitaElement` instance.
+     * Attaches a keypress event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when a key is pressed on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onKeyPress(callback: (event: KeyboardEvent) => void) {
-        this.element.addEventListener("keypress", callback)
-        return this
+    onKeyPress(callback: EL) {
+        return this.on("keypress", callback)
     }
 
     /**
-     * Attaches a keyup event listener to the current `AvitaElement` instance.
+     * Attaches a keyup event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when a key is released on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onKeyUp(callback: (event: KeyboardEvent) => void) {
-        this.element.addEventListener("keyup", callback)
-        return this
+    onKeyUp(callback: EL) {
+        return this.on("keyup", callback)
     }
 
     /**
-     * Attaches a focus event listener to the current `AvitaElement` instance.
+     * Attaches a focus event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element receives focus.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onFocus(callback: (event: FocusEvent) => void) {
-        this.element.addEventListener("focus", callback)
-        return this
+    onFocus(callback: EL) {
+        return this.on("focus", callback)
     }
 
     /**
-     * Attaches a blur event listener to the current `AvitaElement` instance.
+     * Attaches a blur event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element loses focus.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onBlur(callback: (event: FocusEvent) => void) {
-        this.element.addEventListener("blur", callback)
-        return this
+    onBlur(callback: EL) {
+        return this.on("blur", callback)
     }
 
     /**
-     * Attaches a focusin event listener to the current `AvitaElement` instance.
+     * Attaches a focusin event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element receives focus.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onFocusIn(callback: (event: FocusEvent) => void) {
-        this.element.addEventListener("focusin", callback)
-        return this
+    onFocusIn(callback: EL) {
+        return this.on("focusin", callback)
     }
 
     /**
-     * Attaches a focusout event listener to the current `AvitaElement` instance.
+     * Attaches a focuswithin event listener to the current `Avita` instance.
+     * @param callback - The callback function to be executed when the element or any of its descendants receives focus.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onFocusWithin(callback: EL) {
+        return this.on("focuswithin", callback)
+    }
+
+    /**
+     * Attaches a focusout event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element loses focus.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onFocusOut(callback: (event: FocusEvent) => void) {
-        this.element.addEventListener("focusout", callback)
-        return this
+    onFocusOut(callback: EL) {
+        return this.on("focusout", callback)
     }
 
     /**
-     * Attaches a mousedown event listener to the current `AvitaElement` instance.
+     * Attaches a mousedown event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the mouse button is pressed down on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onMouseDown(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("mousedown", callback)
-        return this
+    onMouseDown(callback: EL) {
+        return this.on("mousedown", callback)
     }
 
     /**
-     * Attaches a mouseup event listener to the current `AvitaElement` instance.
+     * Attaches a mouseup event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the mouse button is released on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onMouseUp(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("mouseup", callback)
-        return this
+    onMouseUp(callback: EL) {
+        return this.on("mouseup", callback)
     }
 
     /**
-     * Attaches a mouseenter event listener to the current `AvitaElement` instance.
+     * Attaches a mouseenter event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the mouse pointer enters the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onMouseEnter(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("mouseenter", callback)
-        return this
+    onMouseEnter(callback: EL) {
+        return this.on("mouseenter", callback)
     }
 
     /**
-     * Attaches a mouseleave event listener to the current `AvitaElement` instance.
+     * Attaches a mouseleave event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the mouse pointer leaves the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onMouseLeave(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("mouseleave", callback)
-        return this
+    onMouseLeave(callback: EL) {
+        return this.on("mouseleave", callback)
     }
 
     /**
-     * Attaches a mousemove event listener to the current `AvitaElement` instance.
+     * Attaches a mousemove event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the mouse pointer is moved over the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onMouseMove(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("mousemove", callback)
-        return this
+    onMouseMove(callback: EL) {
+        return this.on("mousemove", callback)
     }
 
     /**
-     * Attaches a mouseover event listener to the current `AvitaElement` instance.
+     * Attaches a mouseover event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the mouse pointer moves over the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onMouseOver(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("mouseover", callback)
-        return this
+    onMouseOver(callback: EL) {
+        return this.on("mouseover", callback)
     }
 
     /**
-     * Attaches a mouseout event listener to the current `AvitaElement` instance.
+     * Attaches a mouseout event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the mouse pointer leaves the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onMouseOut(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("mouseout", callback)
-        return this
+    onMouseOut(callback: EL) {
+        return this.on("mouseout", callback)
     }
 
     /**
-     * Attaches a contextmenu event listener to the current `AvitaElement` instance.
+     * Attaches a contextmenu event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the user right-clicks or otherwise triggers the contextmenu event on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onContextMenu(callback: (event: MouseEvent) => void) {
-        this.element.addEventListener("contextmenu", callback)
-        return this
+    onContextMenu(callback: EL) {
+        return this.on("contextmenu", callback)
     }
 
     /**
-     * Attaches a pointerover event listener to the current `AvitaElement` instance.
+     * Attaches a pointerover event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the pointer moves over the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onPointerOver(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("pointerover", callback)
-        return this
+    onPointerOver(callback: EL) {
+        return this.on("pointerover", callback)
     }
 
     /**
-     * Attaches a pointerenter event listener to the current `AvitaElement` instance.
+     * Attaches a pointerenter event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the pointer enters the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onPointerEnter(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("pointerenter", callback)
-        return this
+    onPointerEnter(callback: EL) {
+        return this.on("pointerenter", callback)
     }
 
     /**
-     * Attaches a pointerleave event listener to the current `AvitaElement` instance.
+     * Attaches a pointerleave event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the pointer leaves the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onPointerLeave(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("pointerleave", callback)
-        return this
+    onPointerLeave(callback: EL) {
+        return this.on("pointerleave", callback)
     }
 
     /**
-     * Attaches a pointermove event listener to the current `AvitaElement` instance.
+     * Attaches a pointermove event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the pointer moves over the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onPointerMove(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("pointermove", callback)
-        return this
+    onPointerMove(callback: EL) {
+        return this.on("pointermove", callback)
     }
 
     /**
-     * Attaches a pointerdown event listener to the current `AvitaElement` instance.
+     * Attaches a pointerdown event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the pointer is pressed down on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onPointerDown(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("pointerdown", callback)
-        return this
+    onPointerDown(callback: EL) {
+        return this.on("pointerdown", callback)
     }
 
     /**
-     * Attaches a pointerup event listener to the current `AvitaElement` instance.
+     * Attaches a pointerup event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the pointer is released on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onPointerUp(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("pointerup", callback)
-        return this
+    onPointerUp(callback: EL) {
+        return this.on("pointerup", callback)
     }
 
     /**
-     * Attaches a pointercancel event listener to the current `AvitaElement` instance.
+     * Attaches a pointercancel event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the pointer interaction is canceled on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onPointerCancel(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("pointercancel", callback)
-        return this
+    onPointerCancel(callback: EL) {
+        return this.on("pointercancel", callback)
     }
 
     /**
-     * Attaches a pointerout event listener to the current `AvitaElement` instance.
+     * Attaches a pointerout event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the pointer leaves the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onPointerOut(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("pointerout", callback)
-        return this
+    onPointerOut(callback: EL) {
+        return this.on("pointerout", callback)
     }
 
     /**
-     * Attaches a gotpointercapture event listener to the current `AvitaElement` instance.
+     * Attaches a gotpointercapture event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the pointer capture is gained on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onGotPointerCapture(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("gotpointercapture", callback)
-        return this
+    onGotPointerCapture(callback: EL) {
+        return this.on("gotpointercapture", callback)
     }
 
     /**
-     * Attaches a lostpointercapture event listener to the current `AvitaElement` instance.
+     * Attaches a lostpointercapture event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the pointer capture is lost on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onLostPointerCapture(callback: (event: PointerEvent) => void) {
-        this.element.addEventListener("lostpointercapture", callback)
-        return this
+    onLostPointerCapture(callback: EL) {
+        return this.on("lostpointercapture", callback)
     }
 
     /**
-     * Attaches a touchstart event listener to the current `AvitaElement` instance.
+     * Attaches a touchstart event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the touch starts on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onTouchStart(callback: (event: TouchEvent) => void) {
-        this.element.addEventListener("touchstart", callback)
-        return this
+    onTouchStart(callback: EL) {
+        return this.on("touchstart", callback)
     }
 
     /**
-     * Attaches a touchmove event listener to the current `AvitaElement` instance.
+     * Attaches a touchmove event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the touch moves on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onTouchMove(callback: (event: TouchEvent) => void) {
-        this.element.addEventListener("touchmove", callback)
-        return this
+    onTouchMove(callback: EL) {
+        return this.on("touchmove", callback)
     }
 
     /**
-     * Attaches a touchend event listener to the current `AvitaElement` instance.
+     * Attaches a touchend event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the touch ends on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onTouchEnd(callback: (event: TouchEvent) => void) {
-        this.element.addEventListener("touchend", callback)
-        return this
+    onTouchEnd(callback: EL) {
+        return this.on("touchend", callback)
     }
 
     /**
-     * Attaches a touchcancel event listener to the current `AvitaElement` instance.
+     * Attaches a touchcancel event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the touch is canceled on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onTouchCancel(callback: (event: TouchEvent) => void) {
-        this.element.addEventListener("touchcancel", callback)
-        return this
+    onTouchCancel(callback: EL) {
+        return this.on("touchcancel", callback)
     }
 
     /**
-     * Attaches a scroll event listener to the current `AvitaElement` instance.
+     * Attaches a touchenter event listener to the current `Avita` instance.
+     * @param callback - The callback function to be executed when the touch enters the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onTouchEnter(callback: EL) {
+        return this.on("touchenter", callback)
+    }
+
+    /**
+     * Attaches a touchleave event listener to the current `Avita` instance.
+     * @param callback - The callback function to be executed when the touch leaves the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onTouchLeave(callback: EL) {
+        return this.on("touchleave", callback)
+    }
+
+    /**
+     * Attaches a touchstationary event listener to the current `Avita` instance.
+     * @param callback - The callback function to be executed when the touch is stationary on the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onTouchStationary(callback: EL) {
+        return this.on("touchstationary", callback)
+    }
+
+    /**
+     * Attaches a scroll event listener to the window.
      * @param callback - The callback function to be executed when the element is scrolled.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onScroll(callback: (event: Event) => void) {
-        this.element.addEventListener("scroll", callback)
+    static onScroll(callback: EL) {
+        window.addEventListener("scroll", callback)
+    }
+
+    /**
+     * Attaches a scroll event listener to the window for the current `Avita` instance unless `thisElement` is provided.
+     * @param callback - The callback function to be executed when the element is scrolled.
+     * @param thisElement - If true, the listener will be attached to the element itself.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onScroll(callback: EL, thisElement?: boolean) {
+        if (thisElement) {
+            return this.on("scroll", callback)
+        }
+        window.addEventListener("scroll", callback)
         return this
     }
 
     /**
-     * Attaches a resize event listener to the current `AvitaElement` instance.
-     * @param callback - The callback function to be executed when the element is resized.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Attaches a resize event listener to the window.
+     * @param callback - The callback function to be executed when the window is resized.
+     * @returns The current `Avita` instance for chaining.
      */
-    onResize(callback: (event: UIEvent) => void) {
-        this.element.addEventListener("resize", callback)
+    static onResize(callback: EL) {
+        window.addEventListener("resize", callback)
+    }
+
+    /**
+     * Attaches a resize event listener to the current `Avita` instance if `thisElement` is true, otherwise attaches it to the window.
+     * @param callback - The callback function to be executed when the element or window is resized.
+     * @param thisElement - If true, the listener will be attached to the element itself. If false or not provided, the listener will be attached to the window.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onResize(callback: EL, thisElement?: boolean) {
+        if (thisElement) {
+            return this.on("resize", callback)
+        }
+        window.addEventListener("resize", callback)
         return this
     }
 
     /**
-     * Attaches a wheel event listener to the current `AvitaElement` instance.
+     * Attaches a wheel event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the wheel is scrolled on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onWheel(callback: (event: WheelEvent) => void) {
-        this.element.addEventListener("wheel", callback)
-        return this
+    onWheel(callback: EL) {
+        return this.on("wheel", callback)
     }
 
     /**
-     * Attaches a drag event listener to the current `AvitaElement` instance.
+     * Attaches a drag event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is dragged.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onDrag(callback: (event: DragEvent) => void) {
-        this.element.addEventListener("drag", callback)
-        return this
+    onDrag(callback: EL) {
+        return this.on("drag", callback)
     }
 
     /**
-     * Attaches a dragend event listener to the current `AvitaElement` instance.
+     * Attaches a dragend event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the drag operation is completed on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onDragEnd(callback: (event: DragEvent) => void) {
-        this.element.addEventListener("dragend", callback)
-        return this
+    onDragEnd(callback: EL) {
+        return this.on("dragend", callback)
     }
 
     /**
-     * Attaches a dragenter event listener to the current `AvitaElement` instance.
+     * Attaches a dragenter event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is entered during a drag operation.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onDragEnter(callback: (event: DragEvent) => void) {
-        this.element.addEventListener("dragenter", callback)
-        return this
+    onDragEnter(callback: EL) {
+        return this.on("dragenter", callback)
     }
 
     /**
-     * Attaches a dragleave event listener to the current `AvitaElement` instance.
+     * Attaches a dragleave event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is left during a drag operation.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onDragLeave(callback: (event: DragEvent) => void) {
-        this.element.addEventListener("dragleave", callback)
-        return this
+    onDragLeave(callback: EL) {
+        return this.on("dragleave", callback)
     }
 
     /**
-     * Attaches a dragover event listener to the current `AvitaElement` instance.
+     * Attaches a dragover event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is dragged over.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onDragOver(callback: (event: DragEvent) => void) {
-        this.element.addEventListener("dragover", callback)
-        return this
+    onDragOver(callback: EL) {
+        return this.on("dragover", callback)
     }
 
     /**
-     * Attaches a dragstart event listener to the current `AvitaElement` instance.
+     * Attaches a dragstart event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the drag operation starts on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onDragStart(callback: (event: DragEvent) => void) {
-        this.element.addEventListener("dragstart", callback)
-        return this
+    onDragStart(callback: EL) {
+        return this.on("dragstart", callback)
     }
 
     /**
-     * Attaches a drop event listener to the current `AvitaElement` instance.
+     * Attaches a drop event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is dropped.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onDrop(callback: (event: DragEvent) => void) {
-        this.element.addEventListener("drop", callback)
-        return this
+    onDrop(callback: EL) {
+        return this.on("drop", callback)
     }
 
     /**
-     * Attaches a abort event listener to the current `AvitaElement` instance.
+     * Attaches a abort event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is aborted.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onAbort(callback: (event: Event) => void) {
-        this.element.addEventListener("abort", callback)
-        return this
+    onAbort(callback: EL) {
+        return this.on("abort", callback)
     }
 
     /**
-     * Attaches a canplay event listener to the current `AvitaElement` instance.
+     * Attaches a canplay event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is able to start playing.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onCanPlay(callback: (event: Event) => void) {
-        this.element.addEventListener("canplay", callback)
-        return this
+    onCanPlay(callback: EL) {
+        return this.on("canplay", callback)
     }
 
     /**
-     * Attaches a canplaythrough event listener to the current `AvitaElement` instance.
+     * Attaches a canplaythrough event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is able to play through without interruption.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onCanPlayThrough(callback: (event: Event) => void) {
-        this.element.addEventListener("canplaythrough", callback)
-        return this
+    onCanPlayThrough(callback: EL) {
+        return this.on("canplaythrough", callback)
     }
 
     /**
-     * Attaches a durationchange event listener to the current `AvitaElement` instance.
+     * Attaches a durationchange event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the duration of the element changes.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onDurationChange(callback: (event: Event) => void) {
-        this.element.addEventListener("durationchange", callback)
-        return this
+    onDurationChange(callback: EL) {
+        return this.on("durationchange", callback)
     }
 
     /**
-     * Attaches an emptied event listener to the current `AvitaElement` instance.
+     * Attaches an emptied event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is emptied.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onEmptied(callback: (event: Event) => void) {
-        this.element.addEventListener("emptied", callback)
-        return this
+    onEmptied(callback: EL) {
+        return this.on("emptied", callback)
     }
 
     /**
-     * Attaches an encrypted event listener to the current `AvitaElement` instance.
+     * Attaches an encrypted event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is encrypted.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onEncrypted(callback: (event: Event) => void) {
-        this.element.addEventListener("encrypted", callback)
-        return this
+    onEncrypted(callback: EL) {
+        return this.on("encrypted", callback)
     }
 
     /**
-     * Attaches an ended event listener to the current `AvitaElement` instance.
+     * Attaches an ended event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element has finished playing.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onEnded(callback: (event: Event) => void) {
-        this.element.addEventListener("ended", callback)
-        return this
+    onEnded(callback: EL) {
+        return this.on("ended", callback)
     }
 
     /**
-     * Attaches a loadeddata event listener to the current `AvitaElement` instance.
+     * Attaches a loadeddata event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element's media data has finished loading.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onLoadedData(callback: (event: Event) => void) {
-        this.element.addEventListener("loadeddata", callback)
-        return this
+    onLoadedData(callback: EL) {
+        return this.on("loadeddata", callback)
     }
 
     /**
-     * Attaches a loadedmetadata event listener to the current `AvitaElement` instance.
+     * Attaches a loadedmetadata event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element's media metadata has finished loading.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onLoadedMetadata(callback: (event: Event) => void) {
-        this.element.addEventListener("loadedmetadata", callback)
-        return this
+    onLoadedMetadata(callback: EL) {
+        return this.on("loadedmetadata", callback)
     }
 
     /**
-     * Attaches a loadstart event listener to the current `AvitaElement` instance.
+     * Attaches a loadstart event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element starts loading.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onLoadStart(callback: (event: Event) => void) {
-        this.element.addEventListener("loadstart", callback)
-        return this
+    onLoadStart(callback: EL) {
+        return this.on("loadstart", callback)
     }
 
     /**
-     * Attaches a pause event listener to the current `AvitaElement` instance.
+     * Attaches a pause event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is paused.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onPause(callback: (event: Event) => void) {
-        this.element.addEventListener("pause", callback)
-        return this
+    onPause(callback: EL) {
+        return this.on("pause", callback)
     }
 
     /**
-     * Attaches a play event listener to the current `AvitaElement` instance.
+     * Attaches a play event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element starts playing.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onPlay(callback: (event: Event) => void) {
-        this.element.addEventListener("play", callback)
-        return this
+    onPlay(callback: EL) {
+        return this.on("play", callback)
     }
 
     /**
-     * Attaches a playing event listener to the current `AvitaElement` instance.
+     * Attaches a playing event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element starts playing.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onPlaying(callback: (event: Event) => void) {
-        this.element.addEventListener("playing", callback)
-        return this
+    onPlaying(callback: EL) {
+        return this.on("playing", callback)
     }
 
     /**
-     * Attaches a progress event listener to the current `AvitaElement` instance.
+     * Attaches a progress event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element's media data is being loaded.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onProgress(callback: (event: ProgressEvent) => void) {
-        this.element.addEventListener("progress", callback)
-        return this
+    onProgress(callback: EL) {
+        return this.on("progress", callback)
     }
 
     /**
-     * Attaches a ratechange event listener to the current `AvitaElement` instance.
+     * Attaches a ratechange event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element's playback rate changes.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onRateChange(callback: (event: Event) => void) {
-        this.element.addEventListener("ratechange", callback)
-        return this
+    onRateChange(callback: EL) {
+        return this.on("ratechange", callback)
     }
 
     /**
-     * Attaches a seeked event listener to the current `AvitaElement` instance.
+     * Attaches a seeked event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element has finished seeking.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onSeeked(callback: (event: Event) => void) {
-        this.element.addEventListener("seeked", callback)
-        return this
+    onSeeked(callback: EL) {
+        return this.on("seeked", callback)
     }
 
     /**
-     * Attaches a seeking event listener to the current `AvitaElement` instance.
+     * Attaches a seeking event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element starts seeking.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onSeeking(callback: (event: Event) => void) {
-        this.element.addEventListener("seeking", callback)
-        return this
+    onSeeking(callback: EL) {
+        return this.on("seeking", callback)
     }
 
     /**
-     * Attaches a stalled event listener to the current `AvitaElement` instance.
+     * Attaches a stalled event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element's media data loading has been interrupted.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onStalled(callback: (event: Event) => void) {
-        this.element.addEventListener("stalled", callback)
-        return this
+    onStalled(callback: EL) {
+        return this.on("stalled", callback)
     }
 
     /**
-     * Attaches a suspend event listener to the current `AvitaElement` instance.
+     * Attaches a suspend event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element's media data loading has been suspended.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onSuspend(callback: (event: Event) => void) {
-        this.element.addEventListener("suspend", callback)
-        return this
+    onSuspend(callback: EL) {
+        return this.on("suspend", callback)
     }
 
     /**
-     * Attaches a timeupdate event listener to the current `AvitaElement` instance.
+     * Attaches a timeupdate event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element's playback position changes.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onTimeUpdate(callback: (event: Event) => void) {
-        this.element.addEventListener("timeupdate", callback)
-        return this
+    onTimeUpdate(callback: EL) {
+        return this.on("timeupdate", callback)
     }
 
     /**
-     * Attaches a volumechange event listener to the current `AvitaElement` instance.
+     * Attaches a volumechange event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element's volume has changed.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onVolumeChange(callback: (event: Event) => void) {
-        this.element.addEventListener("volumechange", callback)
-        return this
+    onVolumeChange(callback: EL) {
+        return this.on("volumechange", callback)
     }
 
     /**
-     * Attaches a waiting event listener to the current `AvitaElement` instance.
+     * Attaches a waiting event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element is waiting for media data to be available.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onWaiting(callback: (event: Event) => void) {
-        this.element.addEventListener("waiting", callback)
-        return this
+    onWaiting(callback: EL) {
+        return this.on("waiting", callback)
     }
 
     /**
-     * Attaches a load event listener to the current `AvitaElement` instance.
+     * Attaches a load event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when the element has finished loading.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onLoad(callback: (event: Event) => void) {
-        this.element.addEventListener("load", callback)
-        return this
+    onLoad(callback: EL) {
+        return this.on("load", callback)
     }
 
     /**
-     * Attaches an error event listener to the current `AvitaElement` instance.
+     * Attaches a global error event listener.
+     * @param callback - The callback function to be executed when a global error occurs.
+     * @returns The current `Avita` instance for chaining.
+     */
+    static onError(callback: EL) {
+        window.addEventListener("error", callback)
+    }
+
+    /**
+     * Attaches an error event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when an error occurs.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onError(callback: (event: Event) => void) {
-        this.element.addEventListener("error", callback)
+    onError(callback: EL, thisElement?: boolean) {
+        if (thisElement) {
+            return this.on("error", callback)
+        }
+        window.addEventListener("error", callback)
         return this
     }
 
     /**
-     * Attaches an animationstart event listener to the current `AvitaElement` instance.
+     * Attaches an animationstart event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when an animation starts on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onAnimationStart(callback: (event: AnimationEvent) => void) {
-        this.element.addEventListener("animationstart", callback)
-        return this
+    onAnimationStart(callback: EL) {
+        return this.on("animationstart", callback)
     }
 
     /**
-     * Attaches an animationend event listener to the current `AvitaElement` instance.
+     * Attaches an animationend event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when an animation ends on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onAnimationEnd(callback: (event: AnimationEvent) => void) {
-        this.element.addEventListener("animationend", callback)
-        return this
+    onAnimationEnd(callback: EL) {
+        return this.on("animationend", callback)
     }
 
     /**
-     * Attaches an animationiteration event listener to the current `AvitaElement` instance.
+     * Attaches an animationiteration event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when an animation iteration occurs on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onAnimationIteration(callback: (event: AnimationEvent) => void) {
-        this.element.addEventListener("animationiteration", callback)
-        return this
+    onAnimationIteration(callback: EL) {
+        return this.on("animationiteration", callback)
     }
 
     /**
-     * Attaches a transitionstart event listener to the current `AvitaElement` instance.
+     * Attaches a transitionstart event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when a transition starts on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onTransitionStart(callback: (event: TransitionEvent) => void) {
-        this.element.addEventListener("transitionstart", callback)
-        return this
+    onTransitionStart(callback: EL) {
+        return this.on("transitionstart", callback)
     }
 
     /**
-     * Attaches a transitionend event listener to the current `AvitaElement` instance.
+     * Attaches a transitionend event listener to the current `Avita` instance.
      * @param callback - The callback function to be executed when a transition ends on the element.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    onTransitionEnd(callback: (event: TransitionEvent) => void) {
-        this.element.addEventListener("transitionend", callback)
+    onTransitionEnd(callback: EL) {
+        return this.on("transitionend", callback)
+    }
+
+    // todo no clue if the rest of these work lol
+    /**
+     * Attaches a transitionrun event listener to the current `Avita` instance.
+     * @param callback - The callback function to be executed when a transition runs on the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onTransitionRun(callback: EL) {
+        return this.on("transitionrun", callback)
+    }
+
+    /**
+     * Attaches a transitioncancel event listener to the current `Avita` instance.
+     * @param callback - The callback function to be executed when a transition is canceled on the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onTransitionCancel(callback: EL) {
+        return this.on("transitioncancel", callback)
+    }
+
+    /**
+     * Attaches a transitionpaused event listener to the current `Avita` instance.
+     * @param callback - The callback function to be executed when a transition is paused on the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onTransitionPaused(callback: EL) {
+        return this.on("transitionpaused", callback)
+    }
+
+    /**
+     * Attaches a transition event listener to the current `Avita` instance.
+     * @param callback - The callback function to be executed when a transition occurs on the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    onTransition(callback: EL) {
+        return this.on("transition", callback)
+    }
+
+    // Pseudoclasses onEventCSS methods
+
+    /**
+     * Attaches a CSS hover effect to the current `Avita` instance.
+     * The hover effect is defined by the provided CSS properties or a single property-value pair.
+     * A unique CSS class is generated and applied to the element to scope the hover effect.
+     * @param props - The CSS properties to apply to the element when hovered over.
+     * @returns The current `Avita` instance for chaining.
+     */
+    hover(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Attaches a CSS hover effect to the current `Avita` instance.
+     * The hover effect is defined by the provided CSS property and value.
+     * A unique CSS class is generated and applied to the element to scope the hover effect.
+     * @param property - The CSS property to apply to the element when hovered over.
+     * @param value - The value to set for the CSS property.
+     * @returns The current `Avita` instance for chaining.
+     */
+    hover(property: keyof CSSStyleDeclaration, value: string): this
+
+    hover(
+        propsOrProperty:
+            | Partial<CSSStyleDeclaration>
+            | keyof CSSStyleDeclaration,
+        value?: string
+    ): this {
+        return this.applyPseudoClassCSS("hover", propsOrProperty, value)
+    }
+
+    /**
+     * Attaches a CSS active effect to the current `Avita` instance.
+     * The active effect is defined by the provided CSS properties or a single property-value pair.
+     * A unique CSS class is generated and applied to the element to scope the active effect.
+     * @param props - The CSS properties to apply to the element when it is active.
+     * @returns The current `Avita` instance for chaining.
+     */
+    active(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Attaches a CSS active effect to the current `Avita` instance.
+     * The active effect is defined by the provided CSS property and value.
+     * A unique CSS class is generated and applied to the element to scope the active effect.
+     * @param property - The CSS property to apply to the element when it is active.
+     * @param value - The value to set for the CSS property.
+     * @returns The current `Avita` instance for chaining.
+     */
+    active(property: keyof CSSStyleDeclaration, value: string): this
+
+    active(
+        propsOrProperty:
+            | Partial<CSSStyleDeclaration>
+            | keyof CSSStyleDeclaration,
+        value?: string
+    ): this {
+        return this.applyPseudoClassCSS("active", propsOrProperty, value)
+    }
+
+    /**
+     * Attaches a CSS focus effect to the current `Avita` instance.
+     * The focus effect is defined by the provided CSS properties or a single property-value pair.
+     * A unique CSS class is generated and applied to the element to scope the focus effect.
+     * @param props - The CSS properties to apply to the element when it is focused.
+     * @returns The current `Avita` instance for chaining.
+     */
+    focus(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Attaches a CSS focus effect to the current `Avita` instance.
+     * The focus effect is defined by the provided CSS property and value.
+     * A unique CSS class is generated and applied to the element to scope the focus effect.
+     * @param property - The CSS property to apply to the element when it is focused.
+     * @param value - The value to set for the CSS property.
+     * @returns The current `Avita` instance for chaining.
+     */
+    focus(property: keyof CSSStyleDeclaration, value: string): this
+
+    focus(
+        propsOrProperty:
+            | Partial<CSSStyleDeclaration>
+            | keyof CSSStyleDeclaration,
+        value?: string
+    ): this {
+        return this.applyPseudoClassCSS("focus", propsOrProperty, value)
+    }
+
+    /**
+     * Helper method to apply CSS for a given pseudoclass.
+     * @param pseudoClass - The pseudoclass to apply (e.g., "hover", "active").
+     * @param propsOrProperty - The CSS properties or property to apply.
+     * @param value - The value to set for the CSS property (if a single property is provided).
+     * @returns The current `Avita` instance for chaining.
+     */
+    private applyPseudoClassCSS(
+        pseudoClass: string,
+        propsOrProperty:
+            | Partial<CSSStyleDeclaration>
+            | keyof CSSStyleDeclaration,
+        value?: string
+    ): this {
+        const uniqueClass = generateClass()
+        this.addClass(uniqueClass)
+
+        let body = ""
+
+        if (typeof propsOrProperty === "string" && value) {
+            body = `${camelToKebab(propsOrProperty)}: ${value}!important;\n`
+        }
+
+        if (typeof propsOrProperty === "object") {
+            Object.entries(propsOrProperty).forEach(([prop, val]) => {
+                body += `${camelToKebab(prop)}: ${val}!important;\n`
+            })
+        }
+
+        const pseudoCSS = `.${uniqueClass}:${pseudoClass} {\n${body}\n}`
+        $("head").append(style().text(pseudoCSS))
+
         return this
     }
 
     // CSS Properties
+
     /**
-     * Sets the 'all' CSS property on the current `AvitaElement` instance.
+     * Sets the 'all' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'all' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     all(value: string) {
-        this.element.style.all = value
-        return this
+        return this.css("all", value)
     }
 
     /**
-     * Sets the 'accent-color' CSS property on the current `AvitaElement` instance.
+     * Sets the 'accent-color' CSS property on the current `Avita` instance.
      * @param color - The color value to set for the 'accent-color' property.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    accentColor(color: AvitaTypes.AvitaColorType | string) {
-        this.element.style.accentColor = String(color)
-        return this
+    accent(color: string) {
+        return this.css("accentColor", color)
     }
 
     /**
-     * Sets the 'appearance' CSS property on the current `AvitaElement` instance.
+     * Sets the 'appearance' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'appearance' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    appearance(value: AvitaTypes.Appearance) {
-        this.element.style.appearance = value
-        return this
+    appearance(value: string) {
+        return this.css("appearance", value)
     }
 
     /**
-     * Sets the 'align-content' CSS property on the current `AvitaElement` instance.
+     * Sets the 'align-content' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'align-content' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    alignContent(value: AvitaTypes.AlignContent) {
-        this.element.style.alignContent = value
-        return this
+    alignContent(value: string) {
+        return this.css("alignContent", value)
     }
 
     /**
-     * Sets the 'align-items' CSS property on the current `AvitaElement` instance.
+     * Shorthand for setting the 'align-content' CSS property on the current `Avita` instance.
+     * @returns The current value of the 'align-content' CSS property.
+     */
+    aContent = this.alignContent
+
+    /**
+     * Sets the 'align-items' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'align-items' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    alignItems(value: AvitaTypes.AlignItems) {
-        this.element.style.alignItems = value
-        return this
+    alignItems(value: string) {
+        return this.css("alignItems", value)
     }
 
     /**
-     * Sets the 'align-self' CSS property on the current `AvitaElement` instance.
+     * Shorthand for setting the 'align-items' CSS property on the current `Avita` instance.
+     * @returns The current value of the 'align-items' CSS property.
+     */
+    aItems = this.alignItems
+
+    /**
+     * Sets the 'align-self' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'align-self' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    alignSelf(value: AvitaTypes.AlignSelf) {
-        this.element.style.alignSelf = value
-        return this
+    alignSelf(value: string) {
+        return this.css("alignSelf", value)
     }
 
     /**
-     * Sets the 'animation' CSS property on the current `AvitaElement` instance.
+     * Shorthand for setting the 'align-self' CSS property on the current `Avita` instance.
+     * @returns The current value of the 'align-self' CSS property.
+     */
+    aSelf = this.alignSelf
+
+    /**
+     * Todo: Big things coming soon...
+     * Sets the 'animation' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'animation' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    animation(value: string) {
-        this.element.style.animation = value
-        return this
+    animationCSS(value: string) {
+        return this.css("animation", value)
     }
 
     /**
-     * Sets the 'animationDelay' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'animationDelay' CSS property. Can be a string or number representing the delay in seconds.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    animationDelay(value: string | number) {
-        this.element.style.animationDelay = numberToSeconds(value)
-        return this
-    }
-
-    /**
-     * Sets the 'animationDirection' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'animationDirection' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    animationDirection(value: AvitaTypes.AnimationDirection) {
-        this.element.style.animationDirection = value
-        return this
-    }
-
-    /**
-     * Sets the 'animationDuration' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'animationDuration' CSS property. Can be a string or number representing the duration in seconds.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    animationDuration(value: string | number) {
-        this.element.style.animationDuration = numberToSeconds(value)
-        return this
-    }
-
-    /**
-     * Sets the 'animationFillMode' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'animationFillMode' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    animationFillMode(value: AvitaTypes.AnimationFillMode) {
-        this.element.style.animationFillMode = value
-        return this
-    }
-
-    /**
-     * Sets the 'animationIterationCount' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'animationIterationCount' CSS property. Can be a number or the string 'infinite'.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    animationIterationCount(value: AvitaTypes.AnimationIterationCount) {
-        this.element.style.animationIterationCount = value
-        return this
-    }
-
-    /**
-     * Sets the 'animationName' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'animationName' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    animationName(value: string) {
-        this.element.style.animationName = value
-        return this
-    }
-
-    /**
-     * Sets the 'animationPlayState' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'animationPlayState' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    animationPlayState(value: AvitaTypes.AnimationPlayState) {
-        this.element.style.animationPlayState = value
-        return this
-    }
-
-    /**
-     * Sets the 'animationTimingFunction' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'animationTimingFunction' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    animationTimingFunction(value: AvitaTypes.AnimationTimingFunction) {
-        this.element.style.animationTimingFunction = value
-        return this
-    }
-
-    /**
-     * Sets the 'aspectRatio' CSS property on the current `AvitaElement` instance.
+     * Sets the 'aspectRatio' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'aspectRatio' CSS property. Can be a number or a string.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     aspectRatio(value: string | number) {
-        this.element.style.aspectRatio = String(value)
-        return this
+        return this.css("aspectRatio", String(value))
     }
 
     /**
-     * Sets the 'backdropFilter' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backdropFilter' CSS property. Can be a string or an array with the filter name and value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Shorthand for setting the 'background' CSS property on the current `Avita` instance.
+     * @returns The current value of the 'aspectRatio' CSS property.
      */
-    backdropFilter(value: AvitaTypes.BackdropFilter) {
-        if (typeof value === "string") {
-            this.element.style.backdropFilter = value
-            return this
-        }
-        const [filter, val] = value
-        this.element.style.backdropFilter = `${filter}(${val})`
-        return this
-    }
+    ratio = this.aspectRatio
 
     /**
-     * Sets the 'backfaceVisibility' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backfaceVisibility' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'backdropFilter' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'backdropFilter' CSS property. Can be a string representing a valid CSS backdrop-filter value.
+     * @returns The current `Avita` instance for chaining.
      */
-    backfaceVisibility(value: AvitaTypes.BackfaceVisibility) {
-        this.element.style.backfaceVisibility = value
-        return this
+    backFilter(value: string) {
+        return this.css("backdropFilter", value)
     }
 
     /**
-     * Sets the 'background' CSS property on the current `AvitaElement` instance.
+     * Sets the 'backfaceVisibility' CSS property on the current `Avita` instance to 'visible', making the element single-sided.
+     * @returns The current `Avita` instance for chaining.
+     */
+    singleSided() {
+        //todo double check
+        return this.css("backfaceVisibility", "visible")
+    }
+
+    /**
+     * Sets the 'backfaceVisibility' CSS property on the current `Avita` instance to 'hidden', making the element double-sided.
+     * @returns The current `Avita` instance for chaining.
+     */
+    dblSided() {
+        //todo double check
+        return this.css("backfaceVisibility", "hidden")
+    }
+
+    /**
+     * Sets the 'background' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'background' CSS property. Can be a string representing a valid CSS background value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     background(value: string) {
-        this.element.style.background = value
-        return this
+        return this.css("background", value)
     }
 
     /**
-     * Sets the 'backgroundAttachment' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundAttachment' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Gets the 'background' CSS property value of the current `Avita` instance.
+     * @returns The current value of the 'background' CSS property.
      */
-    backgroundAttachment(value: AvitaTypes.BackgroundAttachment) {
-        this.element.style.backgroundAttachment = value
-        return this
-    }
+    bg = this.background
 
     /**
-     * Sets the 'backgroundBlendMode' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundBlendMode' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'backgroundColor' CSS property on the current `Avita` instance and all its child elements to the specified value.
+     * @param value - The value to set for the 'backgroundColor' CSS property. Can be a string representing a valid CSS color value.
+     * @returns The current `Avita` instance for chaining.
+     * @deprecated Use the `bg()` method instead.
      */
-    backgroundBlendMode(value: AvitaTypes.BackgroundBlendMode) {
-        this.element.style.backgroundBlendMode = value
-        return this
+    bgColor(value: string) {
+        return this.css("backgroundColor", value)
     }
 
     /**
-     * Sets the 'backgroundClip' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundClip' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'backgroundClip' CSS property on the current `Avita` instance and all its child elements to the specified value.
+     * @param value - The value to set for the 'backgroundClip' CSS property. Can be a string representing a valid CSS background-clip value.
+     * @returns The current `Avita` instance for chaining.
      */
-    backgroundClip(value: AvitaTypes.BackgroundClip) {
-        this.element.style.backgroundClip = value
-        return this
+    bgClip(value: string) {
+        return this.css("backgroundClip", value)
     }
 
     /**
-     * Sets the 'backgroundColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundColor' CSS property. Can be a string representing a valid CSS color value or an `AvitaTypes.AvitaColorType` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'backgroundSize' CSS property on the current `Avita` instance and all its child elements to 'contain', scaling the background image to fit within the element while maintaining its aspect ratio.
+     * @returns The current `Avita` instance for chaining.
      */
-    backgroundColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.backgroundColor = String(value)
-        return this
+    bgContain() {
+        return this.css("backgroundSize", "contain")
     }
 
     /**
-     * Sets the 'backgroundImage' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundImage' CSS property. Can be a string representing a valid CSS background image value or an `AvitaTypes.AvitaColorType` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'backgroundSize' CSS property on the current `Avita` instance and all its child elements to 'cover', scaling the background image to fill the entire element while maintaining its aspect ratio.
+     * @returns The current `Avita` instance for chaining.
      */
-    backgroundImage(value: string | AvitaTypes.AvitaColorType) {
-        this.element.style.backgroundImage = String(value)
-        return this
+    bgCover() {
+        return this.css("backgroundSize", "cover")
     }
 
     /**
-     * Sets the 'backgroundOrigin' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundOrigin' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'backgroundRepeat' CSS property on the current `Avita` instance to 'no-repeat', preventing the background image from repeating.
+     * @returns The current `Avita` instance for chaining.
      */
-    backgroundOrigin(value: AvitaTypes.BackgroundOrigin) {
-        this.element.style.backgroundOrigin = value
-        return this
+    bgNoRepeat() {
+        return this.css("backgroundRepeat", "no-repeat")
     }
 
     /**
-     * Sets the 'backgroundPosition' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundPosition' CSS property. Can be a string representing a valid CSS background position value or an `AvitaTypes.BackgroundPosition` tuple.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'backgroundRepeat' CSS property on the current `Avita` instance to 'repeat', repeating the background image in both the x and y directions.
+     * @returns The current `Avita` instance for chaining.
      */
-    backgroundPosition(value: AvitaTypes.BackgroundPosition) {
-        if (typeof value === "string") {
-            this.element.style.backgroundPosition = value
-            return this
-        }
-        const [pos, val] = value
-        this.element.style.backgroundPosition = `${pos} ${val}`
-        return this
+    bgRepeat() {
+        return this.css("backgroundRepeat", "repeat")
     }
 
     /**
-     * Sets the 'backgroundPositionX' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundPositionX' CSS property. Can be a string representing a valid CSS background position value or an `AvitaTypes.BackgroundPosition` tuple.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'backgroundRepeat' CSS property on the current `Avita` instance to 'repeat-x', repeating the background image horizontally.
+     * @returns The current `Avita` instance for chaining.
      */
-    backgroundPositionX(value: AvitaTypes.BackgroundPosition) {
-        if (typeof value === "string") {
-            this.element.style.backgroundPositionX = value
-            return this
-        }
-        const [pos, val] = value
-        this.element.style.backgroundPositionX = `${pos} ${val}`
-        return this
+    bgRepeatX() {
+        return this.css("backgroundRepeat", "repeat-x")
     }
 
     /**
-     * Sets the 'backgroundPositionY' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundPositionY' CSS property. Can be a string representing a valid CSS background position value or an `AvitaTypes.BackgroundPosition` tuple.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'backgroundRepeat' CSS property on the current `Avita` instance to 'repeat-y', repeating the background image vertically.
+     * @returns The current `Avita` instance for chaining.
      */
-    backgroundPositionY(value: AvitaTypes.BackgroundPosition) {
-        if (typeof value === "string") {
-            this.element.style.backgroundPositionX = value
-            return this
-        }
-        const [pos, val] = value
-        this.element.style.backgroundPositionX = `${pos} ${val}`
-        return this
+    bgRepeatY() {
+        return this.css("backgroundRepeat", "repeat-y")
     }
 
     /**
-     * Sets the 'backgroundRepeat' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundRepeat' CSS property. Can be a valid CSS background repeat value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'backgroundImage' CSS property on the current `Avita` instance using one or more image URLs.
+     * @param urls - A list of image URLs to use as the background image.
+     * @returns The current `Avita` instance for chaining.
      */
-    backgroundRepeat(value: AvitaTypes.BackgroundRepeat) {
-        this.element.style.backgroundRepeat = value
-        return this
+    bgImg(...urls: string[]) {
+        const urlsString = urls.join(", ")
+        return this.css("backgroundImage", `url(${urlsString})`)
     }
 
     /**
-     * Sets the 'backgroundSize' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'backgroundSize' CSS property. Can be a string representing a valid CSS background size value or an `AvitaTypes.BackgroundSize` tuple.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Applies a linear gradient as the background of the current `Avita` instance and its child elements.
+     * @param angle - The angle of the gradient in degrees. Defaults to 0 (horizontal).
+     * @param colors - An array of CSS color values to use in the gradient.
+     * @returns The current `Avita` instance for chaining.
      */
-    backgroundSize(value: AvitaTypes.BackgroundSize) {
-        if (typeof value === "string") {
-            this.element.style.backgroundSize = value
-            return this
-        }
-        const [size, val] = value
-        this.element.style.backgroundSize = `${size} ${val}`
-        return this
+    bgLinearGradient(angle: number = 0, ...colors: string[]) {
+        const gradient = `linear-gradient(${angle}deg, ${colors.join(", ")})`
+        return this.bg(gradient)
     }
 
     /**
-     * Sets the 'blockSize' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'blockSize' CSS property. Can be a string or number representing a valid CSS block size value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Applies a radial gradient as the background of the current `Avita` instance and its child elements.
+     * @param shape - The shape of the gradient, can be 'circle', 'ellipse', 'closest-side' or a shape with location.
+     * @param colors - An array of CSS color values to use in the gradient.
+     * @returns The current `Avita` instance for chaining.
      */
-    blockSize(value: string | number) {
-        this.element.style.blockSize = String(value)
+    bgRadialGradient(shape: string, ...colors: string[]) {
+        const gradient = `radial-gradient(${shape}, ${colors.join(", ")})`
+        return this.bg(gradient)
+    }
+
+    /**
+     * Provides a shorthand for calling the `bgLinearGradient` method on the current `Avita` instance.
+     * @returns The current `Avita` instance for chaining.
+     */
+    bgLinGrad = this.bgLinearGradient
+
+    /**
+     * Applies a text-masked linear gradient effect to the current `Avita` instance and its child elements.
+     * @param angle - The angle of the gradient in degrees or a string value. Defaults to 90 (horizontal).
+     * @param colors - An array of CSS color values to use in the gradient.
+     * @returns The current `Avita` instance for chaining.
+     */
+    textGradient(angle: number | string = 90, ...colors: string[]) {
+        const unit = typeof angle === "string" ? "" : "deg"
+        const gradient = `linear-gradient(${angle}${unit}, ${colors.join(
+            ", "
+        )})`
+        return this.bg(gradient).textMask().color("transparent")
+    }
+
+    /**
+     * Applies a horizontal text-masked linear gradient effect to the current `Avita` instance and its child elements.
+     * @param colors - An array of CSS color values to use in the gradient.
+     * @returns The current `Avita` instance for chaining.
+     */
+    textGradientX(...colors: string[]) {
+        return this.textGradient(90, ...colors)
+    }
+
+    /**
+     * Applies a vertical text-masked linear gradient effect to the current `Avita` instance and its child elements.
+     * @param colors - An array of CSS color values to use in the gradient.
+     * @returns The current `Avita` instance for chaining.
+     */
+    textGradientY(...colors: string[]) {
+        return this.textGradient(0, ...colors)
+    }
+
+    /**
+     * Applies a 45-degree text-masked linear gradient effect to the current `Avita` instance and its child elements.
+     * @param colors - An array of CSS color values to use in the gradient.
+     * @returns The current `Avita` instance for chaining.
+     */
+    textGradient45(...colors: string[]) {
+        return this.textGradient(45, ...colors)
+    }
+
+    /**
+     * Applies a 135-degree text-masked linear gradient effect to the current `Avita` instance and its child elements.
+     * @param colors - An array of CSS color values to use in the gradient.
+     * @returns The current `Avita` instance for chaining.
+     */
+    textGradient135(...colors: string[]) {
+        return this.textGradient(135, ...colors)
+    }
+
+    /**
+     * Applies a 225-degree text-masked linear gradient effect to the current `Avita` instance and its child elements.
+     * @param colors - An array of CSS color values to use in the gradient.
+     * @returns The current `Avita` instance for chaining.
+     */
+    textGradient225(...colors: string[]) {
+        return this.textGradient(225, ...colors)
+    }
+
+    /**
+     * Applies a 315-degree text-masked linear gradient effect to the current `Avita` instance and its child elements.
+     * @param colors - An array of CSS color values to use in the gradient.
+     * @returns The current `Avita` instance for chaining.
+     */
+    textGradient315(...colors: string[]) {
+        return this.textGradient(315, ...colors)
+    }
+
+    /**
+     * Shorthands the text-masked linear gradient effect to be horizontal on the current `Avita` instance.
+     * See `textGradientX` for more details.
+     * @param colors - An array of CSS color values to use in the gradient.
+     * @returns The current `Avita` instance for chaining.
+     */
+    textGrad = this.textGradientX
+
+    /**
+     * Sets the 'backgroundClip' CSS property on the current `Avita` instance and all its child elements to 'text', clipping the background to the text content.
+     * @returns The current `Avita` instance for chaining.
+     */
+    textMask() {
+        this.bgClip("text")
         return this
     }
 
     /**
-     * Sets the 'border' CSS property on the current `AvitaElement` instance.
+     * Sets the 'border' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'border' CSS property. Can be a string representing a valid CSS border value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     border(value: string) {
-        this.element.style.border = value
-        return this
+        return this.css("border", value)
     }
 
     /**
-     * Sets the 'borderBlock' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlock' CSS property. Can be a string representing a valid CSS border block value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'borderLeft' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'borderLeft' CSS property. Can be a string representing a valid CSS border value.
+     * @returns The current `Avita` instance for chaining.
      */
-    borderBlock(value: string) {
-        this.element.style.borderBlock = value
-        return this
+    borderL(value: string) {
+        return this.css("borderLeft", value)
     }
 
     /**
-     * Sets the 'borderBlockColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockColor' CSS property. Can be a string representing a valid CSS color value or an `AvitaTypes.AvitaColorType`.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'borderRight' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'borderRight' CSS property. Can be a string representing a valid CSS border value.
+     * @returns The current `Avita` instance for chaining.
      */
-    borderBlockColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderBlockColor = String(value)
-        return this
+    borderR(value: string) {
+        return this.css("borderRight", value)
     }
 
     /**
-     * Sets the 'borderBlockEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockEnd' CSS property. Can be a string representing a valid CSS border block end value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'borderTop' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'borderTop' CSS property. Can be a string representing a valid CSS border value.
+     * @returns The current `Avita` instance for chaining.
      */
-    borderBlockEnd(value: string) {
-        this.element.style.borderBlockEnd = value
-        return this
+    borderT(value: string) {
+        return this.css("borderTop", value)
     }
 
     /**
-     * Sets the 'borderBlockEndColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockEndColor' CSS property. Can be a string representing a valid CSS color value or an `AvitaTypes.AvitaColorType`.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBlockEndColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderBlockEndColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'borderBlockEndStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockEndStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBlockEndStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderBlockEndStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderBlockEndWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockEndWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBlockEndWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderBlockEndWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderBlockStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockStart' CSS property. Can be a string representing a valid CSS border block start value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBlockStart(value: string) {
-        this.element.style.borderBlockStart = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderBlockStartColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockStartColor' CSS property. Can be a string representing a valid CSS color value or an `AvitaTypes.AvitaColorType`.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBlockStartColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderBlockStartColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'borderBlockStartStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockStartStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBlockStartStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderBlockStartStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderBlockStartWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockStartWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBlockStartWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderBlockStartWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderBlockStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBlockStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderBlockStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderBlockWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBlockWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBlockWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderBlockWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderBottom' CSS property on the current `AvitaElement` instance.
+     * Sets the 'borderBottom' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'borderBottom' CSS property. Can be a string representing a valid CSS border value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    borderBottom(value: string) {
-        this.element.style.borderBottom = value
-        return this
+    borderB(value: string) {
+        return this.css("borderBottom", value)
     }
 
     /**
-     * Sets the 'borderBottomColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBottomColor' CSS property. Can be a value from the `AvitaTypes.AvitaColorType` enum or a string representing a valid CSS color value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'borderColor' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'borderColor' CSS property. Can be a string representing a valid CSS color value.
+     * @returns The current `Avita` instance for chaining.
      */
-    borderBottomColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderBottomColor = String(value)
-        return this
+    borderColor(value: string) {
+        return this.css("borderColor", value)
     }
 
     /**
-     * Sets the 'borderBottomLeftRadius' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBottomLeftRadius' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBottomLeftRadius(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderBottomLeftRadius = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderBottomRightRadius' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBottomRightRadius' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBottomRightRadius(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderBottomRightRadius = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderTopLeftRadius' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderTopLeftRadius' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderTopLeftRadius(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderTopLeftRadius = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderTopRightRadius' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderTopRightRadius' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderTopRightRadius(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderTopRightRadius = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderBottomStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBottomStyle' CSS property. Can be one of the valid CSS border style values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBottomStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderBottomStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderBottomWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderBottomWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderBottomWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderBottomWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderCollapse' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderCollapse' CSS property. Can be one of the valid CSS border collapse values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderCollapse(value: AvitaTypes.BorderCollapse) {
-        this.element.style.borderCollapse = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderColor' CSS property. Can be an `AvitaTypes.AvitaColorType` or a string representing a valid CSS color value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'borderImage' CSS property on the current `AvitaElement` instance.
+     * Sets the 'borderImage' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'borderImage' CSS property. Can be a string representing a valid CSS border image value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    borderImage(value: string) {
-        this.element.style.borderImage = value
-        return this
+    borderImg(value: string) {
+        return this.css("borderImage", value)
     }
 
     /**
-     * Sets the 'borderImageOutset' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderImageOutset' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderImageOutset(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderImageOutset = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderImageRepeat' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderImageRepeat' CSS property. Can be one of the valid CSS border image repeat values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderImageRepeat(value: AvitaTypes.BorderImageRepeat) {
-        this.element.style.borderImageRepeat = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderImageSlice' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderImageSlice' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderImageSlice(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderImageSlice = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderImageSource' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderImageSource' CSS property. Can be a string representing a valid CSS border image source value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderImageSource(value: string) {
-        this.element.style.borderImageSource = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderImageWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderImageWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderImageWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderImageWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderInline' CSS property on the current `AvitaElement` instance.
+     * Sets the 'borderInline' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'borderInline' CSS property. Can be a string representing a valid CSS border inline value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     borderInline(value: string) {
-        this.element.style.borderInline = value
-        return this
+        return this.css("borderInline", value)
     }
 
     /**
-     * Sets the 'borderInlineColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineColor' CSS property. Can be a string representing a valid CSS color value or an `AvitaTypes.AvitaColorType` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'borderStyle' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'borderStyle' CSS property.
+     * @returns The current `Avita` instance for chaining.
      */
-    borderInlineColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderInlineColor = String(value)
-        return this
+    borderStyle(value: string) {
+        return this.css("borderStyle", value)
     }
 
     /**
-     * Sets the 'borderInlineEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineEnd' CSS property. Can be a string representing a valid CSS border inline end value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineEnd(value: string) {
-        this.element.style.borderInlineEnd = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderInlineEndColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineEndColor' CSS property. Can be a string representing a valid CSS color value or an `AvitaTypes.AvitaColorType` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineEndColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderInlineEndColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'borderInlineEndStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineEndStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineEndStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderInlineEndStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderInlineEndWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineEndWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineEndWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderInlineEndWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderInlineStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineStart' CSS property. Can be a string representing a valid CSS border inline start value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineStart(value: string) {
-        this.element.style.borderInlineStart = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderInlineStartColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineStartColor' CSS property. Can be a string representing a valid CSS color value or an `AvitaTypes.AvitaColorType` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineStartColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderInlineStartColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'borderInlineStartStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineStartStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineStartStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderInlineStartStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderInlineStartWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineStartWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineStartWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderInlineStartWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderInlineStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderInlineStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderInlineWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderInlineWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderInlineWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderInlineWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderLeft' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderLeft' CSS property. Can be a string representing a valid CSS border value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderLeft(value: string) {
-        this.element.style.borderLeft = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderLeftColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderLeftColor' CSS property. Can be a value from the `AvitaTypes.AvitaColorType` enum or a string representing a valid CSS color value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderLeftColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderLeftColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'borderLeftStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderLeftStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderLeftStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderLeftStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderLeftWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderLeftWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderLeftWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderLeftWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderRadius' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderRadius' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderRadius(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderRadius = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderRight' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderRight' CSS property. Can be a string representing a valid CSS border value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderRight(value: string) {
-        this.element.style.borderRight = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderRightColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderRightColor' CSS property. Can be a value from the `AvitaTypes.AvitaColorType` enum or a string representing a valid CSS color value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderRightColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderRightColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'borderRightStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderRightStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderRightStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderRightStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderRightWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderRightWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderRightWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderRightWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderSpacing' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderSpacing' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderSpacing(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderSpacing = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderTop' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderTop' CSS property. Can be a string representing a valid CSS border value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderTop(value: string) {
-        this.element.style.borderTop = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderTopColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderTopColor' CSS property. Can be a value from the `AvitaTypes.AvitaColorType` enum or a string representing a valid CSS color value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderTopColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.borderTopColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'borderTopStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderTopStyle' CSS property. Can be a value from the `AvitaTypes.BorderStyle` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderTopStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.borderTopStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'borderTopWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'borderTopWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    borderTopWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderTopWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'borderWidth' CSS property on the current `AvitaElement` instance.
+     * Sets the 'borderWidth' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'borderWidth' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    borderWidth(value: string | number) {
+    borderW(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.borderWidth = String(value) + unit
-        return this
+        return this.css("borderWidth", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'bottom' CSS property on the current `AvitaElement` instance.
+     * Sets the 'bottom' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'bottom' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     bottom(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.bottom = String(value) + unit
-        return this
+        return this.css("bottom", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'boxShadow' CSS property on the current `AvitaElement` instance.
+     * Shorhand for setting the 'bottom' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'bottom' CSS property. Can be a string representing a valid CSS length value or a number representing a value in pixels.
+     * @returns The current `Avita` instance for chaining.
+     */
+    b = this.bottom
+
+    /**
+     * Sets the 'boxShadow' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'boxShadow' CSS property. Can be a string representing a valid CSS box-shadow value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    boxShadow(value: string) {
-        this.element.style.boxShadow = value
+    shadow(value: string) {
+        return this.css("boxShadow", value)
+    }
+
+    /**
+     * Sets the 'boxSizing' CSS property on the current `Avita` instance to 'border-box'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    borderBox() {
+        return this.css("boxSizing", "border-box")
+    }
+
+    /**
+     * Why would you use this?? Just use `borderBox()` instead. Yes this still works but whyyy?
+     * Sets the 'boxSizing' CSS property on the current `Avita` instance to 'content-box'.
+     * @returns The current `Avita` instance for chaining.
+     * @deprecated Use `borderBox()` instead bozo.
+     */
+    contentBox() {
+        return this.css("boxSizing", "content-box")
+    }
+
+    /**
+     * Mostly for printing a page.
+     * Sets the 'breakBefore', 'breakInside', and 'breakAfter' CSS properties on the current `Avita` instance.
+     * @param before - The value to set for the 'breakBefore' CSS property. Can be a valid CSS 'break-before' value.
+     * @param inside - The value to set for the 'breakInside' CSS property. Can be a valid CSS 'break-inside' value.
+     * @param after - The value to set for the 'breakAfter' CSS property. Can be a valid CSS 'break-after' value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    break(before?: string, inside?: string, after?: string) {
+        if (before) {
+            this.css("breakBefore", before)
+        }
+        if (inside) {
+            this.css("breakInside", inside)
+        }
+        if (after) {
+            this.css("breakAfter", after)
+        }
         return this
     }
 
     /**
-     * Sets the 'boxSizing' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'boxSizing' CSS property. Can be one of the valid 'box-sizing' CSS property values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    boxSizing(value: AvitaTypes.BoxSizing) {
-        this.element.style.boxSizing = value
-        return this
-    }
-
-    /**
-     * Sets the 'breakAfter' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'breakAfter' CSS property. Can be one of the valid 'break-after' CSS property values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    breakAfter(value: AvitaTypes.BreakAfter) {
-        this.element.style.breakAfter = value
-        return this
-    }
-
-    /**
-     * Sets the 'breakBefore' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'breakBefore' CSS property. Can be one of the valid 'break-before' CSS property values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    breakBefore(value: AvitaTypes.BreakBefore) {
-        this.element.style.breakBefore = value
-        return this
-    }
-
-    /**
-     * Sets the 'breakInside' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'breakInside' CSS property. Can be one of the valid 'break-inside' CSS property values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    breakInside(value: AvitaTypes.BreakInside) {
-        this.element.style.breakInside = value
-        return this
-    }
-
-    /**
-     * Sets the 'captionSide' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'captionSide' CSS property. Can be one of the valid 'caption-side' CSS property values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    captionSide(value: AvitaTypes.CaptionSide) {
-        this.element.style.captionSide = value
-        return this
-    }
-
-    /**
-     * Sets the 'caretColor' CSS property on the current `AvitaElement` instance.
+     * Sets the 'caretColor' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'caretColor' CSS property. Can be one of the valid CSS color values.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    caretColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.caretColor = String(value)
+    caretColor(value: string) {
+        return this.css("caretColor", value)
+    }
+
+    /**
+     * Shorthands the 'caretColor' CSS property on the current `Avita` instance until css can actually change carets.
+     * Sets the 'caretColor' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'caretColor' CSS property. Can be one of the valid CSS color values.
+     * @returns The current `Avita` instance for chaining.
+     */
+    caret = this.caretColor
+
+    /**
+     * Clears the CSS styles applied to the current `Avita` instance.
+     * @returns The current `Avita` instance for chaining.
+     */
+    clear() {
+        this.element.style.cssText = ""
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.style.cssText = ""
+            })
         return this
     }
 
     /**
-     * Sets the 'clear' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'clear' CSS property. Can be one of the valid 'clear' CSS property values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    clear(value: AvitaTypes.Clear) {
-        this.element.style.clear = value
-        return this
-    }
-
-    /**
-     * Sets the 'clipPath' CSS property on the current `AvitaElement` instance.
+     * Sets the 'clipPath' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'clipPath' CSS property. Can be a valid CSS clip-path value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     clipPath(value: string) {
-        // todo add features
-        this.element.style.clipPath = value
-        return this
+        return this.css("clipPath", value)
     }
 
     /**
-     * Sets the 'color' CSS property on the current `AvitaElement` instance.
+     * Sets the 'color' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'color' CSS property. Can be one of the valid CSS color values.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    color(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.color = String(value)
-        return this
+    color(value: string) {
+        return this.css("color", value)
     }
 
     /**
-     * Sets the 'columnCount' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columnCount' CSS property. Can be a number or one of the valid 'column-count' CSS property values.
-     * @returns The current `AvitaElement` instance for chaining.
+     * For those who like semantic precision (and who doesn't).
+     * Sets the (text) 'color' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'color' CSS property. Can be one of the valid CSS color values.
+     * @returns The current `Avita` instance for chaining.
      */
-    columnCount(value: AvitaTypes.ColumnCount | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.columnCount = String(value) + unit
-        return this
-    }
+    textColor = this.color
 
     /**
-     * Sets the 'columnFill' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columnFill' CSS property. Can be one of the valid 'column-fill' CSS property values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    columnFill(value: AvitaTypes.ColumnFill) {
-        this.element.style.columnFill = value
-        return this
-    }
-
-    /**
-     * Sets the 'columnGap' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columnGap' CSS property. Can be a valid CSS length value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    columnGap(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.columnGap = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'columnRule' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columnRule' CSS property. Can be a valid CSS 'column-rule' property value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    columnRule(value: string) {
-        this.element.style.columnRule = value
-        return this
-    }
-
-    /**
-     * Sets the 'columnRuleColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columnRuleColor' CSS property. Can be one of the valid CSS color values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    columnRuleColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.columnRuleColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'columnRuleStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columnRuleStyle' CSS property. Can be one of the valid 'border-style' CSS property values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    columnRuleStyle(value: AvitaTypes.BorderStyle) {
-        this.element.style.columnRuleStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'columnRuleWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columnRuleWidth' CSS property. Can be a valid CSS length value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    columnRuleWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.columnRuleWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'columnSpan' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columnSpan' CSS property. Can be one of the valid 'column-span' CSS property values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    columnSpan(value: AvitaTypes.ColumnSpan) {
-        this.element.style.columnSpan = value
-        return this
-    }
-
-    /**
-     * Sets the 'columnWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columnWidth' CSS property. Can be a valid CSS length value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    columnWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.columnWidth = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'columns' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'columns' CSS property. Can be a valid CSS length value or a number representing the number of columns.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    columns(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.columns = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'content' CSS property on the current `AvitaElement` instance.
+     * Sets the 'content' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'content' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     content(value: string) {
-        this.element.style.content = value
-        return this
+        return this.css("content", value)
     }
 
     /**
-     * Sets the 'counterIncrement' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'counterIncrement' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    counterIncrement(value: string) {
-        this.element.style.counterIncrement = value
-        return this
-    }
-
-    /**
-     * Sets the 'counterReset' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'counterReset' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    counterReset(value: string) {
-        this.element.style.counterReset = value
-        return this
-    }
-
-    /**
-     * Sets the 'cursor' CSS property on the current `AvitaElement` instance.
+     * Sets the 'cursor' CSS property on the current `Avita` instance.
+     * See shorthands; List here: https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
      * @param value - The value to set for the 'cursor' CSS property. Can be a valid CSS cursor value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
+     * @deprecated Use shorthands like `pointer()` or `grab()` instead.
      */
-    cursor(value: AvitaTypes.Cursor) {
-        this.element.style.cursor = value
-        return this
+    cursor(value: string) {
+        return this.css("cursor", value)
     }
 
     /**
-     * Sets the 'direction' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'direction' CSS property. Can be a valid CSS direction value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'pointer'.
+     * @returns The current `Avita` instance for chaining.
      */
-    direction(value: AvitaTypes.Direction) {
-        this.element.style.direction = value
-        return this
+    pointer() {
+        return this.css("cursor", "pointer")
     }
 
     /**
-     * Sets the 'display' CSS property on the current `AvitaElement` instance.
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'default'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    default() {
+        return this.css("cursor", "default")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'context-menu'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    contextMenu() {
+        return this.css("cursor", "context-menu")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'help'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    help() {
+        return this.css("cursor", "help")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'progress'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    progress() {
+        return this.css("cursor", "progress")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'wait'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    wait() {
+        return this.css("cursor", "wait")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'cell'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    cell() {
+        return this.css("cursor", "cell")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'crosshair'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    crosshair() {
+        return this.css("cursor", "crosshair")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'text'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    txt() {
+        return this.css("cursor", "text")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'vertical-text'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    txtY() {
+        return this.css("cursor", "vertical-text")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'alias'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    alias() {
+        return this.css("cursor", "alias")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'copy'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    copy() {
+        return this.css("cursor", "copy")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'move'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    move() {
+        return this.css("cursor", "move")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'no-drop'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    noDrop() {
+        return this.css("cursor", "no-drop")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'not-allowed'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    notAllowed() {
+        return this.css("cursor", "not-allowed")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'grab'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    grab() {
+        return this.css("cursor", "grab")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'grabbing'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    grabbing() {
+        return this.css("cursor", "grabbing")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'all-scroll'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    allScroll() {
+        return this.css("cursor", "all-scroll")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'col-resize'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    resizeCol() {
+        return this.css("cursor", "col-resize")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'row-resize'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    resizeRow() {
+        return this.css("cursor", "row-resize")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'n-resize'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    resizeT() {
+        return this.css("cursor", "n-resize")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'e-resize'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    resizeR() {
+        return this.css("cursor", "e-resize")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 's-resize'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    resizeB() {
+        return this.css("cursor", "s-resize")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'w-resize'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    resizeL() {
+        return this.css("cursor", "w-resize")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'nw-resize'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    resizeTL() {
+        return this.css("cursor", "nw-resize")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'ne-resize'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    resizeTR() {
+        return this.css("cursor", "ne-resize")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'sw-resize'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    resizeBL() {
+        return this.css("cursor", "sw-resize")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'se-resize'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    resizeBR() {
+        return this.css("cursor", "se-resize")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'ew-resize'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    resizeLR() {
+        return this.css("cursor", "ew-resize")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'ns-resize'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    resizeTB() {
+        return this.css("cursor", "ns-resize")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'zoom-in'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    zoomIn() {
+        return this.css("cursor", "zoom-in")
+    }
+
+    /**
+     * Sets the 'cursor' CSS property on the current `Avita` instance to 'zoom-out'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    zoomOut() {
+        return this.css("cursor", "zoom-out")
+    }
+
+    /**
+     * Sets the 'display' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'display' CSS property. Can be a valid CSS display value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    display(value: AvitaTypes.Display) {
-        this.element.style.display = value
-        return this
+    display(value: string) {
+        return this.css("display", value)
     }
 
     /**
-     * Sets the 'emptyCells' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'emptyCells' CSS property. Can be a valid CSS emptyCells value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    emptyCells(value: AvitaTypes.EmptyCells) {
-        this.element.style.emptyCells = value
-        return this
-    }
-
-    /**
-     * Sets the 'filter' CSS property on the current `AvitaElement` instance.
+     * Sets the 'filter' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'filter' CSS property. Can be a valid CSS filter value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     filter(value: string) {
-        // todo add features
-        this.element.style.filter = value
-        return this
+        return this.css("filter", value)
     }
 
     /**
-     * Sets the 'flex' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'flex' CSS property. Can be a valid CSS flex value, or an array of flex-grow, flex-shrink, and flex-basis values.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'filter' CSS property on the current `Avita` instance to apply a blur effect.
+     * @param value - The value to set for the 'filter' CSS property. Can be a valid CSS blur value, either a string or a number representing the blur radius in pixels.
+     * @returns The current `Avita` instance for chaining.
      */
-    flexCSS(value: AvitaTypes.Flex) {
-        if (Array.isArray(value)) {
-            this.element.style.flex = value.join(" ")
-            return this
-        }
-        this.element.style.flex = value
-        return this
-    }
-
-    /**
-     * Sets the 'flexBasis' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'flexBasis' CSS property. Can be a valid CSS flex-basis value, either a number or a string.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    flexBasis(value: string | number) {
+    blur(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.flexBasis = String(value) + unit
-        return this
+        return this.css("filter", `blur(${value}${unit})`)
     }
 
     /**
-     * Sets the 'flexDirection' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'flexDirection' CSS property. Can be a valid CSS flex-direction value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'flex' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'flex' CSS property. Can be a valid CSS flex value.
+     * @returns The current `Avita` instance for chaining.
      */
-    flexDirection(value: AvitaTypes.FlexDirection) {
-        this.element.style.flexDirection = value
-        return this
+    flexLayout(value: string) {
+        return this.css("flex", value)
     }
 
     /**
-     * Sets the 'flexFlow' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'flexFlow' CSS property. Can be a valid CSS flex-flow value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'flexDirection' CSS property on the current `Avita` instance to 'column'.
+     * @returns The current `Avita` instance for chaining.
      */
-    flexFlow(value: string) {
-        this.element.style.flexFlow = value
-        return this
+    flexCol() {
+        return this.css("flexDirection", "column")
     }
 
     /**
-     * Sets the 'flexGrow' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'flexGrow' CSS property. Can be a valid CSS flex-grow value, either a number or a string.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'flexDirection' CSS property on the current `Avita` instance to 'row'.
+     * @returns The current `Avita` instance for chaining.
      */
-    flexGrow(value: string | number) {
-        this.element.style.flexGrow = String(value)
-        return this
+    flexRow() {
+        return this.css("flexDirection", "row")
     }
 
     /**
-     * Sets the 'flexShrink' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'flexShrink' CSS property. Can be a valid CSS flex-shrink value, either a number or a string.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'flexDirection' CSS property on the current `Avita` instance to 'row-reverse'.
+     * @returns The current `Avita` instance for chaining.
      */
-    flexShrink(value: string | number) {
-        this.element.style.flexShrink = String(value)
-        return this
+    flexRowRev() {
+        return this.css("flexDirection", "row-reverse")
     }
 
     /**
-     * Sets the 'flexWrap' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'flexWrap' CSS property. Can be a valid CSS flex-wrap value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'flexDirection' CSS property on the current `Avita` instance to 'column-reverse'.
+     * @returns The current `Avita` instance for chaining.
      */
-    flexWrap(value: AvitaTypes.FlexWrap) {
-        this.element.style.flexWrap = value
-        return this
+    flexColRev() {
+        return this.css("flexDirection", "column-reverse")
     }
 
     /**
-     * Sets the 'float' CSS property on the current `AvitaElement` instance.
+     * Sets the 'flexWrap' CSS property on the current `Avita` instance to 'wrap'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    flexWrap() {
+        return this.css("flexWrap", "wrap")
+    }
+
+    /**
+     * Sets the 'flexWrap' CSS property on the current `Avita` instance to 'nowrap'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    flexNoWrap() {
+        return this.css("flexWrap", "nowrap")
+    }
+
+    /**
+     * Sets the 'flexWrap' CSS property on the current `Avita` instance to 'wrap-reverse'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    flexWrapRev() {
+        return this.css("flexWrap", "wrap-reverse")
+    }
+
+    /**
+     * Sets the 'float' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'float' CSS property. Can be a valid CSS float value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    float(value: AvitaTypes.Float) {
-        this.element.style.float = value
-        return this
+    float(value: string) {
+        return this.css("float", value)
     }
 
     /**
-     * Sets the 'font' CSS property on the current `AvitaElement` instance.
+     * Sets the 'font' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'font' CSS property. Can be a valid CSS font value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     font(value: string) {
-        this.element.style.font = value
-        return this
+        return this.css("font", value)
     }
 
     /**
-     * Sets the 'fontSizeAdjust' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontSizeAdjust' CSS property. Can be a valid CSS font-size-adjust value, either a number or a string.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontSizeAdjust(value: string | number) {
-        this.element.style.fontSizeAdjust = String(Number(value))
-        return this
-    }
-
-    /**
-     * Sets the 'fontFeatureSettings' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontFeatureSettings' CSS property. Can be a valid CSS font-feature-settings value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontFeatureSettings(value: string) {
-        this.element.style.fontFeatureSettings = value
-        return this
-    }
-
-    /**
-     * Sets the 'fontKerning' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontKerning' CSS property. Can be a valid CSS font-kerning value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontKerning(value: AvitaTypes.FontKerning) {
-        this.element.style.fontKerning = value
-        return this
-    }
-
-    /**
-     * Sets the 'fontFamily' CSS property on the current `AvitaElement` instance.
+     * Sets the 'fontFamily' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'fontFamily' CSS property. Can be a valid CSS font-family value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    fontFamily(value: string) {
-        this.element.style.fontFamily = value
-        return this
+    family(value: string) {
+        return this.css("fontFamily", value)
     }
 
     /**
-     * Sets the 'fontSize' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontSize' CSS property. Can be a valid CSS font-size value, either a number or a string.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Shorthand for setting the 'fontFamily' CSS property on the current `Avita` instance.
+     * @returns The current 'fontFamily' CSS property value.
+     */
+    fam = this.family
+
+    /**
+     * Sets the 'fontSize' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'fontSize' CSS property. Can be a valid CSS font-size value, either a string or a number representing pixels.
+     * @returns The current `Avita` instance for chaining.
      */
     fontSize(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.fontSize = String(value) + unit
-        return this
+        return this.css("fontSize", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'fontStretch' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontStretch' CSS property. Can be a valid CSS font-stretch value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontStretch(value: string) {
-        this.element.style.fontStretch = value
-        return this
-    }
-
-    /**
-     * Sets the 'fontStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontStyle' CSS property. Can be a valid CSS font-style value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontStyle(value: AvitaTypes.FontStyle) {
-        this.element.style.fontStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'fontVariant' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontVariant' CSS property. Can be a valid CSS font-variant value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontVariant(value: string) {
-        this.element.style.fontVariant = value
-        return this
-    }
-
-    /**
-     * Sets the 'fontVariantCaps' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontVariantCaps' CSS property. Can be a valid CSS font-variant-caps value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontVariantCaps(value: string) {
-        this.element.style.fontVariantCaps = value
-        return this
-    }
-
-    /**
-     * Sets the 'fontVariantEastAsian' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontVariantEastAsian' CSS property. Can be a valid CSS font-variant-east-asian value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontVariantEastAsian(value: string) {
-        this.element.style.fontVariantEastAsian = value
-        return this
-    }
-
-    /**
-     * Sets the 'fontVariantLigatures' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontVariantLigatures' CSS property. Can be a valid CSS font-variant-ligatures value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontVariantLigatures(value: string) {
-        this.element.style.fontVariantLigatures = value
-        return this
-    }
-
-    /**
-     * Sets the 'fontVariantNumeric' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontVariantNumeric' CSS property. Can be a valid CSS font-variant-numeric value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontVariantNumeric(value: string) {
-        this.element.style.fontVariantNumeric = value
-        return this
-    }
-
-    /**
-     * Sets the 'fontVariantPosition' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'fontVariantPosition' CSS property. Can be a valid CSS font-variant-position value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    fontVariantPosition(value: string) {
-        this.element.style.fontVariantPosition = value
-        return this
-    }
-
-    /**
-     * Sets the 'fontWeight' CSS property on the current `AvitaElement` instance.
+     * Sets the 'fontWeight' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'fontWeight' CSS property. Can be a valid CSS font-weight value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     fontWeight(value: string | number) {
-        this.element.style.fontWeight = String(value)
-        return this
+        return this.css("fontWeight", String(value))
     }
 
     /**
-     * Sets the 'gap' CSS property on the current `AvitaElement` instance.
+     * Shorthand for setting the 'fontWeight' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'fontWeight' CSS property. Can be a valid CSS font-weight value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    weight = this.fontWeight
+
+    /**
+     * Sets the 'fontStyle' CSS property on the current `Avita` instance.
+     * @returns The current `Avita` instance for chaining.
+     */
+    base() {
+        return this.css("fontStyle", "normal")
+    }
+
+    /**
+     * Sets the 'fontStyle' CSS property on the current `Avita` instance to 'italic'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    italic() {
+        return this.css("fontStyle", "italic")
+    }
+
+    /**
+     * Sets the 'fontStyle' CSS property on the current `Avita` instance to 'oblique'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    oblique() {
+        return this.css("fontStyle", "oblique")
+    }
+
+    /**
+     * Sets the 'fontVariant' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'fontVariant' CSS property. Can be a valid CSS font-variant value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    fontVariant(value: string) {
+        return this.css("fontVariant", value)
+    }
+
+    /**
+     * Shorthand for setting the 'fontVariant' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'fontVariant' CSS property. Can be a valid CSS font-variant value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    fontVar = this.fontVariant
+
+    /**
+     * Sets the 'gap' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'gap' CSS property. Can be a valid CSS gap value, either a string or a number representing pixels.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     gap(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.gap = String(value) + unit
-        return this
+        return this.css("gap", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'grid' CSS property on the current `AvitaElement` instance.
+     * Sets the 'grid' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'grid' CSS property. Can be a valid CSS grid value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     gridLayout(value: string) {
-        this.element.style.grid = value
-        return this
+        return this.css("grid", value)
     }
 
     /**
-     * Sets the 'gridArea' CSS property on the current `AvitaElement` instance.
+     * Sets the 'gridArea' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'gridArea' CSS property. Can be a valid CSS grid-area value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     gridArea(value: string) {
-        this.element.style.gridArea = value
-        return this
+        return this.css("gridArea", value)
     }
 
     /**
-     * Sets the 'gridAutoColumns' CSS property on the current `AvitaElement` instance.
+     * Sets the 'gridAutoColumns' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'gridAutoColumns' CSS property. Can be a valid CSS grid-auto-columns value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    gridAutoColumns(value: string) {
-        this.element.style.gridAutoColumns = value
-        return this
+    gridAutoCols(value: string) {
+        return this.css("gridAutoColumns", value)
     }
 
     /**
-     * Sets the 'gridAutoFlow' CSS property on the current `AvitaElement` instance.
+     * Sets the 'gridAutoFlow' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'gridAutoFlow' CSS property. Can be a valid CSS grid-auto-flow value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    gridAutoFlow(value: AvitaTypes.GridAutoFlow) {
-        this.element.style.gridAutoFlow = value
-        return this
+    gridAutoFlow(value: string) {
+        return this.css("gridAutoFlow", value)
     }
 
     /**
-     * Sets the 'gridAutoRows' CSS property on the current `AvitaElement` instance.
+     * Sets the 'gridAutoRows' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'gridAutoRows' CSS property. Can be a valid CSS grid-auto-rows value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     gridAutoRows(value: string) {
-        this.element.style.gridAutoRows = value
-        return this
+        return this.css("gridAutoRows", value)
     }
 
     /**
-     * Sets the 'gridColumn' CSS property on the current `AvitaElement` instance.
+     * Sets the 'gridColumn' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'gridColumn' CSS property. Can be a valid CSS grid-column value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    gridColumn(value: string) {
-        this.element.style.gridColumn = value
-        return this
+    gridCol(value: string) {
+        return this.css("gridColumn", value)
     }
 
     /**
-     * Sets the 'gridColumnEnd' CSS property on the current `AvitaElement` instance.
+     * Sets the 'gridColumnEnd' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'gridColumnEnd' CSS property. Can be a valid CSS grid-column-end value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    gridColumnEnd(value: string) {
-        this.element.style.gridColumnEnd = value
-        return this
+    gridColEnd(value: string) {
+        return this.css("gridColumnEnd", value)
     }
 
     /**
-     * Sets the 'gridColumnStart' CSS property on the current `AvitaElement` instance.
+     * Sets the 'gridColumnStart' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'gridColumnStart' CSS property. Can be a valid CSS grid-column-start value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    gridColumnStart(value: string) {
-        this.element.style.gridColumnStart = value
-        return this
+    gridColStart(value: string) {
+        return this.css("gridColumnStart", value)
     }
 
     /**
-     * Sets the 'gridRow' CSS property on the current `AvitaElement` instance.
+     * Sets the 'gridRow' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'gridRow' CSS property. Can be a valid CSS grid-row value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     gridRow(value: string) {
-        this.element.style.gridRow = value
-        return this
+        return this.css("gridRow", value)
     }
 
     /**
-     * Sets the 'gridRowEnd' CSS property on the current `AvitaElement` instance.
+     * Sets the 'gridRowEnd' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'gridRowEnd' CSS property. Can be a valid CSS grid-row-end value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     gridRowEnd(value: string) {
-        this.element.style.gridRowEnd = value
-        return this
+        return this.css("gridRowEnd", value)
     }
 
     /**
-     * Sets the 'gridRowStart' CSS property on the current `AvitaElement` instance.
+     * Sets the 'gridRowStart' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'gridRowStart' CSS property. Can be a valid CSS grid-row-start value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     gridRowStart(value: string) {
-        this.element.style.gridRowStart = value
-        return this
+        return this.css("gridRowStart", value)
     }
 
     /**
-     * Sets the 'gridTemplate' CSS property on the current `AvitaElement` instance.
+     * Sets the 'gridTemplate' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'gridTemplate' CSS property. Can be a valid CSS grid-template value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     gridTemplate(value: string) {
-        this.element.style.gridTemplate = value
-        return this
+        return this.css("gridTemplate", value)
     }
 
     /**
-     * Sets the 'gridTemplateAreas' CSS property on the current `AvitaElement` instance.
+     * Sets the 'gridTemplateAreas' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'gridTemplateAreas' CSS property. Can be a valid CSS grid-template-areas value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    gridTemplateAreas(value: string) {
-        this.element.style.gridTemplateAreas = value
-        return this
+    gridAreas(value: string) {
+        return this.css("gridTemplateAreas", value)
     }
 
     /**
-     * Sets the 'gridTemplateColumns' CSS property on the current `AvitaElement` instance.
+     * Sets the 'gridTemplateColumns' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'gridTemplateColumns' CSS property. Can be a valid CSS grid-template-columns value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    gridTemplateColumns(value: string) {
-        this.element.style.gridTemplateColumns = value
-        return this
+    gridCols(value: string) {
+        return this.css("gridTemplateColumns", value)
     }
 
     /**
-     * Sets the 'gridTemplateRows' CSS property on the current `AvitaElement` instance.
+     * Sets the 'gridTemplateRows' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'gridTemplateRows' CSS property. Can be a valid CSS grid-template-rows value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    gridTemplateRows(value: string) {
-        this.element.style.gridTemplateRows = value
-        return this
+    gridRows(value: string) {
+        return this.css("gridTemplateRows", value)
     }
 
     /**
-     * Sets the 'height' CSS property on the current `AvitaElement` instance.
+     * Sets the 'height' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'height' CSS property. Can be a valid CSS height value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     height(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.height = String(value) + unit
-        return this
+        return this.css("height", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'hyphens' CSS property on the current `AvitaElement` instance.
+     * Shorthand for setting the 'height' CSS property on the current `Avita` instance. See `height()` for more details.
+     * @param value - The value to set for the 'height' CSS property. Can be a valid CSS height value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    h = this.height
+
+    /**
+     * Sets the 'hyphens' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'hyphens' CSS property. Can be a valid CSS hyphens value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    hyphens(value: AvitaTypes.Hyphens) {
-        this.element.style.hyphens = value
-        return this
+    hyphens(value: string) {
+        return this.css("hyphens", value)
     }
 
     /**
-     * Sets the 'imageRendering' CSS property on the current `AvitaElement` instance.
+     * Sets the 'imageRendering' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'imageRendering' CSS property. Can be a valid CSS image-rendering value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    imageRendering(value: AvitaTypes.ImageRendering) {
-        this.element.style.imageRendering = value
-        return this
+    imgRender(value: string) {
+        return this.css("imageRendering", value)
     }
 
     /**
-     * Sets the 'inlineSize' CSS property on the current `AvitaElement` instance.
+     * Sets the 'inlineSize' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'inlineSize' CSS property. Can be a valid CSS inline-size value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     inlineSize(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.inlineSize = String(value) + unit
-        return this
+        return this.css("inlineSize", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'inset' CSS property on the current `AvitaElement` instance.
+     * Sets the 'inset' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'inset' CSS property. Can be a valid CSS inset value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     inset(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.inset = String(value) + unit
-        return this
+        return this.css("inset", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'insetBlock' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'insetBlock' CSS property. Can be a valid CSS inset-block value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    insetBlock(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.insetBlock = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'insetBlockEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'insetBlockEnd' CSS property. Can be a valid CSS inset-block-end value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    insetBlockEnd(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.insetBlockEnd = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'insetBlockStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'insetBlockStart' CSS property. Can be a valid CSS inset-block-start value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    insetBlockStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.insetBlockStart = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'insetInline' CSS property on the current `AvitaElement` instance.
+     * Sets the 'insetInline' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'insetInline' CSS property. Can be a valid CSS inset-inline value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     insetInline(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.insetInline = String(value) + unit
-        return this
+        return this.css("insetInline", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'insetInlineEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'insetInlineEnd' CSS property. Can be a valid CSS inset-inline-end value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    insetInlineEnd(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.insetInlineEnd = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'insetInlineStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'insetInlineStart' CSS property. Can be a valid CSS inset-inline-start value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    insetInlineStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.insetInlineStart = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'isolation' CSS property on the current `AvitaElement` instance.
+     * Sets the 'isolation' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'isolation' CSS property. Can be a valid CSS isolation value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    isolation(value: AvitaTypes.Isolation) {
-        this.element.style.isolation = value
-        return this
+    isolation(value: string) {
+        return this.css("isolation", value)
     }
 
     /**
-     * Sets the 'justifyContent' CSS property on the current `AvitaElement` instance.
+     * Sets the 'justifyContent' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'justifyContent' CSS property. Can be a valid CSS justify-content value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    justifyContent(value: AvitaTypes.JustifyContent) {
-        this.element.style.justifyContent = value
-        return this
+    justifyContent(value: string) {
+        return this.css("justifyContent", value)
     }
 
     /**
-     * Sets the 'justifyItems' CSS property on the current `AvitaElement` instance.
+     * Shorthand for setting the 'justifyContent' CSS property on the current `Avita` instance. See `justifyContent()` for more details.
+     * @param value - The value to set for the 'justifyContent' CSS property. Can be a valid CSS justify-content value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    jContent = this.justifyContent
+
+    /**
+     * Sets the 'justifyItems' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'justifyItems' CSS property. Can be a valid CSS justify-items value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    justifyItems(value: AvitaTypes.JustifyItems) {
-        this.element.style.justifyItems = value
-        return this
+    justifyItems(value: string) {
+        return this.css("justifyItems", value)
     }
 
     /**
-     * Sets the 'justifySelf' CSS property on the current `AvitaElement` instance.
+     * Shorthand for setting the 'justifyItems' CSS property on the current `Avita` instance. See `justifyItems()` for more details.
+     * @param value - The value to set for the 'justifyItems' CSS property. Can be a valid CSS justify-items value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    jItems = this.justifyItems
+
+    /**
+     * Sets the 'justifySelf' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'justifySelf' CSS property. Can be a valid CSS justify-self value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    justifySelf(value: AvitaTypes.JustifySelf) {
-        this.element.style.justifySelf = value
-        return this
+    justifySelf(value: string) {
+        return this.css("justifySelf", value)
     }
 
     /**
-     * Sets the 'left' CSS property on the current `AvitaElement` instance.
+     * Shorthand for setting the 'justifySelf' CSS property on the current `Avita` instance. See `justifySelf()` for more details.
+     * @param value - The value to set for the 'justifySelf' CSS property. Can be a valid CSS justify-self value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    jSelf = this.justifySelf
+
+    /**
+     * Sets the 'left' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'left' CSS property. Can be a valid CSS left value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     left(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.left = String(value) + unit
-        return this
+        return this.css("left", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'letterSpacing' CSS property on the current `AvitaElement` instance.
+     * Shorthand for setting the 'left' CSS property on the current `Avita` instance. See `left()` for more details.
+     * @param value - The value to set for the 'left' CSS property. Can be a valid CSS left value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    l = this.left
+
+    /**
+     * Sets the 'letterSpacing' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'letterSpacing' CSS property. Can be a valid CSS letter-spacing value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     letterSpacing(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.letterSpacing = String(value) + unit
-        return this
+        return this.css("letterSpacing", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'lineHeight' CSS property on the current `AvitaElement` instance.
+     * Sets the 'lineHeight' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'lineHeight' CSS property. Can be a valid CSS line-height value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    lineHeight(value: string | number) {
+    lineH(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.lineHeight = String(value) + unit
-        return this
+        return this.css("lineHeight", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'lineBreak' CSS property on the current `AvitaElement` instance.
+     * Sets the 'lineBreak' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'lineBreak' CSS property. Can be a valid CSS line-break value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    lineBreak(value: AvitaTypes.LineBreak) {
-        this.element.style.lineBreak = value
-        return this
+    lineBr(value: string) {
+        return this.css("lineBreak", value)
     }
 
     /**
-     * Sets the 'listStyle' CSS property on the current `AvitaElement` instance.
+     * Sets the 'listStyle' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'listStyle' CSS property. Can be a valid CSS list-style value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    listStyle(value: string) {
-        this.element.style.listStyle = value
-        return this
+    bullet(value: string) {
+        return this.css("listStyle", value)
     }
 
     /**
-     * Sets the 'listStyleImage' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'listStyleImage' CSS property. Can be a valid CSS list-style-image value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'margin' CSS property with one value applied to all sides.
+     * @param value - The value to set for the 'margin' CSS property.
+     * @returns The current `Avita` instance for chaining.
      */
-    listStyleImage(value: string) {
-        this.element.style.listStyleImage = value
-        return this
+    margin(value: string | number): this
+
+    /**
+     * Sets the 'margin' CSS property with two values: vertical and horizontal.
+     * @param vertical - The value to set for the top and bottom margin.
+     * @param horizontal - The value to set for the left and right margin.
+     * @returns The current `Avita` instance for chaining.
+     */
+    margin(vertical: string | number, horizontal: string | number): this
+
+    /**
+     * Sets the 'margin' CSS property with three values: top, horizontal, and bottom.
+     * @param top - The value to set for the top margin.
+     * @param horizontal - The value to set for the left and right margin.
+     * @param bottom - The value to set for the bottom margin.
+     * @returns The current `Avita` instance for chaining.
+     */
+    margin(
+        top: string | number,
+        horizontal: string | number,
+        bottom: string | number
+    ): this
+
+    /**
+     * Sets the 'margin' CSS property with four values: top, right, bottom, and left.
+     * @param top - The value to set for the top margin.
+     * @param right - The value to set for the right margin.
+     * @param bottom - The value to set for the bottom margin.
+     * @param left - The value to set for the left margin.
+     * @returns The current `Avita` instance for chaining.
+     */
+    margin(
+        top: string | number,
+        right: string | number,
+        bottom: string | number,
+        left: string | number
+    ): this
+
+    margin(...values: (string | number)[]): this {
+        const processValue = (value: string | number) =>
+            typeof value === "number" ? `${value}px` : value
+
+        switch (values.length) {
+            case 1:
+                return this.css("margin", processValue(values[0]))
+            case 2:
+                return this.css(
+                    "margin",
+                    `${processValue(values[0])} ${processValue(values[1])}`
+                )
+            case 3:
+                return this.css(
+                    "margin",
+                    `${processValue(values[0])} ${processValue(
+                        values[1]
+                    )} ${processValue(values[2])}`
+                )
+            case 4:
+                return this.css(
+                    "margin",
+                    `${processValue(values[0])} ${processValue(
+                        values[1]
+                    )} ${processValue(values[2])} ${processValue(values[3])}`
+                )
+            default:
+                throw new Error(
+                    "Invalid number of arguments provided to margin(). Must be 1, 2, 3, or 4."
+                )
+        }
     }
 
     /**
-     * Sets the 'listStylePosition' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'listStylePosition' CSS property. Can be a valid CSS list-style-position value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Shorthand for setting the 'margin' CSS property on the current `Avita` instance. See `margin()` for more details.
+     * @param values - The value(s) to set for the 'margin' CSS property. Can be a valid CSS margin value, either a string or a number (which will be interpreted as pixels).
+     * @returns The current `Avita` instance for chaining.
      */
-    listStylePosition(value: AvitaTypes.ListStylePosition) {
-        this.element.style.listStylePosition = value
-        return this
-    }
+    m = this.margin
 
     /**
-     * Sets the 'listStyleType' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'listStyleType' CSS property. Can be a valid CSS list-style-type value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'marginLeft' and 'marginRight' CSS properties on the current `Avita` instance.
+     * @param value - The value to set for the 'marginLeft' and 'marginRight' CSS properties. Can be a valid CSS margin value, either a string or a number (which will be interpreted as pixels).
+     * @returns The current `Avita` instance for chaining.
      */
-    listStyleType(value: AvitaTypes.ListStyleType) {
-        this.element.style.listStyleType = value
-        return this
-    }
-
-    /**
-     * Sets the 'margin' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'margin' CSS property. Can be a valid CSS margin value, either a string or a number (which will be interpreted as pixels).
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    margin(value: string | number) {
+    marginX(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.margin = String(value) + unit
-        return this
+        return this.css("marginLeft", `${value}${unit}`).css(
+            "marginRight",
+            `${value}${unit}`
+        )
     }
 
     /**
-     * Sets the 'marginBlock' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'marginBlock' CSS property. Can be a valid CSS margin-block value, either a string or a number (which will be interpreted as pixels).
-     * @returns The current `AvitaElement` instance for chaining.
+     * Shorthand for setting the 'margin-left' and 'margin-right' CSS properties on the current `Avita` instance.
+     * @param value - The value to set for the 'margin-left' and 'margin-right' CSS properties. Can be a valid CSS margin value, either a string or a number (which will be interpreted as pixels).
+     * @returns The current `Avita` instance for chaining.
      */
-    marginBlock(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.marginBlock = String(value) + unit
-        return this
-    }
+    mx = this.marginX
 
     /**
-     * Sets the 'marginBlockEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'marginBlockEnd' CSS property. Can be a valid CSS margin-block-end value, either a string or a number (which will be interpreted as pixels).
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'marginTop' and 'marginBottom' CSS properties on the current `Avita` instance.
+     * @param value - The value to set for the 'marginTop' and 'marginBottom' CSS properties. Can be a valid CSS margin value, either a string or a number (which will be interpreted as pixels).
+     * @returns The current `Avita` instance for chaining.
      */
-    marginBlockEnd(value: string | number) {
+    marginY(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.marginBlockEnd = String(value) + unit
-        return this
+        return this.css("marginTop", `${value}${unit}`).css(
+            "marginBottom",
+            `${value}${unit}`
+        )
     }
 
     /**
-     * Sets the 'marginBlockStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'marginBlockStart' CSS property. Can be a valid CSS margin-block-start value, either a string or a number (which will be interpreted as pixels).
-     * @returns The current `AvitaElement` instance for chaining.
+     * Shorthand for setting the 'margin-top' and 'margin-bottom' CSS properties on the current `Avita` instance.
+     * @param value - The value to set for the 'margin-top' and 'margin-bottom' CSS properties. Can be a valid CSS margin value, either a string or a number (which will be interpreted as pixels).
+     * @returns The current `Avita` instance for chaining.
      */
-    marginBlockStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.marginBlockStart = String(value) + unit
-        return this
-    }
+    my = this.marginY
 
     /**
-     * Sets the 'marginBottom' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'marginBottom' CSS property. Can be a valid CSS margin-bottom value, either a string or a number (which will be interpreted as pixels).
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    marginBottom(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.marginBottom = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'marginInline' CSS property on the current `AvitaElement` instance.
+     * Sets the 'marginInline' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'marginInline' CSS property. Can be a valid CSS margin-inline value, either a string or a number (which will be interpreted as pixels).
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     marginInline(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.marginInline = String(value) + unit
-        return this
+        return this.css("marginInline", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'marginInlineEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'marginInlineEnd' CSS property. Can be a valid CSS margin-inline-end value, either a string or a number (which will be interpreted as pixels).
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'marginBottom' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'marginBottom' CSS property. Can be a valid CSS margin-bottom value, either a string or a number (which will be interpreted as pixels).
+     * @returns The current `Avita` instance for chaining.
      */
-    marginInlineEnd(value: string | number) {
+    marginB(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.marginInlineEnd = String(value) + unit
-        return this
+        return this.css("marginBottom", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'marginInlineStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'marginInlineStart' CSS property. Can be a valid CSS margin-inline-start value, either a string or a number (which will be interpreted as pixels).
-     * @returns The current `AvitaElement` instance for chaining.
+     * Shorthand for setting the 'margin-bottom' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'margin-bottom' CSS property. Can be a valid CSS margin-bottom value, either a string or a number (which will be interpreted as pixels).
+     * @returns The current `Avita` instance for chaining.
      */
-    marginInlineStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.marginInlineStart = String(value) + unit
-        return this
-    }
+    mb = this.marginB
 
     /**
-     * Sets the 'marginLeft' CSS property on the current `AvitaElement` instance.
+     * Sets the 'marginLeft' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'marginLeft' CSS property. Can be a valid CSS margin-left value, either a string or a number (which will be interpreted as pixels).
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    marginLeft(value: string | number) {
+    marginL(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.marginLeft = String(value) + unit
-        return this
+        return this.css("marginLeft", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'marginRight' CSS property on the current `AvitaElement` instance.
+     * Shorthand for setting the 'margin-left' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'margin-left' CSS property. Can be a valid CSS margin-left value, either a string or a number (which will be interpreted as pixels).
+     * @returns The current `Avita` instance for chaining.
+     */
+    ml = this.marginL
+
+    /**
+     * Sets the 'marginRight' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'marginRight' CSS property. Can be a valid CSS margin-right value, either a string or a number (which will be interpreted as pixels).
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    marginRight(value: string | number) {
+    marginR(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.marginRight = String(value) + unit
-        return this
+        return this.css("marginRight", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'marginTop' CSS property on the current `AvitaElement` instance.
+     * Shorthand for setting the 'margin-right' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'margin-right' CSS property. Can be a valid CSS margin-right value, either a string or a number (which will be interpreted as pixels).
+     * @returns The current `Avita` instance for chaining.
+     */
+    mr = this.marginR
+
+    /**
+     * Sets the 'marginTop' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'marginTop' CSS property. Can be a valid CSS margin-top value, either a string or a number (which will be interpreted as pixels).
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    marginTop(value: string | number) {
+    marginT(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.marginTop = String(value) + unit
-        return this
+        return this.css("marginTop", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'mask' CSS property on the current `AvitaElement` instance.
+     * Shorthand for setting the 'margin-top' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'margin-top' CSS property. Can be a valid CSS margin-top value, either a string or a number (which will be interpreted as pixels).
+     * @returns The current `Avita` instance for chaining.
+     */
+    mt = this.marginT
+
+    /**
+     * Sets the 'mask' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'mask' CSS property. Can be a valid CSS mask value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     mask(value: string) {
-        this.element.style.mask = value
-        return this
+        return this.css("mask", value)
     }
 
     /**
-     * Sets the 'maskImage' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maskImage' CSS property. Can be a valid CSS mask-image value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'maxHeight' and 'maxWidth' CSS properties on the current `Avita` instance.
+     * @param value - The value to set for the 'maxHeight' and 'maxWidth' CSS properties. Must be a valid CSS length value e.g. '100px 200px'.
      */
-    maskImage(value: string) {
-        this.element.style.maskImage = value
-        return this
-    }
+    maxSize(value: string): this
 
     /**
-     * Sets the 'maskMode' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maskMode' CSS property. Can be a valid CSS mask-mode value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'maxHeight' and 'maxWidth' CSS properties on the current `Avita` instance.
+     * @param width - The value to set for the 'maxWidth' CSS property. If number, it will be interpreted as pixels.
+     * @param height - The value to set for the 'maxHeight' CSS property. If number, it will be interpreted as pixels.
      */
-    maskMode(value: AvitaTypes.MaskMode) {
-        this.element.style.maskMode = value
-        return this
-    }
+    maxSize(width: string | number, height: string | number): this
 
-    /**
-     * Sets the 'maskOrigin' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maskOrigin' CSS property. Can be a valid CSS mask-origin value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    maskOrigin(value: AvitaTypes.MaskOrigin) {
-        this.element.style.maskOrigin = value
-        return this
-    }
-
-    /**
-     * Sets the 'maskPosition' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maskPosition' CSS property. Can be a valid CSS mask-position value, either a single value or an array of two values.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    maskPosition(value: AvitaTypes.MaskPosition) {
-        if (Array.isArray(value)) {
-            this.element.style.maskPosition = value.join(" ")
-            return this
+    maxSize(valueOrW: string | number, height?: string | number): this {
+        if (typeof valueOrW === "string" && height === undefined) {
+            const valueArr = valueOrW.split(" ")
+            if (valueArr.length === 2) {
+                return this.css("maxWidth", valueArr[0]).css(
+                    "maxHeight",
+                    valueArr[1]
+                )
+            } else {
+                throw new Error(
+                    "Invalid value for maxSize(). Must be a valid CSS length value e.g. '100px 200px' or a number for both width and height."
+                )
+            }
         }
-        this.element.style.maskPosition = value
-        return this
+        if (valueOrW && height) {
+            if (typeof valueOrW === "number") valueOrW = `${valueOrW}px`
+            if (typeof height === "number") height = `${height}px`
+            return this.css("maxWidth", valueOrW).css("maxHeight", height)
+        } else {
+            throw new Error(
+                "Invalid value for maxSize(). Must be a valid CSS length value e.g. '100px 200px' or a number for both width and height."
+            )
+        }
     }
 
     /**
-     * Sets the 'maskRepeat' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maskRepeat' CSS property. Can be a valid CSS mask-repeat value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'maxHeight' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'maxHeight' CSS property. Can be a valid CSS length value, either a string or a number. If number, it will be interpreted as pixels.
+     * @returns The current `Avita` instance for chaining.
      */
-    maskRepeat(value: AvitaTypes.MaskRepeat) {
-        this.element.style.maskRepeat = value
-        return this
-    }
-
-    /**
-     * Sets the 'maskSize' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maskSize' CSS property. Can be a valid CSS mask-size value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    maskSize(value: AvitaTypes.MaskSize) {
-        this.element.style.maskSize = value
-        return this
-    }
-
-    /**
-     * Sets the 'maxBlockSize' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maxBlockSize' CSS property. Can be a valid CSS length value, either a string or a number.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    maxBlockSize(value: string | number) {
+    maxH(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.maxBlockSize = String(value) + unit
-        return this
+        return this.css("maxHeight", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'maxHeight' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maxHeight' CSS property. Can be a valid CSS length value, either a string or a number.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'maxInlineSize' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'maxInlineSize' CSS property. Can be a valid CSS length value, either a string or a number. If number, it will be interpreted as pixels.
+     * @returns The current `Avita` instance for chaining.
      */
-    maxHeight(value: string | number) {
+    maxInline(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.maxHeight = String(value) + unit
-        return this
+        return this.css("maxInlineSize", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'maxInlineSize' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maxInlineSize' CSS property. Can be a valid CSS length value, either a string or a number.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'maxWidth' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'maxWidth' CSS property. Can be a valid CSS length value, either a string or a number. If number, it will be interpreted as pixels.
+     * @returns The current `Avita` instance for chaining.
      */
-    maxInlineSize(value: string | number) {
+    maxW(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.maxInlineSize = String(value) + unit
-        return this
+        return this.css("maxWidth", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'maxWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'maxWidth' CSS property. Can be a valid CSS length value, either a string or a number.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'minHeight' and 'minWidth' CSS properties on the current `Avita` instance.
+     * @param value - The value to set for the 'minHeight' and 'minWidth' CSS properties. Must be a valid CSS length value e.g. '100px 200px'.
      */
-    maxWidth(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.maxWidth = String(value) + unit
-        return this
-    }
+    minSize(value: string): this
 
     /**
-     * Sets the 'minBlockSize' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'minBlockSize' CSS property. Can be a valid CSS length value, either a string or a number.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'minHeight' and 'minWidth' CSS properties on the current `Avita` instance.
+     * @param width - The value to set for the 'minWidth' CSS property. If number, it will be interpreted as pixels.
+     * @param height - The value to set for the 'minHeight' CSS property. If number, it will be interpreted as pixels.
      */
-    minBlockSize(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.minBlockSize = String(value) + unit
-        return this
+    minSize(width: string | number, height: string | number): this
+
+    minSize(valueOrW: string | number, height?: string | number): this {
+        if (typeof valueOrW === "string" && height === undefined) {
+            const valueArr = valueOrW.split(" ")
+            if (valueArr.length === 2) {
+                return this.css("minWidth", valueArr[0]).css(
+                    "minHeight",
+                    valueArr[1]
+                )
+            } else {
+                throw new Error(
+                    "Invalid value for minSize(). Must be a valid CSS length value e.g. '100px 200px' or a number for both width and height."
+                )
+            }
+        }
+        if (valueOrW && height) {
+            if (typeof valueOrW === "number") valueOrW = `${valueOrW}px`
+            if (typeof height === "number") height = `${height}px`
+            return this.css("minWidth", valueOrW).css("minHeight", height)
+        } else {
+            throw new Error(
+                "Invalid value for minSize(). Must be a valid CSS length value e.g. '100px 200px' or a number for both width and height."
+            )
+        }
     }
 
     /**
-     * Sets the 'minHeight' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'minHeight' CSS property. Can be a valid CSS length value, either a string or a number.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'minHeight' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'minHeight' CSS property. Can be a valid CSS length value, either a string or a number. If number, it will be interpreted as pixels.
+     * @returns The current `Avita` instance for chaining.
      */
-    minHeight(value: string | number) {
+    minH(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.minHeight = String(value) + unit
-        return this
+        return this.css("minHeight", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'minInlineSize' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'minInlineSize' CSS property. Can be a valid CSS length value, either a string or a number.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'minInlineSize' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'minInlineSize' CSS property. Can be a valid CSS length value, either a string or a number. If number, it will be interpreted as pixels.
+     * @returns The current `Avita` instance for chaining.
      */
-    minInlineSize(value: string | number) {
+    minInline(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.minInlineSize = String(value) + unit
-        return this
+        return this.css("minInlineSize", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'minWidth' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'minWidth' CSS property. Can be a valid CSS length value, either a string or a number.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'minWidth' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'minWidth' CSS property. Can be a valid CSS length value, either a string or a number. If number, it will be interpreted as pixels.
+     * @returns The current `Avita` instance for chaining.
      */
-    minWidth(value: string | number) {
+    minW(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.minWidth = String(value) + unit
-        return this
+        return this.css("minWidth", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'mixBlendMode' CSS property on the current `AvitaElement` instance.
+     * Sets the 'mixBlendMode' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'mixBlendMode' CSS property. Must be a valid CSS `mix-blend-mode` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    mixBlendMode(value: AvitaTypes.MixBlendMode) {
-        this.element.style.mixBlendMode = value
-        return this
+    blendMode(value: string) {
+        return this.css("mixBlendMode", value)
     }
 
     /**
-     * Sets the 'objectFit' CSS property on the current `AvitaElement` instance.
+     * Sets the 'objectFit' CSS property on the current `Avita` instance to the specified value.
      * @param value - The value to set for the 'objectFit' CSS property. Must be a valid CSS `object-fit` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
+     * @deprecated Use shorthand methods like `cover()` or `contain()` instead.
      */
-    objectFit(value: AvitaTypes.ObjectFit) {
-        this.element.style.objectFit = value
-        return this
+    objFit(value: string) {
+        return this.css("objectFit", value)
     }
 
     /**
-     * Sets the 'objectPosition' CSS property on the current `AvitaElement` instance.
+     * Sets the 'objectFit' CSS property on the current `Avita` instance and all its child elements to 'none'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    none() {
+        return this.css("objectFit", "none")
+    }
+
+    /**
+     * Sets the 'objectFit' CSS property on the current `Avita` instance to 'scale-down'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scaleDown() {
+        return this.css("objectFit", "scale-down")
+    }
+
+    /**
+     * Sets the 'objectFit' CSS property on the current `Avita` instance to 'cover'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    cover() {
+        return this.css("objectFit", "cover")
+    }
+
+    /**
+     * Sets the 'objectFit' CSS property on the current `Avita` instance to 'contain'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    contain() {
+        return this.css("objectFit", "contain")
+    }
+    /**
+     * Sets the 'objectPosition' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'objectPosition' CSS property. Must be a valid CSS `object-position` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    objectPosition(value: string) {
-        this.element.style.objectPosition = value
-        return this
+    objXY(value: string) {
+        return this.css("objectPosition", value)
     }
 
     /**
-     * Sets the 'offset' CSS property on the current `AvitaElement` instance.
+     * Sets the 'offset' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'offset' CSS property. Must be a valid CSS `offset` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     offset(value: string) {
-        this.element.style.offset = value
-        return this
+        return this.css("offset", value)
     }
 
     /**
-     * Sets the 'offsetAnchor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'offsetAnchor' CSS property. Must be a valid CSS `offset-anchor` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    offsetAnchor(value: string) {
-        this.element.style.offsetAnchor = value
-        return this
-    }
-
-    /**
-     * Sets the 'offsetDistance' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'offsetDistance' CSS property. Must be a valid CSS `offset-distance` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    offsetDistance(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.offsetDistance = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'offsetPath' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'offsetPath' CSS property. Must be a valid CSS `offset-path` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    offsetPath(value: string) {
-        this.element.style.offsetPath = value
-        return this
-    }
-
-    /**
-     * Sets the 'offsetRotate' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'offsetRotate' CSS property. Must be a valid CSS `offset-rotate` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    offsetRotate(value: string) {
-        this.element.style.offsetRotate = value
-        return this
-    }
-
-    /**
-     * Sets the 'opacity' CSS property on the current `AvitaElement` instance.
+     * Sets the 'opacity' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'opacity' CSS property. Must be a valid CSS `opacity` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     opacity(value: number | string) {
-        this.element.style.opacity = String(value)
-        return this
+        return this.css("opacity", String(Number(value)))
     }
 
     /**
-     * Sets the 'order' CSS property on the current `AvitaElement` instance.
+     * Sets the 'order' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'order' CSS property. Must be a valid CSS `order` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     order(value: number | string) {
-        this.element.style.order = String(value)
-        return this
+        return this.css("order", String(Number(value)))
     }
 
     /**
-     * Sets the 'orphans' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'orphans' CSS property. Must be a valid CSS `orphans` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    orphans(value: number | string) {
-        this.element.style.orphans = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'outline' CSS property on the current `AvitaElement` instance.
+     * Sets the 'outline' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'outline' CSS property. Must be a valid CSS `outline` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     outline(value: string) {
-        this.element.style.outline = value
-        return this
+        return this.css("outline", value)
     }
 
     /**
-     * Sets the 'outlineColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'outlineColor' CSS property. Must be a valid CSS `outline-color` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    outlineColor(value: AvitaTypes.AvitaColorType | string) {
-        this.element.style.outlineColor = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'outlineOffset' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'outlineOffset' CSS property. Must be a valid CSS `outline-offset` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    outlineOffset(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.outlineOffset = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'outlineStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'outlineStyle' CSS property. Must be a valid CSS `outline-style` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    /**
-     * Sets the 'outlineStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'outlineStyle' CSS property. Must be a valid CSS `outline-style` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    outlineStyle(value: AvitaTypes.OutlineStyle) {
-        this.element.style.outlineStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'outlineWidth' CSS property on the current `AvitaElement` instance.
+     * Sets the 'outlineWidth' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'outlineWidth' CSS property. Must be a valid CSS `outline-width` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    outlineWidth(value: string | number) {
+    outlineW(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.outlineWidth = String(value) + unit
-        return this
+        return this.css("outlineWidth", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'overflow' CSS property on the current `AvitaElement` instance.
+     * Sets the 'overflow' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'overflow' CSS property. Must be a valid CSS `overflow` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    overflow(value: AvitaTypes.Overflow) {
-        this.element.style.overflow = value
-        return this
+    overflow(value: string): this
+
+    /**
+     * Sets the 'overflow-x' and 'overflow-y' CSS properties on the current `Avita` instance.
+     * @param overflowX - The value to set for the 'overflow-x' CSS property. Must be a valid CSS `overflow` value.
+     * @param overflowY - The value to set for the 'overflow-y' CSS property. Must be a valid CSS `overflow` value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    overflow(overflowX: string, overflowY: string): this
+
+    overflow(valueOrX: string, overflowY?: string): this {
+        if (overflowY === undefined) {
+            // Single value: set overflow for both x and y
+            return this.css("overflow", valueOrX)
+        }
+        // Two values: set overflow for x and y separately
+        return this.css("overflowX", valueOrX).css("overflowY", overflowY)
     }
 
     /**
-     * Sets the 'overflowAnchor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'overflowAnchor' CSS property. Must be a valid CSS `overflow-anchor` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'overflow' CSS property on the current `Avita` instance to 'hidden', preventing any overflow content from being visible.
+     * @returns The current `Avita` instance for chaining.
      */
-    overflowAnchor(value: AvitaTypes.OverflowAnchor) {
-        this.element.style.overflowAnchor = value
-        return this
+    noOverflow() {
+        return this.css("overflow", "hidden")
     }
 
     /**
-     * Sets the 'overflowWrap' CSS property on the current `AvitaElement` instance.
+     * Sets the 'overflow' CSS property on the current `Avita` instance to 'visible', allowing any overflow content to be visible.
+     * @returns The current `Avita` instance for chaining.
+     */
+    allowOverflow() {
+        return this.css("overflow", "visible")
+    }
+
+    /**
+     * Sets the 'overflow' CSS property on the current `Avita` instance to 'scroll', allowing any overflow content to be scrollable.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollOverflow() {
+        return this.css("overflow", "scroll")
+    }
+
+    /**
+     * Sets the 'overflowWrap' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'overflowWrap' CSS property. Must be a valid CSS `overflow-wrap` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    overflowWrap(value: AvitaTypes.OverflowWrap) {
-        this.element.style.overflowWrap = value
-        return this
+    overflowWrap(value: string) {
+        return this.css("overflowWrap", value)
     }
 
     /**
-     * Sets the 'overflowX' CSS property on the current `AvitaElement` instance.
+     * Sets the 'overflowX' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'overflowX' CSS property. Must be a valid CSS `overflow` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    overflowX(value: AvitaTypes.Overflow) {
-        this.element.style.overflowX = value
-        return this
+    overflowX(value: string) {
+        return this.css("overflowX", value)
     }
 
     /**
-     * Sets the 'overflowY' CSS property on the current `AvitaElement` instance.
+     * Sets the 'overflowY' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'overflowY' CSS property. Must be a valid CSS `overflow-y` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    overflowY(value: AvitaTypes.Overflow) {
-        this.element.style.overflowY = value
-        return this
+    overflowY(value: string) {
+        return this.css("overflowY", value)
     }
 
     /**
-     * Sets the 'overscrollBehavior' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'overscrollBehavior' CSS property. Must be a valid CSS `overscroll-behavior` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'padding' CSS property with one value applied to all sides.
+     * @param value - The value to set for the 'padding' CSS property.
+     * @returns The current `Avita` instance for chaining.
      */
-    overscrollBehavior(value: AvitaTypes.OverscrollBehavior) {
-        this.element.style.overscrollBehavior = value
-        return this
+    padding(value: string | number): this
+
+    /**
+     * Sets the 'padding' CSS property with two values: vertical and horizontal.
+     * @param vertical - The value to set for the top and bottom padding.
+     * @param horizontal - The value to set for the left and right padding.
+     * @returns The current `Avita` instance for chaining.
+     */
+    padding(vertical: string | number, horizontal: string | number): this
+
+    /**
+     * Sets the 'padding' CSS property with three values: top, horizontal, and bottom.
+     * @param top - The value to set for the top padding.
+     * @param horizontal - The value to set for the left and right padding.
+     * @param bottom - The value to set for the bottom padding.
+     * @returns The current `Avita` instance for chaining.
+     */
+    padding(
+        top: string | number,
+        horizontal: string | number,
+        bottom: string | number
+    ): this
+
+    /**
+     * Sets the 'padding' CSS property with four values: top, right, bottom, and left.
+     * @param top - The value to set for the top padding.
+     * @param right - The value to set for the right padding.
+     * @param bottom - The value to set for the bottom padding.
+     * @param left - The value to set for the left padding.
+     * @returns The current `Avita` instance for chaining.
+     */
+    padding(
+        top: string | number,
+        right: string | number,
+        bottom: string | number,
+        left: string | number
+    ): this
+
+    padding(...values: (string | number)[]): this {
+        const processValue = (value: string | number) =>
+            typeof value === "number" ? `${value}px` : value
+
+        switch (values.length) {
+            case 1:
+                return this.css("padding", processValue(values[0]))
+            case 2:
+                return this.css(
+                    "padding",
+                    `${processValue(values[0])} ${processValue(values[1])}`
+                )
+            case 3:
+                return this.css(
+                    "padding",
+                    `${processValue(values[0])} ${processValue(
+                        values[1]
+                    )} ${processValue(values[2])}`
+                )
+            case 4:
+                return this.css(
+                    "padding",
+                    `${processValue(values[0])} ${processValue(
+                        values[1]
+                    )} ${processValue(values[2])} ${processValue(values[3])}`
+                )
+            default:
+                throw new Error(
+                    "Invalid number of arguments provided to padding(). Must be 1, 2, 3, or 4."
+                )
+        }
     }
 
     /**
-     * Sets the 'overscrollBehaviorBlock' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'overscrollBehaviorBlock' CSS property. Must be a valid CSS `overscroll-behavior-block` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Shorthand for setting the 'padding' CSS property on the current `Avita` instance. See `padding()` for variations.
+     * @param value - The value to set for the 'padding' CSS property. Can be a valid CSS padding value, either a string or a number (which will be interpreted as pixels).
+     * @returns The current `Avita` instance for chaining.
      */
-    overscrollBehaviorBlock(value: AvitaTypes.OverscrollBehavior) {
-        this.element.style.overscrollBehaviorBlock = value
-        return this
-    }
+    p = this.padding
 
     /**
-     * Sets the 'overscrollBehaviorInline' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'overscrollBehaviorInline' CSS property. Must be a valid CSS `overscroll-behavior-inline` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'padding-top' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'padding-top' CSS property. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `Avita` instance for chaining.
      */
-    overscrollBehaviorInline(value: AvitaTypes.OverscrollBehavior) {
-        this.element.style.overscrollBehaviorInline = value
-        return this
-    }
-
-    /**
-     * Sets the 'overscrollBehaviorX' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'overscrollBehaviorX' CSS property. Must be a valid CSS `overscroll-behavior-x` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    overscrollBehaviorX(value: AvitaTypes.OverscrollBehavior) {
-        this.element.style.overscrollBehaviorX = value
-        return this
-    }
-
-    /**
-     * Sets the 'overscrollBehaviorY' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'overscrollBehaviorY' CSS property. Must be a valid CSS `overscroll-behavior-y` value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    overscrollBehaviorY(value: AvitaTypes.OverscrollBehavior) {
-        this.element.style.overscrollBehaviorY = value
-        return this
-    }
-
-    /**
-     * Sets the 'padding' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'padding' CSS property. Can be a string or number, where a number will be interpreted as pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    padding(value: string | number) {
+    paddingT(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.padding = String(value) + unit
-        return this
+        return this.css("paddingTop", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'paddingBlock' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paddingBlock' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Shorthand for setting the 'padding-top' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'padding-top' CSS property. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `Avita` instance for chaining.
      */
-    paddingBlock(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.paddingBlock = String(value) + unit
-        return this
-    }
+    pt = this.paddingT
 
     /**
-     * Sets the 'paddingBlockEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paddingBlockEnd' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'padding-right' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'padding-right' CSS property. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `Avita` instance for chaining.
      */
-    paddingBlockEnd(value: string | number) {
+    paddingR(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.paddingBlockEnd = String(value) + unit
-        return this
+        return this.css("paddingRight", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'paddingBlockStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paddingBlockStart' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Shorthand for setting the 'padding-right' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'padding-right' CSS property. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `Avita` instance for chaining.
      */
-    paddingBlockStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.paddingBlockStart = String(value) + unit
-        return this
-    }
+    pr = this.paddingR
 
     /**
-     * Sets the 'paddingBottom' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paddingBottom' CSS property. Can be a string or number, where a number will be interpreted as pixels.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'padding-bottom' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'padding-bottom' CSS property. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `Avita` instance for chaining.
      */
-    paddingBottom(value: string | number) {
+    paddingB(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.paddingBottom = String(value) + unit
-        return this
+        return this.css("paddingBottom", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'paddingInline' CSS property on the current `AvitaElement` instance.
+     * Shorthand for setting the 'padding-bottom' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'padding-bottom' CSS property. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `Avita` instance for chaining.
+     */
+    pb = this.paddingB
+
+    /**
+     * Sets the 'padding-left' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'padding-left' CSS property. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `Avita` instance for chaining.
+     */
+    paddingL(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.css("paddingLeft", `${value}${unit}`)
+    }
+
+    /**
+     * Shorthand for setting the 'padding-left' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'padding-left' CSS property. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `Avita` instance for chaining.
+     */
+    pl = this.paddingL
+
+    /**
+     * Sets the 'paddingLeft' and 'paddingRight' CSS properties on the current `Avita` instance.
+     * @param value - The value to set for the 'paddingLeft' and 'paddingRight' CSS properties. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `Avita` instance for chaining.
+     */
+    paddingX(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.css("paddingLeft", `${value}${unit}`).css(
+            "paddingRight",
+            `${value}${unit}`
+        )
+    }
+
+    /**
+     * Shorthand for setting the 'padding-left' and 'padding-right' CSS properties on the current `Avita` instance.
+     * @param value - The value to set for the 'padding-left' and 'padding-right' CSS properties. Can be a string or number value, where a number will be interpreted as pixels.
+     * @returns The current `Avita` instance for chaining.
+     */
+    px = this.paddingX
+
+    /**
+     * Sets the 'paddingTop' and 'paddingBottom' CSS properties on the current `Avita` instance.
+     * @param value - The value to set for the 'paddingTop' and 'paddingBottom' CSS properties. Can be a string or number, where a number will be interpreted as pixels.
+     * @returns The current `Avita` instance for chaining.
+     */
+    paddingY(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.css("paddingTop", `${value}${unit}`).css(
+            "paddingBottom",
+            `${value}${unit}`
+        )
+    }
+
+    /**
+     * Shorthand for setting the 'padding-top' and 'padding-bottom' CSS properties on the current `Avita` instance.
+     * @param value - The value to set for the 'padding-top' and 'padding-bottom' CSS properties. Can be a string or number, where a number will be interpreted as pixels.
+     * @returns The current `Avita` instance for chaining.
+     */
+    py = this.paddingY
+
+    /**
+     * Sets the 'paddingInline' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'paddingInline' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    paddingInline(value: string | number) {
+    textPadding(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.paddingInline = String(value) + unit
-        return this
+        return this.css("paddingInline", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'paddingInlineEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paddingInlineEnd' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    paddingInlineEnd(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.paddingInlineEnd = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'paddingInlineStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paddingInlineStart' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    paddingInlineStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.paddingInlineStart = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'paddingLeft' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paddingLeft' CSS property. Can be a string or number, where a number will be interpreted as pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    paddingLeft(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.paddingLeft = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'paddingRight' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paddingRight' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    paddingRight(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.paddingRight = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'paddingTop' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paddingTop' CSS property. Can be a string or number value, where a number will be interpreted as pixels.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    paddingTop(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.paddingTop = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'pageBreakAfter' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'pageBreakAfter' CSS property. Can be a value from the `AvitaTypes.PageBreak` type.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    pageBreakAfter(value: AvitaTypes.PageBreak) {
-        this.element.style.pageBreakAfter = value
-        return this
-    }
-
-    /**
-     * Sets the 'pageBreakBefore' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'pageBreakBefore' CSS property. Can be a value from the `AvitaTypes.PageBreak` type.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    pageBreakBefore(value: AvitaTypes.PageBreak) {
-        this.element.style.pageBreakBefore = value
-        return this
-    }
-
-    /**
-     * Sets the 'pageBreakInside' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'pageBreakInside' CSS property. Can be a value from the `AvitaTypes.PageBreak` type.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    pageBreakInside(value: AvitaTypes.PageBreak) {
-        this.element.style.pageBreakInside = value
-        return this
-    }
-
-    /**
-     * Sets the 'paintOrder' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'paintOrder' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    paintOrder(value: string) {
-        this.element.style.paintOrder = value
-        return this
-    }
-
-    /**
-     * Sets the 'perspective' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'perspective' CSS property. Can be a string or number value, where a number will be interpreted as pixels.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'perspective' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'perspective' CSS property. Can be a string or number value, where a number will be interpreted in pixels.
+     * @returns The current `Avita` instance for chaining.
      */
     perspective(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.perspective = String(value) + unit
-        return this
+        return this.css("perspective", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'perspectiveOrigin' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'perspectiveOrigin' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'perspectiveOrigin' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'perspectiveOrigin' CSS property.
+     * @returns The current `Avita` instance for chaining.
      */
     perspectiveOrigin(value: string) {
-        this.element.style.perspectiveOrigin = value
-        return this
+        return this.css("perspectiveOrigin", value)
     }
 
     /**
-     * Sets the 'placeContent' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'placeContent' CSS property. Can be a value from the `AvitaTypes.PlaceContent` type.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'perspective' CSS property on the current `Avita` instance to a value of "100px".
+     * @returns The current `Avita` instance for chaining.
      */
-    placeContent(value: AvitaTypes.PlaceContent) {
-        this.element.style.placeContent = value
-        return this
+    uncumfy() {
+        return this.perspective("100px")
     }
 
     /**
-     * Sets the 'placeItems' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'placeItems' CSS property. Can be a value from the `AvitaTypes.PlaceItems` type.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'perspective' CSS property on the current `Avita` instance to a value of "250px".
+     * @returns The current `Avita` instance for chaining.
      */
-    placeItems(value: AvitaTypes.PlaceItems) {
-        this.element.style.placeItems = value
-        return this
+    tight() {
+        return this.perspective("250px")
     }
 
     /**
-     * Sets the 'placeSelf' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'placeSelf' CSS property. Can be a value from the `AvitaTypes.PlaceSelf` type.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'perspective' CSS property on the current `Avita` instance to a value of "500px".
+     * @returns The current `Avita` instance for chaining.
      */
-    placeSelf(value: AvitaTypes.PlaceSelf) {
-        this.element.style.placeSelf = value
-        return this
+    near() {
+        return this.perspective("500px")
     }
 
     /**
-     * Sets the 'pointerEvents' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'pointerEvents' CSS property. Can be a value from the `AvitaTypes.PointerEvents` type.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'perspective' CSS property on the current `Avita` instance to a value of "750px".
+     * @returns The current `Avita` instance for chaining.
      */
-    pointerEvents(value: AvitaTypes.PointerEvents) {
-        this.element.style.pointerEvents = value
-        return this
+    away() {
+        return this.perspective("750px")
     }
 
     /**
-     * Sets the 'position' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'position' CSS property. Can be a value from the `AvitaTypes.Position` type.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'perspective' CSS property on the current `Avita` instance to a value of "1000px".
+     * @returns The current `Avita` instance for chaining.
      */
-    position(value: AvitaTypes.Position) {
-        this.element.style.position = value
-        return this
+    far() {
+        return this.perspective("1000px")
     }
 
     /**
-     * Sets the 'quotes' CSS property on the current `AvitaElement` instance.
+     * Sets the 'perspective' CSS property on the current `Avita` instance to a value of "1500px".
+     * @returns The current `Avita` instance for chaining.
+     */
+    further() {
+        return this.perspective("1500px")
+    }
+
+    /**
+     * Sets the 'perspective' CSS property on the current `Avita` instance to a value of "2000px".
+     * @returns The current `Avita` instance for chaining.
+     */
+    deep() {
+        return this.perspective("2000px")
+    }
+
+    /**
+     * Sets the 'placeContent' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'placeContent' CSS property. Can be a value from the `string` type.
+     * @returns The current `Avita` instance for chaining.
+     */
+    placeContent(value: string) {
+        return this.css("placeContent", value)
+    }
+
+    /**
+     * Shorthand for setting the 'placeContent' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'placeContent' CSS property. Can be a value from the `string` type.
+     * @returns The current `Avita` instance for chaining.
+     */
+    pContent = this.placeContent
+
+    /**
+     * Sets the 'placeItems' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'placeItems' CSS property. Can be a value from the `string` type.
+     * @returns The current `Avita` instance for chaining.
+     */
+    placeItems(value: string) {
+        return this.css("placeItems", value)
+    }
+
+    /**
+     * Shorthand for setting the 'placeItems' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'placeItems' CSS property. Can be a value from the `string` type.
+     * @returns The current `Avita` instance for chaining.
+     */
+    pItems = this.placeItems
+
+    /**
+     * Sets the 'placeSelf' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'placeSelf' CSS property. Can be a value from the `string` type.
+     * @returns The current `Avita` instance for chaining.
+     */
+    placeSelf(value: string) {
+        return this.css("placeSelf", value)
+    }
+
+    /**
+     * Shorthand for setting the 'placeSelf' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'placeSelf' CSS property. Can be a value from the `string` type.
+     * @returns The current `Avita` instance for chaining.
+     */
+    pSelf = this.placeSelf
+
+    /**
+     * Sets the 'pointerEvents' CSS property on the current `Avita` instance to 'auto', allowing the element to be clicked.
+     * @returns The current `Avita` instance for chaining.
+     */
+    clickable() {
+        return this.css("pointerEvents", "auto")
+    }
+
+    /**
+     * Sets the 'pointerEvents' CSS property on the current `Avita` instance to 'none', disabling the element from being clicked.
+     * @returns The current `Avita` instance for chaining.
+     */
+    unclickable() {
+        return this.css("pointerEvents", "none")
+    }
+
+    /**
+     * Sets the 'quotes' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'quotes' CSS property.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     quotes(value: string) {
-        this.element.style.quotes = value
-        return this
+        return this.css("quotes", value)
     }
 
     /**
-     * Sets the 'resize' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'resize' CSS property. Can be a value from the `AvitaTypes.Resize` type.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'resize' CSS property on the current `Avita` instance to 'both', allowing the element to be resized in both horizontal and vertical directions.
+     * @returns The current `Avita` instance for chaining.
      */
-    resize(value: AvitaTypes.Resize) {
-        this.element.style.resize = value
-        return this
+    resizable() {
+        return this.css("resize", "both")
     }
 
     /**
-     * Sets the 'right' CSS property on the current `AvitaElement` instance.
+     * Sets the 'resize' CSS property on the current `Avita` instance to 'horizontal', allowing the element to be resized horizontally.
+     * @returns The current `Avita` instance for chaining.
+     */
+    resizeX() {
+        return this.css("resize", "horizontal")
+    }
+
+    /**
+     * Sets the 'resize' CSS property on the current `Avita` instance to 'vertical', allowing the element to be resized vertically.
+     * @returns The current `Avita` instance for chaining.
+     */
+    resizeY() {
+        return this.css("resize", "vertical")
+    }
+
+    /**
+     * Sets the 'resize' CSS property on the current `Avita` instance to 'none', preventing the element from being resized.
+     * @returns The current `Avita` instance for chaining.
+     */
+    unresizable() {
+        return this.css("resize", "none")
+    }
+
+    /**
+     * Sets the 'right' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'right' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     right(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.right = String(value) + unit
-        return this
+        return this.css("right", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'rotate' CSS property on the current `AvitaElement` instance.
+     * Gets the 'right' CSS property value of the current `Avita` instance.
+     * @returns The value of the 'right' CSS property.
+     */
+    r = this.right
+
+    /**
+     * Sets the 'rotate' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'rotate' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     rotate(value: string | number) {
         const unit = typeof value === "string" ? "" : "deg"
-        this.element.style.rotate = String(value)
+        return this.css("rotate", `${value}${unit}`)
+    }
+
+    /**
+     * Sets the 'rotateX' CSS transform property on the current `Avita` instance.
+     * @param value - The value to set for the 'rotateX' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    rotateX(value: string | number) {
+        const unit = typeof value === "string" ? "" : "deg"
+        const val = `rotateX(${value}${unit}) `
+        this.element.style.transform += val
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.style.transform += val
+            })
         return this
     }
 
     /**
-     * Sets the 'scale' CSS property on the current `AvitaElement` instance.
+     * A shorthand property for calling the `rotateX()` method on the current `Avita` instance.
+     * @returns The current `Avita` instance for chaining.
+     */
+    rx = this.rotateX
+
+    /**
+     * Sets the 'rotateY' CSS transform property on the current `Avita` instance.
+     * @param value - The value to set for the 'rotateY' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    rotateY(value: string | number) {
+        const unit = typeof value === "string" ? "" : "deg"
+        const val = `rotateY(${value}${unit}) `
+        this.element.style.transform += val
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.style.transform += val
+            })
+        return this
+    }
+
+    /**
+     * A shorthand property for calling the `rotateY()` method on the current `Avita` instance.
+     * @returns The current `Avita` instance for chaining.
+     */
+    ry = this.rotateY
+
+    /**
+     * Sets the 'rotateZ' CSS transform property on the current `Avita` instance.
+     * @param value - The value to set for the 'rotateZ' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    rotateZ(value: string | number) {
+        const unit = typeof value === "string" ? "" : "deg"
+        const val = `rotateZ(${value}${unit}) `
+        this.element.style.transform += val
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.style.transform += val
+            })
+        return this
+    }
+
+    /**
+     * A shorthand property for calling the `rotateZ()` method on the current `Avita` instance.
+     * @returns The current `Avita` instance for chaining.
+     */
+    rz = this.rotateZ
+
+    /**
+     * Sets the 'scale' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'scale' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     scale(value: string | number) {
-        this.element.style.scale = String(value)
-        return this
+        return this.css("scale", String(Number(value)))
     }
 
     /**
-     * Sets the 'scrollBehavior' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollBehavior' CSS property. Can be a value from the `AvitaTypes.ScrollBehavior` type.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'scrollBehavior' CSS property on the current `Avita` instance to 'auto', disabling smooth scrolling behavior.
+     * @returns The current `Avita` instance for chaining.
      */
-    scrollBehavior(value: AvitaTypes.ScrollBehavior) {
-        this.element.style.scrollBehavior = value
-        return this
+    instantScroll() {
+        return this.css("scrollBehavior", "auto")
     }
 
     /**
-     * Sets the 'scrollMargin' CSS property on the current `AvitaElement` instance.
+     * Sets the 'scrollBehavior' CSS property on the current `Avita` instance to 'smooth', enabling smooth scrolling behavior.
+     * @returns The current `Avita` instance for chaining.
+     */
+    smoothScroll() {
+        return this.css("scrollBehavior", "smooth")
+    }
+
+    /**
+     * Sets the 'scrollSnapType' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'scrollSnapType' CSS property.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollSnapType(value: string) {
+        return this.css("scrollSnapType", value)
+    }
+
+    /**
+     * Sets the 'scrollSnapAlign' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'scrollSnapAlign' CSS property.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollSnapAlign(value: string) {
+        return this.css("scrollSnapAlign", value)
+    }
+
+    /**
+     * Sets the 'scrollMargin' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'scrollMargin' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     scrollMargin(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMargin = String(value) + unit
-        return this
+        return this.css("scrollMargin", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'scrollMarginBlock' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollMarginBlock' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Shorthands for setting the 'scrollMargin' CSS property on the current `Avita` instance. See `scrollMargin()` for details.
+     * @param value - The value to set for the 'scrollMargin' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
      */
-    scrollMarginBlock(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginBlock = String(value) + unit
-        return this
-    }
+    scrollM = this.scrollMargin
 
     /**
-     * Sets the 'scrollMarginBlockEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollMarginBlockEnd' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollMarginBlockEnd(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginBlockEnd = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollMarginBlockStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollMarginBlockStart' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollMarginBlockStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginBlockStart = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollMarginBottom' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollMarginBottom' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollMarginBottom(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginBottom = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollMarginInline' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollMarginInline' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollMarginInline(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginInline = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollMarginInlineEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollMarginInlineEnd' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollMarginInlineEnd(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginInlineEnd = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollMarginInlineStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollMarginInlineStart' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollMarginInlineStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginInlineStart = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollMarginLeft' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollMarginLeft' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollMarginLeft(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginLeft = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollMarginRight' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollMarginRight' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollMarginRight(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginRight = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollMarginTop' CSS property on the current `AvitaElement` instance.
+     * Sets the 'scrollMarginTop' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'scrollMarginTop' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     scrollMarginTop(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollMarginTop = String(value) + unit
-        return this
+        return this.css("scrollMarginTop", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'scrollPadding' CSS property on the current `AvitaElement` instance.
+     * Shorthands for setting the 'scrollMarginTop' CSS property on the current `Avita` instance. See `scrollMarginTop()` for details.
+     * @param value - The value to set for the 'scrollMarginTop' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollMT = this.scrollMarginTop
+
+    /**
+     * Sets the 'scrollMarginBottom' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'scrollMarginBottom' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollMarginBottom(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.css("scrollMarginBottom", `${value}${unit}`)
+    }
+
+    /**
+     * Shorthands for setting the 'scrollMarginBottom' CSS property on the current `Avita` instance. See `scrollMarginBottom()` for details.
+     * @param value - The value to set for the 'scrollMarginBottom' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollMB = this.scrollMarginBottom
+
+    /**
+     * Sets the 'scrollMarginLeft' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'scrollMarginLeft' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollMarginLeft(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.css("scrollMarginLeft", `${value}${unit}`)
+    }
+
+    /**
+     * Shorthands for setting the 'scrollMarginLeft' CSS property on the current `Avita` instance. See `scrollMarginLeft()` for details.
+     * @param value - The value to set for the 'scrollMarginLeft' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollML = this.scrollMarginLeft
+
+    /**
+     * Sets the 'scrollMarginRight' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'scrollMarginRight' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollMarginRight(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.css("scrollMarginRight", `${value}${unit}`)
+    }
+
+    /**
+     * Shorthands for setting the 'scrollMarginRight' CSS property on the current `Avita` instance. See `scrollMarginRight()` for details.
+     * @param value - The value to set for the 'scrollMarginRight' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollMR = this.scrollMarginRight
+
+    /**
+     * Sets the 'scrollPadding' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'scrollPadding' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     scrollPadding(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPadding = String(value) + unit
-        return this
+        return this.css("scrollPadding", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'scrollPaddingBlock' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollPaddingBlock' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Shorthands for setting the 'scrollPadding' CSS property on the current `Avita` instance. See `scrollPadding()` for details.
+     * @param value - The value to set for the 'scrollPadding' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
      */
-    scrollPaddingBlock(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingBlock = String(value) + unit
-        return this
-    }
+    scrollP = this.scrollPadding
 
     /**
-     * Sets the 'scrollPaddingBlockEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollPaddingBlockEnd' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollPaddingBlockEnd(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingBlockEnd = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollPaddingBlockStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollPaddingBlockStart' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollPaddingBlockStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingBlockStart = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollPaddingBottom' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollPaddingBottom' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollPaddingBottom(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingBottom = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollPaddingBottom' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollPaddingBottom' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollPaddingInline(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingInline = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollPaddingInlineEnd' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollPaddingInlineEnd' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollPaddingInlineEnd(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingInlineEnd = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollPaddingInlineStart' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollPaddingInlineStart' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollPaddingInlineStart(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingInlineStart = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollPaddingLeft' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollPaddingLeft' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollPaddingLeft(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingLeft = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollPaddingRight' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollPaddingRight' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollPaddingRight(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingRight = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'scrollPaddingTop' CSS property on the current `AvitaElement` instance.
+     * Sets the 'scrollPaddingTop' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'scrollPaddingTop' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     scrollPaddingTop(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.scrollPaddingTop = String(value) + unit
-        return this
+        return this.css("scrollPaddingTop", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'scrollSnapAlign' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollSnapAlign' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Shorthands for setting the 'scrollPaddingTop' CSS property on the current `Avita` instance. See `scrollPaddingTop()` for details.
+     * @param value - The value to set for the 'scrollPaddingTop' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
      */
-    scrollSnapAlign(value: string) {
-        this.element.style.scrollSnapAlign = value
-        return this
-    }
+    scrollPT = this.scrollPaddingTop
 
     /**
-     * Sets the 'scrollSnapStop' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollSnapStop' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'scrollPaddingBottom' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'scrollPaddingBottom' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
      */
-    scrollSnapStop(value: string) {
-        this.element.style.scrollSnapStop = value
-        return this
-    }
-
-    /**
-     * Sets the 'scrollSnapType' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'scrollSnapType' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    scrollSnapType(value: string) {
-        this.element.style.scrollSnapType = value
-        return this
-    }
-
-    /**
-     * Sets the 'shapeImageThreshold' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'shapeImageThreshold' CSS property. Must be a number.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    shapeImageThreshold(value: number) {
-        this.element.style.shapeImageThreshold = String(value)
-        return this
-    }
-
-    /**
-     * Sets the 'shapeMargin' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'shapeMargin' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    shapeMargin(value: string | number) {
+    scrollPaddingBottom(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.shapeMargin = String(value) + unit
-        return this
+        return this.css("scrollPaddingBottom", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'shapeOutside' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'shapeOutside' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Shorthands for setting the 'scrollPaddingBottom' CSS property on the current `Avita` instance. See `scrollPaddingBottom()` for details.
+     * @param value - The value to set for the 'scrollPaddingBottom' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
      */
-    shapeOutside(value: string) {
-        this.element.style.shapeOutside = value
-        return this
+    scrollPB = this.scrollPaddingBottom
+
+    /**
+     * Sets the 'scrollPaddingLeft' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'scrollPaddingLeft' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollPaddingLeft(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.css("scrollPaddingLeft", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'tabSize' CSS property on the current `AvitaElement` instance.
+     * Shorthands for setting the 'scrollPaddingLeft' CSS property on the current `Avita` instance. See `scrollPaddingLeft()` for details.
+     * @param value - The value to set for the 'scrollPaddingLeft' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollPL = this.scrollPaddingLeft
+
+    /**
+     * Sets the 'scrollPaddingRight' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'scrollPaddingRight' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollPaddingRight(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.css("scrollPaddingRight", `${value}${unit}`)
+    }
+
+    /**
+     * Shorthands for setting the 'scrollPaddingRight' CSS property on the current `Avita` instance. See `scrollPaddingRight()` for details.
+     * @param value - The value to set for the 'scrollPaddingRight' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollPR = this.scrollPaddingRight
+
+    /**
+     * Sets the 'scrollSnapAlign' CSS property on the current `Avita` instance to 'start', aligning the element to the start of the scroll container.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollSnap() {
+        return this.css("scrollSnapAlign", "start")
+    }
+
+    /**
+     * Sets the 'tabSize' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'tabSize' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     tabSize(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.tabSize = String(value) + unit
-        return this
+        return this.css("tabSize", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'tableLayout' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'tableLayout' CSS property. Can be a string value from the `AvitaTypes.TableLayout` type.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'textAlign' CSS property on the current `Avita` instance to 'left', aligning the text to the left.
+     * @returns The current `Avita` instance for chaining.
      */
-    tableLayout(value: AvitaTypes.TableLayout) {
-        this.element.style.tableLayout = value
-        return this
+    textL() {
+        return this.css("textAlign", "left")
     }
 
     /**
-     * Sets the 'textAlign' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textAlign' CSS property. Must be a valid `AvitaTypes.TextAlign` value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'textAlign' CSS property on the current `Avita` instance to 'right', aligning the text to the right.
+     * @returns The current `Avita` instance for chaining.
      */
-    textAlign(value: AvitaTypes.TextAlign) {
-        this.element.style.textAlign = value
-        return this
+    textR() {
+        return this.css("textAlign", "right")
     }
 
     /**
-     * Sets the 'textAlignLast' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textAlignLast' CSS property. Can be a value from the `AvitaTypes.TextAlignLast` type.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'textAlign' CSS property on the current `Avita` instance to 'center', aligning the text to the center.
+     * @returns The current `Avita` instance for chaining.
      */
-    textAlignLast(value: AvitaTypes.TextAlignLast) {
-        this.element.style.textAlignLast = value
-        return this
+    textC() {
+        return this.css("textAlign", "center")
     }
 
     /**
-     * Sets the 'textCombineUpright' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textCombineUpright' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'textAlign' CSS property on the current `Avita` instance to 'justify', aligning the text to be justified.
+     * @returns The current `Avita` instance for chaining.
      */
-    textCombineUpright(value: string) {
-        this.element.style.textCombineUpright = value
-        return this
+    textJ() {
+        return this.css("textAlign", "justify")
     }
 
     /**
-     * Sets the 'textDecoration' CSS property on the current `AvitaElement` instance.
+     * Sets the 'textDecoration' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'textDecoration' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    textDecoration(value: string) {
-        this.element.style.textDecoration = value
-        return this
+    decoration(value: string) {
+        return this.css("textDecoration", value)
     }
 
     /**
-     * Sets the 'textDecorationColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textDecorationColor' CSS property. Can be a string value or an `AvitaTypes.AvitaColorType`.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'textDecorationLine' CSS property on the current `Avita` instance to 'overline', creating a halo effect.
+     * @returns The current `Avita` instance for chaining.
      */
-    textDecorationColor(value: string | AvitaTypes.AvitaColorType) {
-        this.element.style.textDecorationColor = value.toString()
-        return this
+    halo() {
+        return this.css("textDecorationLine", "overline")
     }
 
     /**
-     * Sets the 'textDecorationLine' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textDecorationLine' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'textDecorationLine' CSS property on the current `Avita` instance to "line-through", creating a strikethrough effect.
+     * @returns The current `Avita` instance for chaining.
      */
-    textDecorationLine(value: string) {
-        this.element.style.textDecorationLine = value
-        return this
+    crossout() {
+        return this.css("textDecorationLine", "line-through")
     }
 
     /**
-     * Sets the 'textDecorationStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textDecorationStyle' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'textDecorationLine' CSS property on the current `Avita` instance to 'underline'.
+     * @returns The current `Avita` instance for chaining.
      */
-    textDecorationStyle(value: string) {
-        this.element.style.textDecorationStyle = value
-        return this
+    underline() {
+        return this.css("textDecorationLine", "underline")
     }
 
     /**
-     * Sets the 'textDecorationThickness' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textDecorationThickness' CSS property. Can be a string value or a number representing a pixel value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    textDecorationThickness(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.textDecorationThickness = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'textEmphasis' CSS property on the current `AvitaElement` instance.
+     * Sets the 'textEmphasis' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'textEmphasis' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    textEmphasis(value: string) {
-        this.element.style.textEmphasis = value
-        return this
+    emphasis(value: string) {
+        return this.css("textEmphasis", value)
     }
 
     /**
-     * Sets the 'textEmphasisColor' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textEmphasisColor' CSS property. Can be a string value or an `AvitaTypes.AvitaColorType`.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    textEmphasisColor(value: string | AvitaTypes.AvitaColorType) {
-        this.element.style.textEmphasisColor = value.toString()
-        return this
-    }
-
-    /**
-     * Sets the 'textEmphasisPosition' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textEmphasisPosition' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    textEmphasisPosition(value: string) {
-        this.element.style.textEmphasisPosition = value
-        return this
-    }
-
-    /**
-     * Sets the 'textEmphasisStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textEmphasisStyle' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    textEmphasisStyle(value: string) {
-        this.element.style.textEmphasisStyle = value
-        return this
-    }
-
-    /**
-     * Sets the 'textIndent' CSS property on the current `AvitaElement` instance.
+     * Sets the 'textIndent' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'textIndent' CSS property. Can be a string value or a number representing a pixel value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    textIndent(value: string | number) {
+    indent(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.textIndent = String(value) + unit
-        return this
+        return this.css("textIndent", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'textOrientation' CSS property on the current `AvitaElement` instance.
+     * Sets the 'textOrientation' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'textOrientation' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    textOrientation(value: string) {
-        this.element.style.textOrientation = value
-        return this
+    textOrient(value: string) {
+        return this.css("textOrientation", value)
     }
 
     /**
-     * Sets the 'textOverflow' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textOverflow' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Rotates the text of the current `Avita` instance by 90 degrees, displaying it vertically.
+     * Sets the 'textOrientation' CSS property on the current `Avita` instance to 'upright'.
+     * @returns The current `Avita` instance for chaining.
      */
-    textOverflow(value: string) {
-        this.element.style.textOverflow = value
-        return this
+    verticalText() {
+        return this.css("textOrientation", "upright")
     }
 
     /**
-     * Sets the 'textRendering' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textRendering' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Rotates the text of the current `Avita` instance by 90 degrees, displaying it vertically.
+     * Sets the 'textOrientation' CSS property on the current `Avita` instance to 'sideways'.
+     * @returns The current `Avita` instance for chaining.
      */
-    textRendering(value: string) {
-        this.element.style.textRendering = value
-        return this
+    sideways() {
+        return this.css("textOrientation", "sideways")
     }
 
     /**
-     * Sets the 'textShadow' CSS property on the current `AvitaElement` instance.
+     * This will cause any overflowing text to be truncated and display an ellipsis ('...') at the end.
+     * Sets the 'textOverflow' CSS property on the current `Avita` instance to 'ellipsis'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    ellipses() {
+        return this.css("textOverflow", "ellipsis")
+    }
+
+    /**
+     * This will cause any overflowing text to be clipped and not display an ellipsis.
+     * Sets the 'textOverflow' CSS property on the current `Avita` instance to 'clip'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    clipText() {
+        return this.css("textOverflow", "clip")
+    }
+
+    /**
+     * Sets the 'textShadow' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'textShadow' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     textShadow(value: string) {
-        this.element.style.textShadow = value
-        return this
+        return this.css("textShadow", value)
     }
 
     /**
-     * Sets the 'textTransform' CSS property on the current `AvitaElement` instance.
+     * Sets the 'textTransform' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'textTransform' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    textTransform(value: string) {
-        this.element.style.textTransform = value
-        return this
+    textTrans(value: string) {
+        return this.css("textTransform", value)
     }
 
     /**
-     * Sets the 'textUnderlineOffset' CSS property on the current `AvitaElement` instance.
+     * UPPERCASE TEXT!!!
+     * Sets the 'textTransform' CSS property on the current `Avita` instance to 'uppercase'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    caps() {
+        return this.css("textTransform", "uppercase")
+    }
+
+    /**
+     * Capitalizes the first letter of each word
+     * Sets the 'textTransform' CSS property on the current `Avita` instance to "capitalize".
+     * @returns The current `Avita` instance for chaining.
+     */
+    capEach() {
+        return this.css("textTransform", "capitalize")
+    }
+
+    /**
+     * lowercase text...
+     * Sets the 'textTransform' CSS property on the current `Avita` instance to 'lowercase'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    lowercase() {
+        return this.css("textTransform", "lowercase")
+    }
+
+    /**
+     * Sets the 'textUnderlineOffset' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'textUnderlineOffset' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    textUnderlineOffset(value: string | number) {
+    underlineY(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.textUnderlineOffset = String(value) + unit
-        return this
+        return this.css("textUnderlineOffset", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'textUnderlinePosition' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'textUnderlinePosition' CSS property. Can be a string value from the `AvitaTypes.TextUnderlinePosition` enum.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    textUnderlinePosition(value: AvitaTypes.TextUnderlinePosition) {
-        this.element.style.textUnderlinePosition = value
-        return this
-    }
-
-    /**
-     * Sets the 'top' CSS property on the current `AvitaElement` instance.
+     * Sets the 'top' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'top' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     top(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.top = String(value) + unit
-        return this
+        return this.css("top", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'touchAction' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'touchAction' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Shorthand for `top()` method.
+     * Gets the 'top' CSS property value of the current `Avita` instance.
+     * @returns The current value of the 'top' CSS property.
      */
-    touchAction(value: string) {
-        this.element.style.touchAction = value
-        return this
+    t = this.top
+
+    /**
+     * Sets the 'touchAction' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'touchAction' CSS property. Can be a string value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    touch(value: string) {
+        return this.css("touchAction", value)
     }
 
     /**
-     * Sets the 'transform' CSS property on the current `AvitaElement` instance.
+     * Sets the 'transform' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'transform' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     transform(value: string) {
-        this.element.style.transform = value
-        return this
+        return this.css("transform", value)
     }
 
     /**
-     * Sets the 'transformBox' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'transformBox' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    transformBox(value: string) {
-        this.element.style.transformBox = value
-        return this
-    }
-
-    /**
-     * Sets the 'transformOrigin' CSS property on the current `AvitaElement` instance.
+     * Sets the 'transformOrigin' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'transformOrigin' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    transformOrigin(value: string) {
-        this.element.style.transformOrigin = value
-        return this
+    origin(value: string) {
+        return this.css("transformOrigin", value)
     }
 
     /**
-     * Sets the 'transformStyle' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'transformStyle' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'transformStyle' CSS property on the current `Avita` instance to 'flat'.
+     * This flattens the 3D transform of the element.
+     * @returns The current `Avita` instance for chaining.
      */
-    transformStyle(value: string) {
-        this.element.style.transformStyle = value
-        return this
+    flat(): this {
+        return this.css("transformStyle", "flat")
     }
 
     /**
-     * Adds the 'transition' CSS property on the current `AvitaElement` instance.
-     * Defaults to 'all 0.2s ease-in-out'.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'transformStyle' CSS property on the current `Avita` instance to 'preserve-3d'.
+     * This preserves the 3D transform of the element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    preserve3d(): this {
+        return this.css("transformStyle", "preserve-3d")
+    }
+
+    /**
+     * Adds the 'transition' CSS property on the current `Avita` instance.
+     * Defaults to 'all 0.1s ease-in-out'.
+     * @returns The current `Avita` instance for chaining.
      */
     transition(): this
 
     /**
-     * Sets the 'transition' CSS property on the current `AvitaElement` instance.
+     * Sets the 'transition' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'transition' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     transition(value: string): this
 
-    transition(value?: string): this {
-        if (value === undefined) {
-            // Set default transition
-            this.element.style.transition = "all 0.2s ease-in-out"
-        } else {
-            // Set custom transition
-            this.element.style.transition = value
-        }
-        return this
+    transition(value: string = "all 0.1s ease-in-out"): this {
+        return this.css("transition", value)
     }
 
     /**
-     * Sets the 'transitionDelay' CSS property on the current `AvitaElement` instance.
+     * Sets the 'transitionDelay' CSS property on the current `Avita` instance. Default number value is in seconds.
      * @param value - The value to set for the 'transitionDelay' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    transitionDelay(value: string | number) {
+    delay(value: string | number) {
         const unit = typeof value === "string" ? "" : "s"
-        this.element.style.transitionDelay = numberToSeconds(value) + unit
-        return this
+        return this.css("transitionDelay", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'transitionDuration' CSS property on the current `AvitaElement` instance.
+     * Sets the 'transitionDuration' CSS property on the current `Avita` instance. Default number value is in seconds.
      * @param value - The value to set for the 'transitionDuration' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    transitionDuration(value: string | number) {
+    duration(value: string | number) {
         const unit = typeof value === "string" ? "" : "s"
-        this.element.style.transitionDuration = numberToSeconds(value) + unit
-        return this
+        return this.css("transitionDuration", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'transitionProperty' CSS property on the current `AvitaElement` instance.
+     * Sets the 'transitionProperty' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'transitionProperty' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    transitionProperty(value: string) {
-        this.element.style.transitionProperty = value
-        return this
+    transProp(value: string) {
+        return this.css("transitionProperty", value)
     }
 
     /**
-     * Sets the 'transitionTimingFunction' CSS property on the current `AvitaElement` instance.
+     * Sets the 'transitionTimingFunction' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'transitionTimingFunction' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    transitionTimingFunction(value: string) {
-        this.element.style.transitionTimingFunction = value
-        return this
+    timingFunc(value: string) {
+        return this.css("transitionTimingFunction", value)
     }
 
     /**
-     * Sets the 'translate' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'translate' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'translate' CSS property on the current `Avita` instance.
+     * Applies a translation along the X-axis, Y-axis, and optionally the Z-axis using a single string.
+     * @param value - The full `translate` value as a string (e.g., "10px, 20px, 30px").
+     * @returns The current `Avita` instance for chaining.
      */
-    translate(value: string) {
-        this.element.style.translate = value
-        return this
+    translate(value: string): this
+
+    /**
+     * Sets the 'translate' CSS property on the current `Avita` instance.
+     * Applies a 2D translation along the X-axis.
+     * @param x - The value to set for the 'translate' CSS property along the X-axis. Can be a string or number.
+     * @returns The current `Avita` instance for chaining.
+     */
+    translate(x: string | number): this
+
+    /**
+     * Sets the 'translate' CSS property on the current `Avita` instance.
+     * Applies a 2D translation along the X and Y axes.
+     * @param x - The value to set for the 'translate' CSS property along the X-axis. Can be a string or number.
+     * @param y - The value to set for the 'translate' CSS property along the Y-axis. Can be a string or number.
+     * @returns The current `Avita` instance for chaining.
+     */
+    translate(x: string | number, y: string | number): this
+
+    /**
+     * Sets the 'translate' CSS property on the current `Avita` instance.
+     * Applies a 3D translation along the X, Y, and Z axes.
+     * @param x - The value to set for the 'translate' CSS property along the X-axis. Can be a string or number.
+     * @param y - The value to set for the 'translate' CSS property along the Y-axis. Can be a string or number.
+     * @param z - The value to set for the 'translate' CSS property along the Z-axis. Can be a string or number. This parameter is optional.
+     * @returns The current `Avita` instance for chaining.
+     */
+    translate(x: string | number, y: string | number, z: string | number): this
+
+    translate(
+        xOrValue: string | number,
+        y?: string | number,
+        z?: string | number
+    ): this {
+        let translateValue: string
+
+        if (
+            typeof xOrValue === "string" &&
+            y === undefined &&
+            z === undefined
+        ) {
+            translateValue = xOrValue
+        } else {
+            // Otherwise, process as individual axis values.
+            const unitX = typeof xOrValue === "string" ? "" : "px"
+            const unitY = typeof y === "string" ? "" : "px"
+            const unitZ = typeof z === "string" ? "" : "px"
+
+            translateValue =
+                z !== undefined
+                    ? `${xOrValue}${unitX} ${y}${unitY} ${z}${unitZ}`
+                    : y !== undefined
+                    ? `${xOrValue}${unitX} ${y}${unitY}`
+                    : `${xOrValue}${unitX}`
+        }
+
+        return this.css("translate", translateValue)
     }
 
     /**
-     * Sets the 'unicodeBidi' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'unicodeBidi' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'translateX' CSS translate property on the current `Avita` instance.
+     * @param value - The value to set for the 'translateX' transform. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
      */
-    unicodeBidi(value: string) {
-        this.element.style.unicodeBidi = value
-        return this
+    translateX(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.translate(`${value}${unit} 0 0`)
     }
 
     /**
-     * Sets the 'userSelect' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'userSelect' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Shorthand for `translateX()` method.
+     * Sets the 'translateX' CSS translate property on the current `Avita` instance.
+     * @param value - The value to set for the 'translateX' transform. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
      */
-    userSelect(value: string) {
-        this.element.style.userSelect = value
-        return this
+    tx = this.translateX
+
+    /**
+     * Sets the 'translateY' CSS translate property on the current `Avita` instance.
+     * @param value - The value to set for the 'translateY' transform. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    translateY(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.translate(`0 ${value}${unit} 0`)
     }
 
     /**
-     * Sets the 'verticalAlign' CSS property on the current `AvitaElement` instance.
+     * Shorthand for `translateY()` method.
+     * Sets the 'translateY' CSS translate property on the current `Avita` instance.
+     * @param value - The value to set for the 'translateY' transform. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    ty = this.translateY
+
+    /**
+     * Sets the 'translateZ' CSS translate property on the current `Avita` instance.
+     * @param value - The value to set for the 'translateZ' transform. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    translateZ(value: string | number) {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.translate(`0 0 ${value}${unit}`)
+    }
+
+    /**
+     * Shorthand for `translateZ()` method.
+     * Sets the 'translateZ' CSS translate property on the current `Avita` instance.
+     * @param value - The value to set for the 'translateZ' transform. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    tz = this.translateZ
+
+    /**
+     * Sets the 'userSelect' CSS property on the current `Avita` instance to 'auto', allowing the element to be selectable.
+     * @returns The current `Avita` instance for chaining.
+     */
+    selectable() {
+        return this.css("userSelect", "auto")
+    }
+
+    /**
+     * Sets the 'userSelect' CSS property on the current `Avita` instance to 'none', making the element unselectable.
+     * @returns The current `Avita` instance for chaining.
+     */
+    unselectable() {
+        return this.css("userSelect", "none")
+    }
+
+    /**
+     * Sets the 'verticalAlign' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'verticalAlign' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     verticalAlign(value: string) {
-        this.element.style.verticalAlign = value
-        return this
+        return this.css("verticalAlign", value)
     }
 
     /**
-     * Sets the 'visibility' CSS property on the current `AvitaElement` instance.
+     * Sets the 'visibility' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'visibility' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     visibility(value: string) {
-        this.element.style.visibility = value
-        return this
+        return this.css("visibility", value)
     }
 
     /**
-     * Sets the 'whiteSpace' CSS property on the current `AvitaElement` instance.
+     * Sets the 'whiteSpace' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'whiteSpace' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     whiteSpace(value: string) {
-        this.element.style.whiteSpace = value
-        return this
+        return this.css("whiteSpace", value)
     }
 
     /**
-     * Sets the 'wordBreak' CSS property on the current `AvitaElement` instance.
+     * Sets the 'whiteSpace' CSS property on the current `Avita` instance to 'pre-wrap', which allows the text to wrap but preserves newlines and other whitespace.
+     * @returns The current `Avita` instance for chaining.
+     */
+    textWrap() {
+        return this.whiteSpace("pre-wrap")
+    }
+
+    /**
+     * Sets the 'whiteSpace' CSS property on the current `Avita` instance to 'nowrap', which prevents the text from wrapping.
+     * @returns The current `Avita` instance for chaining.
+     */
+    textNoWrap() {
+        return this.whiteSpace("nowrap")
+    }
+
+    /**
+     * Sets the 'wordBreak' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'wordBreak' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     wordBreak(value: string) {
-        this.element.style.wordBreak = value
-        return this
+        return this.css("wordBreak", value)
     }
 
     /**
-     * Sets the 'wordSpacing' CSS property on the current `AvitaElement` instance.
+     * Sets the 'wordSpacing' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'wordSpacing' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     wordSpacing(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.wordSpacing = String(value) + unit
-        return this
+        return this.css("wordSpacing", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'widows' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'widows' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    widows(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.widows = String(value) + unit
-        return this
-    }
-
-    /**
-     * Sets the 'width' CSS property on the current `AvitaElement` instance.
+     * Sets the 'width' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'width' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     width(value: string | number) {
         const unit = typeof value === "string" ? "" : "px"
-        this.element.style.width = String(value) + unit
-        return this
+        return this.css("width", `${value}${unit}`)
     }
 
     /**
-     * Sets the 'willChange' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'willChange' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Shorthand for `width()`
+     * Sets the 'width' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'width' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
      */
-    willChange(value: string) {
-        this.element.style.willChange = value
-        return this
-    }
+    w = this.width
 
     /**
-     * Sets the 'wordWrap' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'wordWrap' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    wordWrap(value: AvitaTypes.WordWrap) {
-        this.element.style.wordWrap = value
-        return this
-    }
-
-    /**
-     * Sets the 'writingMode' CSS property on the current `AvitaElement` instance.
-     * @param value - The value to set for the 'writingMode' CSS property. Can be a string value.
-     * @returns The current `AvitaElement` instance for chaining.
-     */
-    writingMode(value: string) {
-        this.element.style.writingMode = value
-        return this
-    }
-
-    /**
-     * Sets the 'zIndex' CSS property on the current `AvitaElement` instance.
+     * Sets the 'zIndex' CSS property on the current `Avita` instance.
      * @param value - The value to set for the 'zIndex' CSS property. Can be a string or number value.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     zIndex(value: string | number) {
-        const unit = typeof value === "string" ? "" : "px"
-        this.element.style.zIndex = String(value) + unit
-        return this
+        return this.css("zIndex", String(Number(value)))
     }
 
     /**
-     * Sets the 'opacity' CSS property on the current `AvitaElement` instance to 0.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Shorthand for `zIndex()`
+     * Sets the 'zIndex' CSS property on the current `Avita` instance.
+     * @param value - The value to set for the 'zIndex' CSS property. Can be a string or number value.
+     * @returns The current `Avita` instance for chaining.
+     */
+    z = this.zIndex
+
+    /**
+     * Shows the element by setting the 'visibility' CSS property to 'visible'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    visible() {
+        return this.css("visibility", "visible")
+    }
+
+    /**
+     * Hides the element by setting the 'visibility' CSS property to 'hidden'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    invisible() {
+        return this.css("visibility", "hidden")
+    }
+
+    /**
+     * Sets the 'opacity' CSS property on the current `Avita` instance to 0.
+     * @returns The current `Avita` instance for chaining.
      */
     transparent() {
-        this.element.style.opacity = "0"
-        return this
+        return this.opacity(0)
     }
 
     /**
-     * Sets the 'opacity' CSS property on the current `AvitaElement` instance to 0.5.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'opacity' CSS property on the current `Avita` instance to 0.5.
+     * @returns The current `Avita` instance for chaining.
      */
     translucent() {
-        this.element.style.opacity = "0.5"
-        return this
+        return this.opacity(0.5)
     }
 
     /**
-     * Sets the 'opacity' CSS property on the current `AvitaElement` instance to 1.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Sets the 'opacity' CSS property on the current `Avita` instance to 1.
+     * @returns The current `Avita` instance for chaining.
      */
     opaque() {
-        this.element.style.opacity = "1"
-        return this
+        return this.opacity(1)
     }
 
     /**
-     * Shows the element by setting the 'display' CSS property to 'flex'.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Shows the element by setting the 'display' CSS property to the specified value.
+     * @param value - The value to set for the 'display' CSS property. Defaults to 'flex'.
+     * @returns The current `Avita` instance for chaining.
      */
-    show() {
-        this.element.style.display = "flex"
-        return this
+    show(value: string = "flex") {
+        return this.css("display", value)
     }
 
     /**
      * Hides the element by setting the 'display' CSS property to 'none'.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     hide() {
-        this.element.style.display = "none"
-        return this
+        return this.css("display", "none")
+    }
+
+    /**
+     * Toggles the visibility of the element by setting the 'display' CSS property to either the specified value or 'none'.
+     * @param value - The value to set for the 'display' CSS property if the element is currently hidden. Defaults to 'flex'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    toggle(value: string = "flex") {
+        return this.css("display") === "none" ? this.show(value) : this.hide()
     }
 
     /**
      * Centers the child elements by setting the 'display' CSS property to 'flex' and setting the 'justifyContent' and 'alignItems' CSS properties to 'center'.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     center(): this
 
     /**
      * Centers the element itself by setting the 'margin' CSS property to 'auto'.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     center(type: "self"): this
 
     /**
-     * Centers the child elements vertically by setting the 'display' CSS property to 'flex' and setting the 'alignItems' CSS property to 'center'.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Centers the child elements by setting the 'display' CSS property to 'flex' and setting the 'justifyContent' and 'alignItems' CSS properties to 'center'.
+     * @returns The current `Avita` instance for chaining.
      */
-    center(type: "vertical"): this
+    center(type: "flex"): this
 
     /**
-     * Centers the child elements horizontally by setting the 'display' CSS property to 'flex' and setting the 'justifyContent' CSS property to 'center'.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Centers the child elements by setting the 'display' CSS property to 'grid' and setting the 'placeItems' CSS properties to 'center'.
+     * @returns The current `Avita` instance for chaining.
      */
-    center(type: "horizontal"): this
+    center(type: "grid"): this
 
     /**
      * Centers the element itself by setting its position to absolute and transforming its position.
      * @param type - Type of centering.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
     center(type: "absolute"): this
 
-    center(type?: "self" | "vertical" | "horizontal" | "absolute"): this {
-        if (type === undefined) {
-            // Center child elements both vertically and horizontally
-            this.element.style.display = "flex"
-            this.element.style.justifyContent = "center"
-            this.element.style.alignItems = "center"
-        } else if (type === "self") {
+    center(type: "self" | "flex" | "grid" | "absolute" = "flex"): this {
+        if (type === "self") {
             // Center the element itself using margin auto
-            this.element.style.margin = "auto"
-        } else if (type === "vertical") {
-            // Center child elements vertically
-            this.element.style.display = "flex"
-            this.element.style.alignItems = "center"
-        } else if (type === "horizontal") {
-            // Center child elements horizontally
-            this.element.style.display = "flex"
-            this.element.style.justifyContent = "center"
+            this.margin("auto")
+        } else if (type === "flex") {
+            // Center child elements using flexbox
+            this.flex()
+            this.jContent("center")
+            this.aItems("center")
+        } else if (type === "grid") {
+            // Center child elements using grid
+            this.grid()
+            this.placeItems("center")
         } else if (type === "absolute") {
-            // Center the element itself absolutely
-            this.element.style.position = "absolute"
-            this.element.style.top = "50%"
-            this.element.style.left = "50%"
-            this.element.style.transform = "translate(-50%, -50%)"
+            // Center the element itself using absolute positioning
+            this.absolute()
+            this.top("50%")
+            this.left("50%")
+            this.translate("-50%", "-50%")
         }
         return this
     }
 
     /**
-     * Sets the 'position' CSS property to 'absolute' on the current `AvitaElement` instance.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Stacks the current `Avita` and its children vertically, with the ability to align the children along the vertical axis.
+     * Fills 100% of the parent's width and height by default.
+     * @param align - The alignment of the children along the vertical axis. Defaults to 'center'.
+     * @returns The current `Avita` instance for chaining.
      */
-    absolute() {
-        this.element.style.position = "absolute"
+    vstack(
+        align:
+            | "top"
+            | "center"
+            | "bottom"
+            | "left"
+            | "right"
+            | "between"
+            | "around"
+            | "evenly" = "center"
+    ) {
+        this.full()
+        this.center()
+        this.flexCol()
+        switch (align) {
+            case "top":
+                this.justifyContent("flex-start")
+                break
+            case "center":
+                this.justifyContent("center")
+                break
+            case "bottom":
+                this.justifyContent("flex-end")
+                break
+            case "left":
+                this.alignItems("flex-start")
+                break
+            case "right":
+                this.alignItems("flex-end")
+                break
+            case "between":
+                this.justifyContent("space-between")
+                break
+            case "around":
+                this.justifyContent("space-around")
+                break
+            case "evenly":
+                this.justifyContent("space-evenly")
+                break
+        }
         return this
     }
 
     /**
-     * Sets the 'position' CSS property to 'relative' on the current `AvitaElement` instance.
-     * @returns The current `AvitaElement` instance for chaining.
+     * Stacks the current `Avita` and its children horizontally, with the ability to align the children along the horizontal axis.
+     * Fills 100% of the parent's width and height by default.
+     * @param align - The alignment of the children along the horizontal axis. Defaults to 'center'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    hstack(
+        align:
+            | "top"
+            | "center"
+            | "bottom"
+            | "left"
+            | "right"
+            | "between"
+            | "around"
+            | "evenly" = "center"
+    ) {
+        this.full()
+        this.center()
+        switch (align) {
+            case "top":
+                this.alignItems("flex-start")
+                break
+            case "center":
+                this.alignItems("center")
+                break
+            case "bottom":
+                this.alignItems("flex-end")
+                break
+            case "left":
+                this.justifyContent("flex-start")
+                break
+            case "right":
+                this.justifyContent("flex-end")
+                break
+            case "between":
+                this.justifyContent("space-between")
+                break
+            case "around":
+                this.justifyContent("space-around")
+                break
+            case "evenly":
+                this.justifyContent("space-evenly")
+                break
+        }
+        return this
+    }
+
+    /**
+     * Stacks the current `Avita` and its children vertically, with the ability to align the children along the vertical axis.
+     * Fills 100% of the parent's width and height by default.
+     * @param align - The alignment of the children along the vertical axis. Defaults to 'center'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    zstack(
+        align:
+            | "top"
+            | "center"
+            | "bottom"
+            | "left"
+            | "right"
+            | "between"
+            | "around"
+            | "evenly" = "center"
+    ) {
+        this.relative()
+        this.hstack(align)
+        $(() => this.avitaChildren.forEach((child) => child.absolute()))
+        return this
+    }
+
+    /**
+     * Sets the 'position' CSS property to 'absolute' on the current `Avita` instance.
+     * @returns The current `Avita` instance for chaining.
+     */
+    absolute() {
+        return this.css("position", "absolute")
+    }
+
+    /**
+     * Sets the 'position' CSS property to 'relative' on the current `Avita` instance.
+     * @returns The current `Avita` instance for chaining.
      */
     relative() {
-        this.element.style.position = "relative"
-        return this
+        return this.css("position", "relative")
     }
 
+    /**
+     * Sets the 'position' CSS property to 'fixed' on the current `Avita` instance.
+     * @returns The current `Avita` instance for chaining.
+     */
+    fixed() {
+        return this.css("position", "fixed")
+    }
+
+    /**
+     * Sets the 'position' CSS property to 'sticky' on the current `Avita` instance.
+     * @returns The current `Avita` instance for chaining.
+     */
+    sticky() {
+        return this.css("position", "sticky")
+    }
+
+    /**
+     * Sets the 'position' CSS property to 'static' on the current `Avita` instance.
+     * @returns The current `Avita` instance for chaining.
+     */
+    static() {
+        return this.css("position", "static")
+    }
+
+    /**
+     * Sets the display property of the current `Avita` instance to 'block'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    block() {
+        return this.css("display", "block")
+    }
+
+    /**
+     * Sets the display property of the current `Avita` instance to 'flex'.
+     * @returns The current `Avita` instance for chaining.
+     */
     flex() {
-        this.element.style.display = "flex"
-        return this
+        return this.css("display", "flex")
     }
 
+    /**
+     * Sets the display property of the current `Avita` instance to 'grid'.
+     * @returns The current `Avita` instance for chaining.
+     */
     grid() {
-        this.element.style.display = "grid"
-        return this
+        return this.css("display", "grid")
+    }
+
+    /**
+     * Sets the display property of the current `Avita` instance to 'inline'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    inline() {
+        return this.css("display", "inline")
+    }
+
+    /**
+     * Sets the display property of the current `Avita` instance to 'inline-block'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    inlineBlock() {
+        return this.css("display", "inline-block")
     }
 
     /**
      * Sets the font weight to 'bold'.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    bold(): this {
-        this.element.style.fontWeight = "bold"
-        return this
+    bold() {
+        return this.css("fontWeight", "bold")
     }
 
     /**
      * Sets the font weight to 'normal'.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    normal(): this {
-        this.element.style.fontWeight = "normal"
-        return this
+    normal() {
+        return this.css("fontWeight", "normal")
     }
 
     /**
      * Sets the font weight to 'lighter'.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    lighter(): this {
-        this.element.style.fontWeight = "lighter"
-        return this
+    lighter() {
+        return this.css("fontWeight", "lighter")
     }
 
     /**
      * Sets the font weight to 'bolder'.
-     * @returns The current `AvitaElement` instance for chaining.
+     * @returns The current `Avita` instance for chaining.
      */
-    bolder(): this {
-        this.element.style.fontWeight = "bolder"
+    bolder() {
+        return this.css("fontWeight", "bolder")
+    }
+
+    /**
+     * Sets the stroke color of the element.
+     * @param value - The CSS color value to set as the stroke.
+     * @returns The current `Avita` instance for chaining.
+     */
+    stroke(value: string) {
+        return this.css("stroke", value)
+    }
+
+    /**
+     * Sets the stroke width of the element.
+     * @param value - The CSS length value to set as the stroke width. Can be a number (in pixels) or a string.
+     * @returns The current `Avita` instance for chaining.
+     */
+    strokeW(value: string | number): this {
+        const unit = typeof value === "string" ? "" : "px"
+        return this.css("strokeWidth", `${value}${unit}`)
+    }
+
+    /**
+     * Sets the stroke opacity of the element.
+     * @param value - The stroke opacity value to set (between 0 and 1).
+     * @returns The current `Avita` instance for chaining.
+     */
+    strokeOpacity(value: string | number) {
+        return this.css("strokeOpacity", String(Number(value)))
+    }
+
+    /**
+     * Sets the stroke linecap of the element.
+     * @param value - The CSS value to set as the stroke linecap (e.g., "butt", "round", "square").
+     * @returns The current `Avita` instance for chaining.
+     */
+    linecap(value: string) {
+        return this.css("strokeLinecap", value)
+    }
+
+    /**
+     * Sets the stroke linejoin of the element.
+     * @param value - The CSS value to set as the stroke linejoin (e.g., "miter", "round", "bevel").
+     * @returns The current `Avita` instance for chaining.
+     */
+    linejoin(value: string) {
+        return this.css("strokeLinejoin", value)
+    }
+
+    /**
+     * Sets the stroke dash array of the element.
+     * @param value - The CSS value to set as the stroke dash array.
+     * @returns The current `Avita` instance for chaining.
+     */
+    dasharray(value: string) {
+        return this.css("strokeDasharray", value)
+    }
+
+    /**
+     * Sets the stroke dash offset of the element.
+     * @param value - The CSS value to set as the stroke dash offset.
+     * @returns The current `Avita` instance for chaining.
+     */
+    dashoffset(value: string) {
+        return this.css("strokeDashoffset", value)
+    }
+
+    /**
+     * Sets the skew transformation of the element along both the X and Y axes.
+     * @param x - The skew angle in degrees or a string value along the X-axis.
+     * @param y - The optional skew angle in degrees or a string value along the Y-axis.
+     * @returns The current `Avita` instance for chaining.
+     */
+    skew(x: string | number, y?: string | number) {
+        const unitX = typeof x === "string" ? "" : "deg"
+        const unitY = typeof y === "string" ? "" : "deg"
+        return (this.element.style.transform += `skew(${x}${unitX}, ${y}${unitY}) `)
+    }
+
+    /**
+     * Sets the skew transformation angle of the element along the X-axis.
+     * @param value - The skew angle in degrees.
+     * @returns The current `Avita` instance for chaining.
+     */
+    skewX(value: number) {
+        this.element.style.transform += `skewX(${value}deg) `
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.style.transform += `skewX(${value}deg) `
+            })
         return this
     }
+
+    /**
+     * Sets the skew transformation angle of the element along the Y-axis.
+     * @param value - The skew angle in degrees.
+     * @returns The current `Avita` instance for chaining.
+     */
+    skewY(value: number) {
+        this.element.style.transform += `skewY(${value}deg) `
+        if (this.elements.length > 0)
+            this.elements.forEach((element) => {
+                element.style.transform += `skewY(${value}deg) `
+            })
+        return this
+    }
+
+    /**
+     * Sets the transformation matrix of the element.
+     * @warning This resets the transform property to an empty string before applying the matrix.
+     * @param value - The CSS transform matrix value to set.
+     * @returns The current `Avita` instance for chaining.
+     */
+    matrix(value: string): this
+
+    /**
+     * Sets the transformation matrix of the element.
+     * @param a - The first linear transformation value.
+     * @param b - The second linear transformation value.
+     * @param c - The third linear transformation value.
+     * @param d - The fourth linear transformation value.
+     * @param tx - The translation value along the X-axis.
+     * @param ty - The translation value along the Y-axis.
+     * @returns The current `Avita` instance for chaining.
+     */
+    matrix(
+        a: number | string,
+        b: number | string,
+        c: number | string,
+        d: number | string,
+        tx: number | string,
+        ty: number | string
+    ): this
+
+    matrix(
+        aOrValue: number | string,
+        b?: number | string,
+        c?: number | string,
+        d?: number | string,
+        tx?: number | string,
+        ty?: number | string
+    ): this {
+        if (typeof aOrValue === "string" && aOrValue.includes(",")) {
+            return this.css("transform", aOrValue)
+        }
+        return this.css(
+            "transform",
+            `matrix(${aOrValue}, ${b}, ${c}, ${d}, ${tx}, ${ty})`
+        )
+    }
+
+    /**
+     * Sets the object fit property of the element to fill.
+     * @returns The current `Avita` instance for chaining.
+     */
+    fill(): this
+
+    /**
+     * Sets the fill of the element.
+     * @param value - The fill value to set. If not provided, the element's object-fit will be set to "fill".
+     * @returns The current `Avita` instance for chaining.
+     */
+    fill(value: string): this
+
+    fill(value?: string) {
+        if (value === undefined) {
+            // If no value is provided, set the object-fit property to "fill"
+            this.css("objectFit", "fill")
+        } else {
+            // If a value is provided, set the fill property to the provided value
+            this.css("fill", value)
+        }
+        return this
+    }
+
+    /**
+     * Sets the fill opacity of the element.
+     * @param value - The fill opacity value to set (between 0 and 1).
+     * @returns The current `Avita` instance for chaining.
+     */
+    fillOpacity(value: number | string): this {
+        return this.css("fillOpacity", String(Number(value)))
+    }
+
+    /**
+     * Sets the element to be the full size of the viewport.
+     * @returns The current `Avita` instance for chaining.
+     */
+    screen() {
+        return this.screenW().screenH()
+    }
+
+    /**
+     * Sets the element to be the width of the viewport.
+     * @returns The current `Avita` instance for chaining.
+     */
+    screenW() {
+        return this.w("100vw")
+    }
+
+    /**
+     * Sets the element to be height of the viewport.
+     * @returns The current `Avita` instance for chaining.
+     */
+    screenH() {
+        return this.h("100vh")
+    }
+
+    /**
+     * Sets the element to be full-width and full-height.
+     * @returns The current `Avita` instance for chaining.
+     */
+    full() {
+        return this.fullW().fullH()
+    }
+
+    /**
+     * Sets the element to be full-width.
+     * @returns The current `Avita` instance for chaining.
+     */
+    fullW() {
+        return this.w("100%")
+    }
+
+    /**
+     * Sets the element to be full-height.
+     * @returns The current `Avita` instance for chaining.
+     */
+    fullH() {
+        return this.h("100%")
+    }
+
+    /**
+     * Converts the provided radius value to a valid CSS border-radius value.
+     * If the radius is undefined, it returns "9999px" to create a circular border.
+     * If the radius is a number, it converts it to a pixel value.
+     * If the radius is a string, it returns the string as-is.
+     * @param radius - The radius value to convert.
+     * @returns The converted border-radius value.
+     */
+    private borderRadiusValue(radius: string | number | undefined) {
+        return radius === undefined
+            ? "9999px"
+            : typeof radius === "number"
+            ? `${radius}px`
+            : radius
+    }
+
+    /**
+     * Sets the border-radius of the current element.
+     * @param radius - The border-radius value to set. Can be a number (in pixels) or a string (e.g. "10px").
+     * @returns The current `Avita` instance for chaining.
+     */
+    rounded(radius?: number | string) {
+        return this.css("borderRadius", this.borderRadiusValue(radius))
+    }
+
+    /**
+     * Sets the border-top-left-radius of the current element.
+     * @param radius - The border-radius value to set. Can be a number (in pixels) or a string (e.g. "10px").
+     * @returns The current `Avita` instance for chaining.
+     */
+    roundedTL(radius?: number | string) {
+        return this.css("borderTopLeftRadius", this.borderRadiusValue(radius))
+    }
+
+    /**
+     * Sets the border-top-right-radius of the current element.
+     * @param radius - The border-radius value to set. Can be a number (in pixels) or a string (e.g. "10px").
+     * @returns The current `Avita` instance for chaining.
+     */
+    roundedTR(radius?: number | string) {
+        return this.css("borderTopRightRadius", this.borderRadiusValue(radius))
+    }
+
+    /**
+     * Sets the border-bottom-left-radius of the current element.
+     * @param radius - The border-radius value to set. Can be a number (in pixels) or a string (e.g. "10px").
+     * @returns The current `Avita` instance for chaining.
+     */
+    roundedBL(radius?: number | string) {
+        return this.css(
+            "borderBottomLeftRadius",
+            this.borderRadiusValue(radius)
+        )
+    }
+
+    /**
+     * Sets the border-bottom-right-radius of the current element.
+     * @param radius - The border-radius value to set. Can be a number (in pixels) or a string (e.g. "10px").
+     * @returns The current `Avita` instance for chaining.
+     */
+    roundedBR(radius?: number | string) {
+        return this.css(
+            "borderBottomRightRadius",
+            this.borderRadiusValue(radius)
+        )
+    }
+
+    /**
+     * Sets the border-top-left-radius and border-top-right-radius of the current element.
+     * @param radius - The border-radius value to set. Can be a number (in pixels) or a string (e.g. "10px").
+     * @returns The current `Avita` instance for chaining.
+     */
+    roundedT(radius?: number | string) {
+        return this.roundedTL(radius).roundedTR(radius)
+    }
+
+    /**
+     * Sets the border-bottom-left-radius and border-bottom-right-radius of the current element.
+     * @param radius - The border-radius value to set. Can be a number (in pixels) or a string (e.g. "10px").
+     * @returns The current `Avita` instance for chaining.
+     */
+    roundedB(radius?: number | string) {
+        return this.roundedBL(radius).roundedBR(radius)
+    }
+
+    /**
+     * Sets the border-top-left-radius and border-bottom-left-radius of the current element.
+     * @param radius - The border-radius value to set. Can be a number (in pixels) or a string (e.g. "10px").
+     * @returns The current `Avita` instance for chaining.
+     */
+    roundedL(radius?: number | string) {
+        return this.roundedTL(radius).roundedBL(radius)
+    }
+
+    /**
+     * Sets the border-top-right-radius and border-bottom-right-radius of the current element.
+     * @param radius - The border-radius value to set. Can be a number (in pixels) or a string (e.g. "10px").
+     * @returns The current `Avita` instance for chaining.
+     */
+    roundedR(radius?: number | string) {
+        return this.roundedTR(radius).roundedBR(radius)
+    }
+
+    /**
+     * Sets the viewBox attribute of the current `Avita` element.
+     * @param x - The x-coordinate of the viewBox.
+     * @param y - The y-coordinate of the viewBox.
+     * @param width - The width of the viewBox.
+     * @param height - The height of the viewBox.
+     * @returns The current `Avita` instance for chaining.
+     */
+    viewBox(x: number, y: number, width: number, height: number): this {
+        return this.attr("viewBox", `${x} ${y} ${width} ${height}`)
+    }
+
+    /**
+     * Sets the preserveAspectRatio attribute of the current `Avita` element.
+     * @param align - The alignment of the viewBox within the viewport. Can be one of the following values: 'none', 'xMinYMin', 'xMidYMin', 'xMaxYMin', 'xMinYMid', 'xMidYMid', 'xMaxYMid', 'xMinYMax', 'xMidYMax', 'xMaxYMax'.
+     * @param meetOrSlice - The scaling behavior of the viewBox within the viewport. Can be either 'meet' or 'slice'.
+     * @returns The current `Avita` instance for chaining.
+     */
+    preserveRatio(align: string, meetOrSlice: string) {
+        return this.attr("preserveAspectRatio", `${align} ${meetOrSlice}`)
+    }
+
+    /**
+     * Manually generates the CSS for a particular media query on the current `Avita` element.
+     * @param query - The media query to generate the CSS for
+     * @param props - The applied CSS properties to the media query
+     */
+    media(query: string, props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Manually generates the CSS rules for a particular media query on the current `Avita` element.
+     * @param query - The media query to generate the CSS for
+     * @param property - The CSS property to apply to the media query
+     * @param value - The value to set for the CSS property
+     */
+    media(query: string, property: string, value: string): this
+
+    media(
+        query: string,
+        propsOrProperty: Partial<CSSStyleDeclaration> | string,
+        value?: string
+    ) {
+        const uniqueClass = generateClass()
+        this.addClass(uniqueClass)
+
+        let body = ""
+
+        if (typeof propsOrProperty === "string" && value) {
+            body = `${camelToKebab(propsOrProperty)}: ${value};`
+        }
+
+        if (typeof propsOrProperty === "object") {
+            Object.entries(propsOrProperty).forEach(([prop, val]) => {
+                body += `${camelToKebab(prop)}: ${val};`
+            })
+        }
+
+        let mediaQuery = `.${uniqueClass} { ${body} }`
+
+        $("head").append(style().text(`@media ${query} { ${mediaQuery} }`))
+
+        return this
+    }
+
+    /**
+     * Applies the provided CSS properties when the current viewport width is at least 640px.
+     * @param props - The CSS properties to apply to the element when the viewport width is at least 640px.
+     * @returns The current `Avita` instance for chaining.
+     */
+    sm(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Applies the provided CSS property and value when the current viewport width is at least 640px.
+     * @param property - The CSS property to apply to the element when the viewport width is at least 640px.
+     * @param value - The value to set for the CSS property
+     * @returns The current `Avita` instance for chaining.
+     */
+    sm(property: string, value: string): this
+
+    sm(propertyOrProps: string | Partial<CSSStyleDeclaration>, value?: string) {
+        if (typeof propertyOrProps === "string" && value) {
+            this.media("(min-width: 640px)", propertyOrProps, value)
+        }
+        if (typeof propertyOrProps === "object") {
+            this.media("(min-width: 640px)", propertyOrProps)
+        }
+        return this
+    }
+
+    /**
+     * Applies the provided CSS properties when the current viewport width is at least 768px.
+     * @param props - The CSS properties to apply to the element when the viewport width is at least 768px.
+     * @returns The current `Avita` instance for chaining.
+     */
+    md(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Applies the provided CSS property and value when the current viewport width is at least 768px.
+     * @param property - The CSS property to apply to the element when the viewport width is at least 768px.
+     * @param value - The value to set for the CSS property.
+     * @returns The current `Avita` instance for chaining.
+     */
+    md(property: string, value: string): this
+
+    md(
+        propertyOrProps: string | Partial<CSSStyleDeclaration>,
+        value?: string
+    ): this {
+        if (typeof propertyOrProps === "string" && value) {
+            this.media("(min-width: 768px)", propertyOrProps, value)
+        } else if (typeof propertyOrProps === "object") {
+            this.media("(min-width: 768px)", propertyOrProps)
+        }
+        return this
+    }
+
+    /**
+     * Applies the provided CSS properties when the current viewport width is at least 1024px.
+     * @param props - The CSS properties to apply to the element when the viewport width is at least 1024px.
+     * @returns The current `Avita` instance for chaining.
+     */
+    lg(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Applies the provided CSS property and value when the current viewport width is at least 1024px.
+     * @param property - The CSS property to apply to the element when the viewport width is at least 1024px.
+     * @param value - The value to set for the CSS property.
+     * @returns The current `Avita` instance for chaining.
+     */
+    lg(property: string, value: string): this
+
+    lg(
+        propertyOrProps: string | Partial<CSSStyleDeclaration>,
+        value?: string
+    ): this {
+        if (typeof propertyOrProps === "string" && value) {
+            this.media("(min-width: 1024px)", propertyOrProps, value)
+        } else if (typeof propertyOrProps === "object") {
+            this.media("(min-width: 1024px)", propertyOrProps)
+        }
+        return this
+    }
+
+    /**
+     * Applies the provided CSS properties when the current viewport width is at least 1280px.
+     * @param props - The CSS properties to apply to the element when the viewport width is at least 1280px.
+     * @returns The current `Avita` instance for chaining.
+     */
+    xl(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Applies the provided CSS property and value when the current viewport width is at least 1280px.
+     * @param property - The CSS property to apply to the element when the viewport width is at least 1280px.
+     * @param value - The value to set for the CSS property.
+     * @returns The current `Avita` instance for chaining.
+     */
+    xl(property: string, value: string): this
+
+    xl(
+        propertyOrProps: string | Partial<CSSStyleDeclaration>,
+        value?: string
+    ): this {
+        if (typeof propertyOrProps === "string" && value) {
+            this.media("(min-width: 1280px)", propertyOrProps, value)
+        } else if (typeof propertyOrProps === "object") {
+            this.media("(min-width: 1280px)", propertyOrProps)
+        }
+        return this
+    }
+
+    /**
+     * Applies the provided CSS properties when the current viewport width is at least 1536px.
+     * @param props - The CSS properties to apply to the element when the viewport width is at least 1536px.
+     * @returns The current `Avita` instance for chaining.
+     */
+    xxl(props: Partial<CSSStyleDeclaration>): this
+
+    /**
+     * Applies the provided CSS property and value when the current viewport width is at least 1536px.
+     * @param property - The CSS property to apply to the element when the viewport width is at least 1536px.
+     * @param value - The value to set for the CSS property.
+     * @returns The current `Avita` instance for chaining.
+     */
+    xxl(property: string, value: string): this
+
+    xxl(
+        propertyOrProps: string | Partial<CSSStyleDeclaration>,
+        value?: string
+    ): this {
+        if (typeof propertyOrProps === "string" && value) {
+            this.media("(min-width: 1536px)", propertyOrProps, value)
+        } else if (typeof propertyOrProps === "object") {
+            this.media("(min-width: 1536px)", propertyOrProps)
+        }
+        return this
+    }
+
+    /**
+     * Returns a new `Avita` instance wrapping the parent element of the current element or `null` if the parent element does not exist.
+     * @returns A new `Avita` instance wrapping the parent element of the current element or `null` if the parent element does not exist.
+     */
+    parent(): Avita<T> | null {
+        const parent = this.element.parentElement
+        return parent ? new Avita(parent as T) : null
+    }
+
+    /**
+     * Returns a new `Avita` instance wrapping the sibling elements of the current element.
+     * @returns A new `Avita` instance wrapping the sibling elements of the current element, or `null` if the current element has no parent.
+     */
+    siblings(): Avita<T> | null {
+        const elmt = this.element as HTMLElement
+        const parent = elmt.parentElement
+
+        if (!parent) return null
+
+        const siblings = Array.from(parent.children).filter(
+            (child) => child !== elmt
+        )
+
+        return new Avita<T>(siblings.map((sibling) => sibling as T))
+    }
+
+    /**
+     * Toggles the specified CSS class on the current element/all elements in the collection.
+     * @param className - The CSS class to toggle.
+     * @returns The current `Avita` instance for chaining.
+     */
+    toggleClass(className: string): this {
+        this.element.classList.toggle(className)
+        if (this.elements.length > 0) {
+            this.elements.forEach((element) => {
+                element.classList.toggle(className)
+            })
+        }
+        return this
+    }
+
+    /**
+     * Adds the specified CSS class(es) to the current element/all elements in the collection.
+     * @param classNames - The CSS class(es) to add.
+     * @returns The current `Avita` instance for chaining.
+     */
+    addClass(...classNames: string[]): this {
+        this.element.classList.add(...classNames)
+        if (this.elements.length > 0) {
+            this.elements.forEach((element) => {
+                element.classList.add(...classNames)
+            })
+        }
+        return this
+    }
+
+    /**
+     * Removes the specified CSS class(es) from the current element/all elements in the collection.
+     * @param classNames - The CSS class(es) to remove.
+     * @returns The current `Avita` instance for chaining.
+     */
+    removeClass(...classNames: string[]): this {
+        this.element.classList.remove(...classNames)
+        if (this.elements.length > 0) {
+            this.elements.forEach((element) => {
+                element.classList.remove(...classNames)
+            })
+        }
+        return this
+    }
+
+    /**
+     * Checks if the current element or any elements in the collection have the specified CSS class.
+     * @param className - The CSS class to check for.
+     * @returns `true` if the element or any elements in the collection have the specified class, `false` otherwise.
+     */
+    hasClass(className: string): boolean {
+        return this.element.classList.contains(className)
+    }
+
+    /**
+     * Scrolls the current element or elements in the collection into the visible area of the browser window.
+     * @param behavior - The behavior for the scroll operation. Can be either "auto" (default) or "smooth".
+     * @param block - The block to align the element to. Can be either "start", "center", "nearest", or "end".
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollIntoView(
+        behavior: "auto" | "smooth" = "auto",
+        block: "start" | "center" | "nearest" | "end" = "start"
+    ): this {
+        this.element.scrollIntoView({ block, behavior })
+        return this
+    }
+    /**
+     * Scrolls the window to the x and y coordinates.
+     * @param y - The y coordinate to scroll to.
+     * @param x - (optional) The x coordinate to scroll to.
+     */
+    static scroll(y: number, x?: number): void
+
+    /**
+     * Scrolls the window using the specified options.
+     * @param options - The y coordinate to scroll to, or an object containing options for the scroll operation.
+     */
+    static scroll(options: ScrollToOptions): void
+
+    static scroll(yOrOptions: number | ScrollToOptions, x?: number): void {
+        if (typeof yOrOptions === "number") {
+            window.scroll(x || 0, yOrOptions)
+        } else if (typeof yOrOptions === "object") {
+            window.scroll(yOrOptions)
+        }
+    }
+
+    /**
+     * Scrolls the window to the specified x and y coordinates.
+     * @param y - The y coordinate to scroll to.
+     * @param x - (optional) The x coordinate to scroll to.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scroll(y: number, x?: number): void
+
+    /**
+     * Scrolls the window using the specified options
+     * @param options - The options to use for the scroll operation.
+     */
+    scroll(options: ScrollToOptions): void
+
+    scroll(yOrOptions: number | ScrollToOptions, x?: number) {
+        if (x === undefined && typeof yOrOptions === "object") {
+            Avita.scroll(yOrOptions as ScrollToOptions)
+        } else if (typeof yOrOptions === "number") {
+            Avita.scroll(yOrOptions, x)
+        }
+        return this
+    }
+
+    /**
+     * Scrolls the window to the top of the page.
+     * @param smooth - If set to `true`, the scroll will be animated smoothly. Otherwise, it will scroll instantly.
+     */
+    static scrollToTop(smooth: boolean = false): void {
+        Avita.scroll({
+            top: 0,
+            behavior: smooth ? "smooth" : "instant",
+        })
+    }
+
+    /**
+     * Scrolls the window to the top of the page.
+     * @param smooth - If set to `true`, the scroll will be animated smoothly. Otherwise, it will scroll instantly.
+     * @returns The current `Avita` instance for chaining.
+     */
+    scrollToTop(smooth: boolean = false) {
+        Avita.scrollToTop(smooth)
+        return this
+    }
+
+    /**
+     * Scrolls the window to the bottom of the page.
+     * @param smooth - If set to `true`, the scroll will be animated smoothly. Otherwise, it will scroll instantly.
+     */
+    static scrollToBottom(smooth: boolean = false): void {
+        Avita.scroll({
+            top: document.body.scrollHeight,
+            behavior: smooth ? "smooth" : "instant",
+        })
+    }
+
+    /**
+     * Scrolls the window to the bottom of the page.
+     * @param smooth - If set to `true`, the scroll will be animated smoothly. Otherwise, it will scroll instantly.
+     * @returns The current `Avita` instance, allowing for method chaining.
+     */
+    scrollToBottom(smooth: boolean = false) {
+        Avita.scrollToBottom(smooth)
+        return this
+    }
+
+    /**
+     * Scrolls the window to the right edge of the page.
+     * @param smooth - If set to `true`, the scroll will be animated smoothly. Otherwise, it will scroll instantly.
+     */
+    static scrollToRight(smooth: boolean = false) {
+        Avita.scroll({
+            left: document.body.scrollWidth,
+            behavior: smooth ? "smooth" : "instant",
+        })
+    }
+
+    /**
+     * Scrolls the window to the right edge of the page.
+     * @param smooth - If set to `true`, the scroll will be animated smoothly. Otherwise, it will scroll instantly.
+     * @returns The current `Avita` instance, allowing for method chaining.
+     */
+    scrollToRight(smooth: boolean = false) {
+        Avita.scrollToRight(smooth)
+        return this
+    }
+
+    /**
+     * Scrolls the window to the left edge of the page.
+     * @param smooth - If set to `true`, the scroll will be animated smoothly. Otherwise, it will scroll instantly.
+     */
+    static scrollToLeft(smooth: boolean = false) {
+        Avita.scroll({
+            left: 0,
+            behavior: smooth ? "smooth" : "instant",
+        })
+        return this
+    }
+
+    /**
+     * Scrolls the window to the left edge of the page.
+     * @param smooth - If set to `true`, the scroll will be animated smoothly. Otherwise, it will scroll instantly.
+     * @returns The current `Avita` instance, allowing for method chaining.
+     */
+    scrollToLeft(smooth: boolean = false) {
+        Avita.scrollToLeft(smooth)
+        return this
+    }
+
+    /**
+     * Returns the bounding rectangle of the document element.
+     * @returns The bounding rectangle of the document element.
+     */
+    static rect(): DOMRect {
+        return document.documentElement.getBoundingClientRect()
+    }
+
+    /**
+     * Returns the bounding rectangle of the current Avita instance's element.
+     * @returns The bounding rectangle of the current Avita instance's element.
+     */
+    rect(): DOMRect {
+        return this.element.getBoundingClientRect()
+    }
+
+    /**
+     * Iterates over the elements in the current Avita instance and calls the provided callback function for each element.
+     * @param callback - The function to call for each element. The function will receive the Avita instance for the current element and the index of the element.
+     * @returns The current Avita instance, allowing for method chaining.
+     */
+    each(callback: (element: Avita<T>, index: number) => void): this {
+        this.elements.forEach((element, index) => {
+            callback(new Avita(element), index)
+        })
+        return this
+    }
+
+    /**
+     * Returns the current height of the window.
+     * @returns The current height of the window in pixels.
+     */
+    static height(): number {
+        return window.innerHeight
+    }
+
+    /**
+     * Shorthand that returns the current height of the window.
+     * @returns The current height of the window in pixels.
+     */
+    static h = Avita.height
+
+    /**
+     * Returns the current width of the window.
+     * @returns The current width of the window in pixels.
+     */
+    static width(): number {
+        return window.innerWidth
+    }
+
+    /**
+     * Shorthand that returns the current width of the window.
+     * @returns The current width of the window in pixels.
+     */
+    static w = Avita.width
 }
 
 /**
- * Like jQuery, this function finds all elements in the DOM based on the provided selector. Then
- * it wraps the element as an `Avita` element and returns it (or an array of `Avita` elements if multiple elements are found).
- * @param selector - The selector to use to find the element in the DOM.
- * @returns `Avita` element (list) wrapping the found element(s).
+ * Selects an HTML element or a collection of HTML elements matching the provided CSS selector.
+ * @param selector - The CSS selector to use for selecting the element(s).
+ * @returns An `Avita` instance wrapping the selected element(s), or the raw HTMLElement or HTMLElement[] if `raw` is `true`.
  */
-export const $ = Avita.find
+export function $<T extends HTMLElement | SVGElement>(
+    selector: string
+): Avita<T>
+
+/**
+ * Selects an HTML element or a collection of HTML elements matching the provided CSS selector.
+ * @param selector - The CSS selector to use for selecting the element(s).
+ * @param raw - If set to `true`, the function will return the raw HTMLElement or HTMLElement[] instead of an Avita instance.
+ * @returns An `Avita` instance wrapping the selected element(s), or the raw HTMLElement or HTMLElement[] if `raw` is `true`.
+ */
+export function $<T extends HTMLElement | SVGElement>(
+    selector: string,
+    raw: boolean
+): Avita<T> | T | T[]
+
+/**
+ * Executes the provided callback function when the DOM is ready.
+ * @param callback - The function to execute when the DOM is ready.
+ */
+export function $(callback: () => void): void
+
+export function $<T extends HTMLElement | SVGElement>(
+    selectorOrCallback: string | (() => void),
+    raw: boolean = false
+): Avita<T> | T | T[] | null | void {
+    if (typeof selectorOrCallback === "string") {
+        return Avita.find<T>(selectorOrCallback, raw)
+    } else if (typeof selectorOrCallback === "function") {
+        // Handle DOM ready event
+        Avita.ready(selectorOrCallback)
+    }
+}
