@@ -469,6 +469,15 @@ export function html(): Avita<HTMLHtmlElement> {
 }
 
 /**
+ * Creates A new `Avita<body>` element. Has properties of AvitaElement
+ * to allow for seamless DOM manipulation. No clue why u would need this.
+ * @returns {Avita<HTMLBodyElement>} A new `Avita<body>` element.
+ */
+export function body(): Avita<HTMLBodyElement> {
+    return new Avita<HTMLBodyElement>("body")
+}
+
+/**
  * Creates a new `Avita<i>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
  * @returns {Avita<HTMLElement>} A new `Avita<i>` element.
@@ -602,6 +611,24 @@ export function small(): Avita<HTMLElement> {
  */
 export function dfn(): Avita<HTMLElement> {
     return new Avita<HTMLElement>("dfn")
+}
+
+/**
+ * Creates a new `Avita<abbr>` element. Has properties of AvitaElement
+ * to allow for seamless DOM manipulation.
+ * @returns {Avita<HTMLElement>} A new `Avita<abbr>` element.
+ */
+export function abbr(): Avita<HTMLElement> {
+    return new Avita<HTMLElement>("abbr")
+}
+
+/**
+ * Creates a new `Avita<blockquote>` element. Has properties of AvitaElement
+ * to allow for seamless DOM manipulation.
+ * @returns {Avita<HTMLQuoteElement>} A new `Avita<blockquote>` element.
+ */
+export function blockquote(): Avita<HTMLQuoteElement> {
+    return new Avita<HTMLQuoteElement>("blockquote")
 }
 
 /**
@@ -894,6 +921,15 @@ export function animateMotion(): Avita<SVGAnimateMotionElement> {
  */
 export function animateTransform(): Avita<SVGAnimateTransformElement> {
     return new Avita<SVGAnimateTransformElement>("animateTransform")
+}
+
+/**
+ * Creates a new `Avita<SVGMPathElement>` element. Has properties of AvitaElement
+ * to allow for seamless DOM manipulation.
+ * @returns {Avita<SVGMPathElement>} A new `Avita<mpath>` element.
+ */
+export function mpath(): Avita<SVGMPathElement> {
+    return new Avita<SVGMPathElement>("mpath")
 }
 
 /**
