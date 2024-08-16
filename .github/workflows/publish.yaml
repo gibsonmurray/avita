@@ -24,9 +24,6 @@ jobs:
             - name: Build the package with npm
               run: npm run build
 
-            - name: Create .npmrc file
-              run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
-
             - name: Publish to NPM
               run: npm publish
               env:
