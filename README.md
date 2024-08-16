@@ -38,6 +38,7 @@ npm install avita
 ## Latest Updates
 _Crossed out means deprecated._
 
+-   **v1.2.3** - Fixed media query support, Aug 15, 2024
 -   **v1.2.2** - Added CDN support for router, Aug 15, 2024
 -   ~~**v1.2.1**~~ - Added CDN support, Aug 15, 2024
 -   ~~**v1.2.0**~~ - MASSIVE Changes to Avita, Aug 15, 2024
@@ -211,6 +212,7 @@ Congrats! You've built a simple todo app using Avita.
 ## TODO
 
 -   [ ] animation integration with GSAP
+-   [ ] run each component function only when routed to
 -   [ ] Prettier plugin
 -   [ ] Icon integration
 -   [ ] Markdown support

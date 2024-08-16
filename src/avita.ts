@@ -5711,12 +5711,12 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         let body = ""
 
         if (typeof propsOrProperty === "string" && value) {
-            body = `${camelToKebab(propsOrProperty)}: ${value};`
+            body = `${camelToKebab(propsOrProperty)}: ${value} !important; `
         }
 
         if (typeof propsOrProperty === "object") {
             Object.entries(propsOrProperty).forEach(([prop, val]) => {
-                body += `${camelToKebab(prop)}: ${val};`
+                body += `${camelToKebab(prop)}: ${val} !important; `
             })
         }
 
@@ -5728,15 +5728,15 @@ export default class Avita<T extends HTMLElement | SVGElement> {
     }
 
     /**
-     * Applies the provided CSS properties when the current viewport width is at least 640px.
-     * @param props - The CSS properties to apply to the element when the viewport width is at least 640px.
+     * Applies the provided CSS properties when the current viewport width is at most 640px.
+     * @param props - The CSS properties to apply to the element when the viewport width is at most 640px.
      * @returns The current `Avita` instance for chaining.
      */
     sm(props: Partial<CSSStyleDeclaration>): this
 
     /**
-     * Applies the provided CSS property and value when the current viewport width is at least 640px.
-     * @param property - The CSS property to apply to the element when the viewport width is at least 640px.
+     * Applies the provided CSS property and value when the current viewport width is at most 640px.
+     * @param property - The CSS property to apply to the element when the viewport width is at most 640px.
      * @param value - The value to set for the CSS property
      * @returns The current `Avita` instance for chaining.
      */
@@ -5744,24 +5744,24 @@ export default class Avita<T extends HTMLElement | SVGElement> {
 
     sm(propertyOrProps: string | Partial<CSSStyleDeclaration>, value?: string) {
         if (typeof propertyOrProps === "string" && value) {
-            this.media("(min-width: 640px)", propertyOrProps, value)
+            this.media("(max-width: 640px)", propertyOrProps, value)
         }
         if (typeof propertyOrProps === "object") {
-            this.media("(min-width: 640px)", propertyOrProps)
+            this.media("(max-width: 640px)", propertyOrProps)
         }
         return this
     }
 
     /**
-     * Applies the provided CSS properties when the current viewport width is at least 768px.
-     * @param props - The CSS properties to apply to the element when the viewport width is at least 768px.
+     * Applies the provided CSS properties when the current viewport width is at most 768px.
+     * @param props - The CSS properties to apply to the element when the viewport width is at most 768px.
      * @returns The current `Avita` instance for chaining.
      */
     md(props: Partial<CSSStyleDeclaration>): this
 
     /**
-     * Applies the provided CSS property and value when the current viewport width is at least 768px.
-     * @param property - The CSS property to apply to the element when the viewport width is at least 768px.
+     * Applies the provided CSS property and value when the current viewport width is at most 768px.
+     * @param property - The CSS property to apply to the element when the viewport width is at most 768px.
      * @param value - The value to set for the CSS property.
      * @returns The current `Avita` instance for chaining.
      */
@@ -5772,23 +5772,23 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         value?: string
     ): this {
         if (typeof propertyOrProps === "string" && value) {
-            this.media("(min-width: 768px)", propertyOrProps, value)
+            this.media("(max-width: 768px)", propertyOrProps, value)
         } else if (typeof propertyOrProps === "object") {
-            this.media("(min-width: 768px)", propertyOrProps)
+            this.media("(max-width: 768px)", propertyOrProps)
         }
         return this
     }
 
     /**
-     * Applies the provided CSS properties when the current viewport width is at least 1024px.
-     * @param props - The CSS properties to apply to the element when the viewport width is at least 1024px.
+     * Applies the provided CSS properties when the current viewport width is at most 1024px.
+     * @param props - The CSS properties to apply to the element when the viewport width is at most 1024px.
      * @returns The current `Avita` instance for chaining.
      */
     lg(props: Partial<CSSStyleDeclaration>): this
 
     /**
-     * Applies the provided CSS property and value when the current viewport width is at least 1024px.
-     * @param property - The CSS property to apply to the element when the viewport width is at least 1024px.
+     * Applies the provided CSS property and value when the current viewport width is at most 1024px.
+     * @param property - The CSS property to apply to the element when the viewport width is at most 1024px.
      * @param value - The value to set for the CSS property.
      * @returns The current `Avita` instance for chaining.
      */
@@ -5799,23 +5799,23 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         value?: string
     ): this {
         if (typeof propertyOrProps === "string" && value) {
-            this.media("(min-width: 1024px)", propertyOrProps, value)
+            this.media("(max-width: 1024px)", propertyOrProps, value)
         } else if (typeof propertyOrProps === "object") {
-            this.media("(min-width: 1024px)", propertyOrProps)
+            this.media("(max-width: 1024px)", propertyOrProps)
         }
         return this
     }
 
     /**
-     * Applies the provided CSS properties when the current viewport width is at least 1280px.
-     * @param props - The CSS properties to apply to the element when the viewport width is at least 1280px.
+     * Applies the provided CSS properties when the current viewport width is at most 1280px.
+     * @param props - The CSS properties to apply to the element when the viewport width is at most 1280px.
      * @returns The current `Avita` instance for chaining.
      */
     xl(props: Partial<CSSStyleDeclaration>): this
 
     /**
-     * Applies the provided CSS property and value when the current viewport width is at least 1280px.
-     * @param property - The CSS property to apply to the element when the viewport width is at least 1280px.
+     * Applies the provided CSS property and value when the current viewport width is at most 1280px.
+     * @param property - The CSS property to apply to the element when the viewport width is at most 1280px.
      * @param value - The value to set for the CSS property.
      * @returns The current `Avita` instance for chaining.
      */
@@ -5826,23 +5826,23 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         value?: string
     ): this {
         if (typeof propertyOrProps === "string" && value) {
-            this.media("(min-width: 1280px)", propertyOrProps, value)
+            this.media("(max-width: 1280px)", propertyOrProps, value)
         } else if (typeof propertyOrProps === "object") {
-            this.media("(min-width: 1280px)", propertyOrProps)
+            this.media("(max-width: 1280px)", propertyOrProps)
         }
         return this
     }
 
     /**
-     * Applies the provided CSS properties when the current viewport width is at least 1536px.
-     * @param props - The CSS properties to apply to the element when the viewport width is at least 1536px.
+     * Applies the provided CSS properties when the current viewport width is at most 1536px.
+     * @param props - The CSS properties to apply to the element when the viewport width is at most 1536px.
      * @returns The current `Avita` instance for chaining.
      */
     xxl(props: Partial<CSSStyleDeclaration>): this
 
     /**
-     * Applies the provided CSS property and value when the current viewport width is at least 1536px.
-     * @param property - The CSS property to apply to the element when the viewport width is at least 1536px.
+     * Applies the provided CSS property and value when the current viewport width is at most 1536px.
+     * @param property - The CSS property to apply to the element when the viewport width is at most 1536px.
      * @param value - The value to set for the CSS property.
      * @returns The current `Avita` instance for chaining.
      */
@@ -5853,9 +5853,9 @@ export default class Avita<T extends HTMLElement | SVGElement> {
         value?: string
     ): this {
         if (typeof propertyOrProps === "string" && value) {
-            this.media("(min-width: 1536px)", propertyOrProps, value)
+            this.media("(max-width: 1536px)", propertyOrProps, value)
         } else if (typeof propertyOrProps === "object") {
-            this.media("(min-width: 1536px)", propertyOrProps)
+            this.media("(max-width: 1536px)", propertyOrProps)
         }
         return this
     }
