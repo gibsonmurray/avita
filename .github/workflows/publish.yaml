@@ -16,16 +16,12 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v3
               with:
-                  node-version: "20.x" # Use the Node.js version you prefer
-                  registry-url: "https://registry.npmjs.org"
+                  node-version: "20.x"
 
-            - name: Configure npm with .npmrc
-              run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
-
-            - name: Install dependencies
+            - name: Install dependencies with npm
               run: npm install
 
-            - name: Build the package
+            - name: Build the package with npm
               run: npm run build
 
             - name: Publish to NPM
