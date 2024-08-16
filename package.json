@@ -1,6 +1,6 @@
 {
     "name": "avita",
-    "version": "1.2.4",
+    "version": "1.2.5",
     "author": "Gibson Murray",
     "main": "dist/index.cjs",
     "module": "dist/index.js",
@@ -33,7 +33,6 @@
     "license": "MIT",
     "scripts": {
         "build": "tsup",
-        "publish" : "npm publish",
         "dev": "bun run index.ts",
         "docs": "bun typedoc"
     },
