@@ -1,16 +1,17 @@
+import type { HTMLTag } from "./avita"
 import Avita, { $ } from "./avita"
 import { div } from "./elements"
 
 export default class AvitaRouter {
     private routes: {
         [path: string]: {
-            element: Avita<HTMLElement | SVGElement>
+            element: Avita<HTMLTag>
             title?: string
         }
     } = {}
-    private root: Avita<HTMLElement | SVGElement> | null = null
+    private root: Avita<HTMLTag> | null = null
     private notFoundPath: {
-        element: Avita<HTMLElement | SVGElement>
+        element: Avita<HTMLTag>
         title?: string
     } | null = null
 
@@ -41,7 +42,7 @@ export default class AvitaRouter {
      */
     register(
         path: string,
-        avitaElement: Avita<HTMLElement | SVGElement>,
+        avitaElement: Avita<HTMLTag>,
         title?: string
     ) {
         this.routes[path] = { element: avitaElement, title: title }
@@ -51,7 +52,7 @@ export default class AvitaRouter {
      * Sets the not found path for the router.
      * @param avitaElement - The Avita element to render when a route is not found.
      */
-    setNotFound(avitaElement: Avita<HTMLElement | SVGElement>, title?: string) {
+    setNotFound(avitaElement: Avita<HTMLTag>, title?: string) {
         this.notFoundPath = { element: avitaElement, title: title }
     }
 
