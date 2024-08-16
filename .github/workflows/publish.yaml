@@ -13,19 +13,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install Bun
+      - name: Install Bun and Setup Environment
         run: |
           curl -fsSL https://bun.sh/install | bash
-          export BUN_INSTALL="$HOME/.bun"
-          export PATH="$BUN_INSTALL/bin:$PATH"
+          echo 'export BUN_INSTALL="$HOME/.bun"' >> $GITHUB_ENV
+          echo 'export PATH="$BUN_INSTALL/bin:$PATH"' >> $GITHUB_ENV
+        shell: bash
 
       - name: Install dependencies with Bun
         run: bun install
+        shell: bash
 
       - name: Build the package with Bun
         run: bun run build
+        shell: bash
 
       - name: Publish to NPM
         run: bun run publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        shell: bash
