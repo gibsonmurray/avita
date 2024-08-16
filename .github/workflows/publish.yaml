@@ -1,35 +1,30 @@
 name: Publish to NPM
 
 on:
-  push:
-    branches:
-      - main
+    push:
+        branches:
+            - main
 
 jobs:
-  publish:
-    runs-on: macos-latest
+    publish:
+        runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
 
-      - name: Install Bun and Setup Environment
-        run: |
-          curl -fsSL https://bun.sh/install | bash
-          echo 'export BUN_INSTALL="$HOME/.bun"' >> $GITHUB_ENV
-          echo 'export PATH="$BUN_INSTALL/bin:$PATH"' >> $GITHUB_ENV
-        shell: bash
+            - name: Setup Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: "20.x"
 
-      - name: Install dependencies with Bun
-        run: bun install
-        shell: bash
+            - name: Install dependencies with npm
+              run: npm install
 
-      - name: Build the package with Bun
-        run: bun run build
-        shell: bash
+            - name: Build the package with npm
+              run: npm run build
 
-      - name: Publish to NPM
-        run: bun run publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        shell: bash
+            - name: Publish to NPM
+              run: npm publish
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
