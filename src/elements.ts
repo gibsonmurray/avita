@@ -1,9 +1,9 @@
-import type { HTMLTag, NewChildren } from "./avita"
+import type { HTMLTag, Children } from "./avita"
 import Avita from "./avita"
 
 export function element<T extends HTMLTag>(
     tag: string,
-    ...children: NewChildren<T>
+    children: Children<T>
 ): Avita<HTMLTag> {
     return new Avita(tag, children)
 }
@@ -11,55 +11,55 @@ export function element<T extends HTMLTag>(
 /**
  * Creates A new `Avita<div>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @param {NewChildren<T>} children - The children of the `div` element.
+ * @param {Children<T>} children - The children of the `div` element.
  * @returns {Avita<HTMLTag>} A new Avita wrapped `div>` element.
  */
 export function div<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("div", ...children)
+    return element("div", children) 
 }
 
 /**
  * Creates a new `Avita<span>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @param {NewChildren<T>} children - The children of the `span` element.
+ * @param {Children<T>} children - The children of the `span` element.
  * @returns {Avita<HTMLTag>} A new Avita wrapped `span>` element.
  */
 export function span<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("span", ...children)
+    return element("span", children)
 }
 
 /**
  * Creates a new `Avita<button>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @param {NewChildren<T>} children - The children of the `button` element.
+ * @param {Children<T>} children - The children of the `button` element.
  * @returns {Avita<HTMLTag>} A new Avita wrapped `button>` element.
  */
 export function button<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("button", ...children)
+    return element("button", children)
 }
 
 /**
  * Creates a new `Avita<input>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @param {NewChildren<T>} children - The children of the `input` element.
+ * @param {Children<T>} children - The children of the `input` element.
  * @returns {Avita<HTMLTag>} A new Avita wrapped `input>` element.
  */
 export function input<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("div", ...children)
+    return element("div", children)
 }
 
 export function h1<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("h1", ...children)
+    return element("h1", children)
 }
 
 /**
@@ -68,9 +68,9 @@ export function h1<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<h2>` element.
  */
 export function h2<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("h2", ...children)
+    return element("h2", children)
 }
 
 /**
@@ -79,9 +79,9 @@ export function h2<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<h3>` element.
  */
 export function h3<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("h3", ...children)
+    return element("h3", children)
 }
 
 /**
@@ -90,9 +90,9 @@ export function h3<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<h4>` element.
  */
 export function h4<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("h4", ...children)
+    return element("h4", children)
 }
 
 /**
@@ -101,9 +101,9 @@ export function h4<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<h5>` element.
  */
 export function h5<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("h5", ...children)
+    return element("h5", children)
 }
 
 /**
@@ -112,9 +112,9 @@ export function h5<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<h6>` element.
  */
 export function h6<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("h6", ...children)
+    return element("h6", children)
 }
 
 /**
@@ -123,9 +123,9 @@ export function h6<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<p>` element.
  */
 export function p<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("p", ...children)
+    return element("p", children)
 }
 
 /**
@@ -134,9 +134,9 @@ export function p<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<ul>` element.
  */
 export function ul<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("ul", ...children)
+    return element("ul", children)
 }
 
 /**
@@ -145,9 +145,9 @@ export function ul<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<ol>` element.
  */
 export function ol<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("ol", ...children)
+    return element("ol", children)
 }
 
 /**
@@ -156,9 +156,9 @@ export function ol<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<li>` element.
  */
 export function li<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("li", ...children)
+    return element("li", children)
 }
 
 /**
@@ -167,9 +167,9 @@ export function li<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<img>` element.
  */
 export function img<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("img", ...children)
+    return element("img", children)
 }
 
 /**
@@ -178,9 +178,9 @@ export function img<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<iframe>` element.
  */
 export function iframe<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("iframe", ...children)
+    return element("iframe", children)
 }
 
 /**
@@ -189,9 +189,9 @@ export function iframe<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<a>` element.
  */
 export function a<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("a", ...children)
+    return element("a", children)
 }
 
 /**
@@ -200,9 +200,9 @@ export function a<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<form>` element.
  */
 export function form<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("form", ...children)
+    return element("form", children)
 }
 
 /**
@@ -211,9 +211,9 @@ export function form<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<input>` element.
  */
 export function label<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("label", ...children)
+    return element("label", children)
 }
 
 /**
@@ -222,9 +222,9 @@ export function label<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<textarea>` element.
  */
 export function textarea<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("textarea", ...children)
+    return element("textarea", children)
 }
 
 /**
@@ -233,9 +233,9 @@ export function textarea<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<select>` element.
  */
 export function select<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("select", ...children)
+    return element("select", children)
 }
 
 /**
@@ -244,9 +244,9 @@ export function select<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<option>` element.
  */
 export function option<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("option", ...children)
+    return element("option", children)
 }
 
 /**
@@ -255,9 +255,9 @@ export function option<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<table>` element.
  */
 export function table<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("table", ...children)
+    return element("table", children)
 }
 
 /**
@@ -266,9 +266,9 @@ export function table<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<thead>` element.
  */
 export function thead<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("thead", ...children)
+    return element("thead", children)
 }
 
 /**
@@ -277,9 +277,9 @@ export function thead<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<tbody>` element.
  */
 export function tbody<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("tbody", ...children)
+    return element("tbody", children)
 }
 
 /**
@@ -288,9 +288,9 @@ export function tbody<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<tr>` element.
  */
 export function tr<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("tr", ...children)
+    return element("tr", children)
 }
 
 /**
@@ -299,9 +299,9 @@ export function tr<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<th>` element.
  */
 export function th<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("th", ...children)
+    return element("th", children)
 }
 
 /**
@@ -310,9 +310,9 @@ export function th<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<td>` element.
  */
 export function td<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("td", ...children)
+    return element("td", children)
 }
 
 /**
@@ -321,9 +321,9 @@ export function td<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<nav>` element.
  */
 export function nav<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("nav", ...children)
+    return element("nav", children)
 }
 
 /**
@@ -332,9 +332,9 @@ export function nav<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<header>` element.
  */
 export function header<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("header", ...children)
+    return element("header", children)
 }
 
 /**
@@ -343,9 +343,9 @@ export function header<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<footer>` element.
  */
 export function footer<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("footer", ...children)
+    return element("footer", children)
 }
 
 /**
@@ -354,9 +354,9 @@ export function footer<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<section>` element.
  */
 export function section<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("section", ...children)
+    return element("section", children)
 }
 
 /**
@@ -365,9 +365,9 @@ export function section<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<article>` element.
  */
 export function article<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("article", ...children)
+    return element("article", children)
 }
 
 /**
@@ -376,9 +376,9 @@ export function article<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<aside>` element.
  */
 export function aside<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("aside", ...children)
+    return element("aside", children)
 }
 
 /**
@@ -387,9 +387,9 @@ export function aside<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<main>` element.
  */
 export function main<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("main", ...children)
+    return element("main", children)
 }
 
 /**
@@ -398,9 +398,9 @@ export function main<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<figure>` element.
  */
 export function figure<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("figure", ...children)
+    return element("figure", children)
 }
 
 /**
@@ -409,9 +409,9 @@ export function figure<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<figcaption>` element.
  */
 export function figcaption<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("figcaption", ...children)
+    return element("figcaption", children)
 }
 
 /**
@@ -420,9 +420,9 @@ export function figcaption<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<video>` element.
  */
 export function video<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("video", ...children)
+    return element("video", children)
 }
 
 /**
@@ -431,9 +431,9 @@ export function video<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<audio>` element.
  */
 export function audio<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("audio", ...children)
+    return element("audio", children)
 }
 
 /**
@@ -442,9 +442,9 @@ export function audio<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<source>` element.
  */
 export function source<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("source", ...children)
+    return element("source", children)
 }
 
 /**
@@ -453,9 +453,9 @@ export function source<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<embed>` element.
  */
 export function embed<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("embed", ...children)
+    return element("embed", children)
 }
 
 /**
@@ -464,9 +464,9 @@ export function embed<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<object>` element.
  */
 export function object<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("object", ...children)
+    return element("object", children)
 }
 
 /**
@@ -475,9 +475,9 @@ export function object<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<style>` element.
  */
 export function style<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("style", ...children)
+    return element("style", children)
 }
 
 /**
@@ -486,9 +486,9 @@ export function style<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<head>` element.
  */
 export function head<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("head", ...children)
+    return element("head", children)
 }
 
 /**
@@ -497,9 +497,9 @@ export function head<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<link>` element.
  */
 export function link<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("link", ...children)
+    return element("link", children)
 }
 
 /**
@@ -508,9 +508,9 @@ export function link<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<meta>` element.
  */
 export function meta<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("meta", ...children)
+    return element("meta", children)
 }
 
 /**
@@ -519,9 +519,9 @@ export function meta<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<title>` element.
  */
 export function title<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("title", ...children)
+    return element("title", children)
 }
 
 /**
@@ -530,9 +530,9 @@ export function title<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<base>` element.
  */
 export function base<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("base", ...children)
+    return element("base", children)
 }
 
 /**
@@ -541,9 +541,9 @@ export function base<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<script>` element.
  */
 export function script<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("script", ...children)
+    return element("script", children)
 }
 
 /**
@@ -552,9 +552,9 @@ export function script<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<noscript>` element.
  */
 export function noscript<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("noscript", ...children)
+    return element("noscript", children)
 }
 
 /**
@@ -563,9 +563,9 @@ export function noscript<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<template>` element.
  */
 export function template<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("template", ...children)
+    return element("template", children)
 }
 
 /**
@@ -574,9 +574,9 @@ export function template<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<html>` element.
  */
 export function html<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("html", ...children)
+    return element("html", children)
 }
 
 /**
@@ -585,9 +585,9 @@ export function html<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<body>` element.
  */
 export function body<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("body", ...children)
+    return element("body", children)
 }
 
 /**
@@ -596,9 +596,9 @@ export function body<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<i>` element.
  */
 export function i<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("i", ...children)
+    return element("i", children)
 }
 
 /**
@@ -607,9 +607,9 @@ export function i<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<b>` element.
  */
 export function b<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("b", ...children)
+    return element("b", children)
 }
 
 /**
@@ -618,9 +618,9 @@ export function b<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<br>` element.
  */
 export function br<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("br", ...children)
+    return element("br", children)
 }
 
 /**
@@ -629,9 +629,9 @@ export function br<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<hr>` element.
  */
 export function hr<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("hr", ...children)
+    return element("hr", children)
 }
 
 /**
@@ -640,9 +640,9 @@ export function hr<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<sup>` element.
  */
 export function sup<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("sup", ...children)
+    return element("sup", children)
 }
 
 /**
@@ -651,9 +651,9 @@ export function sup<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<sub>` element.
  */
 export function sub<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("sub", ...children)
+    return element("sub", children)
 }
 
 /**
@@ -662,9 +662,9 @@ export function sub<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<em>` element.
  */
 export function em<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("em", ...children)
+    return element("em", children)
 }
 
 /**
@@ -673,9 +673,9 @@ export function em<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<strong>` element.
  */
 export function strong<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("strong", ...children)
+    return element("strong", children)
 }
 
 /**
@@ -684,9 +684,9 @@ export function strong<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<kbd>` element.
  */
 export function kbd<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("kbd", ...children)
+    return element("kbd", children)
 }
 
 /**
@@ -695,9 +695,9 @@ export function kbd<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<code>` element.
  */
 export function code<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("code", ...children)
+    return element("code", children)
 }
 
 /**
@@ -706,9 +706,9 @@ export function code<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<samp>` element.
  */
 export function samp<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("samp", ...children)
+    return element("samp", children)
 }
 
 /**
@@ -717,9 +717,9 @@ export function samp<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<cite>` element.
  */
 export function cite<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("cite", ...children)
+    return element("cite", children)
 }
 
 /**
@@ -728,10 +728,10 @@ export function cite<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<var>` element.
  */
 export function varElement<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
     // 'var' is a reserved keyword
-    return element("var", ...children)
+    return element("var", children)
 }
 
 /**
@@ -740,9 +740,9 @@ export function varElement<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<big>` element.
  */
 export function big<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("big", ...children)
+    return element("big", children)
 }
 
 /**
@@ -751,9 +751,9 @@ export function big<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<small>` element.
  */
 export function small<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("small", ...children)
+    return element("small", children)
 }
 
 /**
@@ -762,9 +762,9 @@ export function small<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<dfn>` element.
  */
 export function dfn<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("dfn", ...children)
+    return element("dfn", children)
 }
 
 /**
@@ -773,9 +773,9 @@ export function dfn<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<abbr>` element.
  */
 export function abbr<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("abbr", ...children)
+    return element("abbr", children)
 }
 
 /**
@@ -784,9 +784,9 @@ export function abbr<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<blockquote>` element.
  */
 export function blockquote<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("blockquote", ...children)
+    return element("blockquote", children)
 }
 
 /**
@@ -795,9 +795,9 @@ export function blockquote<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<q>` element.
  */
 export function q<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("q", ...children)
+    return element("q", children)
 }
 
 /**
@@ -806,9 +806,9 @@ export function q<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<time>` element.
  */
 export function time<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("time", ...children)
+    return element("time", children)
 }
 
 /**
@@ -817,9 +817,9 @@ export function time<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<pre>` element.
  */
 export function pre<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("pre", ...children)
+    return element("pre", children)
 }
 
 /**
@@ -828,9 +828,9 @@ export function pre<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<map>` element.
  */
 export function map<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("map", ...children)
+    return element("map", children)
 }
 
 /**
@@ -839,9 +839,9 @@ export function map<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<area>` element.
  */
 export function area<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("area", ...children)
+    return element("area", children)
 }
 
 /**
@@ -850,9 +850,9 @@ export function area<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<canvas>` element.
  */
 export function canvas<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("canvas", ...children)
+    return element("canvas", children)
 }
 
 /**
@@ -861,9 +861,9 @@ export function canvas<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<svg>` element.
  */
 export function svg<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("svg", ...children)
+    return element("svg", children)
 }
 
 /**
@@ -872,9 +872,9 @@ export function svg<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<path>` element.
  */
 export function path<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("path", ...children)
+    return element("path", children)
 }
 
 /**
@@ -883,9 +883,9 @@ export function path<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<rect>` element.
  */
 export function rect<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("rect", ...children)
+    return element("rect", children)
 }
 
 /**
@@ -894,9 +894,9 @@ export function rect<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<HTMLTag>` element.
  */
 export function circle<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("circle", ...children)
+    return element("circle", children)
 }
 
 /**
@@ -905,9 +905,9 @@ export function circle<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<ellipse>` element.
  */
 export function ellipse<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("ellipse", ...children)
+    return element("ellipse", children)
 }
 /**
  * Creates a new `Avita<line>` element. Has properties of AvitaElement
@@ -915,9 +915,9 @@ export function ellipse<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<line>` element.
  */
 export function line<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("line", ...children)
+    return element("line", children)
 }
 
 /**
@@ -926,9 +926,9 @@ export function line<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<polygon>` element.
  */
 export function polygon<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("polygon", ...children)
+    return element("polygon", children)
 }
 
 /**
@@ -937,9 +937,9 @@ export function polygon<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<polyline>` element.
  */
 export function polyline<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("polyline", ...children)
+    return element("polyline", children)
 }
 
 /**
@@ -948,9 +948,9 @@ export function polyline<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<text>` element.
  */
 export function text<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("text", ...children)
+    return element("text", children)
 }
 
 /**
@@ -959,9 +959,9 @@ export function text<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<textPath>` element.
  */
 export function textPath<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("textPath", ...children)
+    return element("textPath", children)
 }
 
 /**
@@ -970,9 +970,9 @@ export function textPath<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<marker>` element.
  */
 export function marker<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("marker", ...children)
+    return element("marker", children)
 }
 
 /**
@@ -981,9 +981,9 @@ export function marker<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<symbol>` element.
  */
 export function symbol<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("symbol", ...children)
+    return element("symbol", children)
 }
 
 /**
@@ -992,9 +992,9 @@ export function symbol<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<image>` element.
  */
 export function image<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("image", ...children)
+    return element("image", children)
 }
 
 /**
@@ -1003,9 +1003,9 @@ export function image<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<clipPath>` element.
  */
 export function clipPath<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("clipPath", ...children)
+    return element("clipPath", children)
 }
 
 /**
@@ -1014,9 +1014,9 @@ export function clipPath<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<mask>` element.
  */
 export function mask<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("mask", ...children)
+    return element("mask", children)
 }
 
 /**
@@ -1025,9 +1025,9 @@ export function mask<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<pattern>` element.
  */
 export function pattern<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("pattern", ...children)
+    return element("pattern", children)
 }
 
 /**
@@ -1036,9 +1036,9 @@ export function pattern<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<filter>` element.
  */
 export function filter<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("filter", ...children)
+    return element("filter", children)
 }
 
 /**
@@ -1047,9 +1047,9 @@ export function filter<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<linearGradient>` element.
  */
 export function linearGradient<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("linearGradient", ...children)
+    return element("linearGradient", children)
 }
 
 /**
@@ -1058,9 +1058,9 @@ export function linearGradient<T extends HTMLTag>(
  * @returns {Avita<HTMLTag>} A new `Avita<radialGradient>` element.
  */
 export function radialGradient<T extends HTMLTag>(
-    ...children: NewChildren<T>
+    ...children: Children<T>
 ): Avita<HTMLTag> {
-    return element("radialGradient", ...children)
+    return element("radialGradient", children)
 }
 
 // interface HTMLElementTagNameMap {

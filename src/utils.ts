@@ -4,12 +4,10 @@ import { style } from "./elements"
 /**
  * Applies a set of default styles to the linked HTML document.
  * These styles are commonly used as a starting point for web applications to ensure consistent layout and appearance across different browsers.
- *
- * @param body - The HTML body element to apply the default styles to.
  */
 export function defaultStyles() {
     $("head").append(
-        style().text(`
+        style(`
             * {
                 box-sizing: border-box;
                 padding: 0;
@@ -42,15 +40,7 @@ export function defaultStyles() {
  * @returns A unique class name string in the format `class-{randomString}`.
  */
 export function generateClass(): string {
-    return `class-${Math.random().toString(36).substring(2, 15)}`
-}
-
-/**
- * Generates a unique identifier string.
- * @returns A unique identifier string in the format `id-{random_string}`.
- */
-export function generateId(): string {
-    return `id-${Math.random().toString(36).substring(2, 15)}`
+    return `class-${crypto.randomUUID()}`
 }
 
 /**

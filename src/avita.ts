@@ -1,51 +1,51 @@
-import { span, style } from "./elements"
+import { style } from "./elements"
 import { camelToKebab, defaultStyles, generateClass } from "./utils"
 
 export type EL = EventListenerOrEventListenerObject
 export type HTMLTag = HTMLElement | SVGElement
-export type NewChildren<T extends HTMLTag> = (Avita<T> | string)[]
+export type Children<T extends HTMLTag> = (Avita<T> | string)[]
 
 export default class Avita<T extends HTMLTag> {
     private element: T
     private elements: T[] = [] // mostly used when querying for multiple elements, otherwise empty
-    private avitaChildren: Avita<T>[] = []
+    private avitaChildren: Children<T> = []
 
     /**
      * Creates a new instance of the Avita class.
      * @param tag - The tag name of the HTML element to create.
      */
-    constructor(tag: string, children?: NewChildren<T>)
+    constructor(tag: string, children?: Children<T>)
 
     /**
      * Creates a new instance of the Avita class.
      * @param element - The HTML element to wrap.
      */
-    constructor(element: T, children?: NewChildren<T>)
+    constructor(element: T, children?: Children<T>)
 
     /**
      * Creates a new instance of the Avita class.
      * @param elements - The HTML elements to wrap.
      */
-    constructor(elements: T[], children?: NewChildren<T>)
+    constructor(elements: T[], children?: Children<T>)
 
-    constructor(tagOrElement: string | T | T[], children: NewChildren<T> = []) {
-        if (typeof tagOrElement === "string") {
-            this.element = document.createElementNS(
-                tagOrElement.startsWith("svg")
-                    ? "http://www.w3.org/2000/svg"
-                    : "http://www.w3.org/1999/xhtml",
-                tagOrElement
-            ) as T
-        } else if (Array.isArray(tagOrElement)) {
+    constructor(tagOrElement: string | T | T[], children: Children<T> = []) {
+        if (Array.isArray(tagOrElement)) {
             if (tagOrElement.length === 0) {
                 throw new Error("The elements array should not be empty.")
             }
             this.element = tagOrElement[0]
             this.elements = tagOrElement
+            return
+        }
+        if (typeof tagOrElement === "string") {
+            this.element = document.createElement(tagOrElement) as T
         } else {
             this.element = tagOrElement
-            this.setChildren(...children)
         }
+        children.forEach((child) => {
+            this.avitaChildren.push(child)
+        })
+        this.updateDOMChildren()
     }
 
     /**
@@ -70,30 +70,12 @@ export default class Avita<T extends HTMLTag> {
                 defaultStyles()
             }
             root.innerHTML = ""
-            root.appendChild(child.element)
+            root.append(child.element)
         } else {
             throw new Error(
                 "Root element not found: please add a div with id='root' to your HTML file"
             )
         }
-    }
-
-    /**
-     * Sets the child elements of the current `Avita` instance. This will remove any existing child elements.
-     * @param elements - An array of `Avita` instances or strings to set as the child elements.
-     * @returns The current `Avita` instance for chaining.
-     */
-    private setChildren(...elements: NewChildren<T>): this { // todo fix raw text input
-        this.avitaChildren = []
-        elements.forEach((element) => {
-            if (typeof element === "string") {
-                this.avitaChildren.push(span().text(element) as Avita<T>)
-            } else {
-                this.avitaChildren.push(element)
-            }
-        })
-        this.updateDOMChildren()
-        return this
     }
 
     /**
@@ -109,7 +91,7 @@ export default class Avita<T extends HTMLTag> {
      * Returns the child elements of the current `Avita` instance.
      * @returns An array of `Avita` instances representing the child elements, or `null` if the current element has no children.
      */
-    children(): Avita<T>[] | null {
+    children(): Children<T> | null {
         return this.avitaChildren.length > 0 ? this.avitaChildren : null
     }
 
@@ -128,6 +110,25 @@ export default class Avita<T extends HTMLTag> {
         )
 
         return new Avita<T>(siblings.map((sibling) => sibling as T))
+    }
+
+    /**
+     * Updates the DOM children of the current `Avita` instance to match the `avitaChildren` array.
+     * This removes any existing child nodes and appends the new child elements.
+     */
+    private updateDOMChildren() {
+        if (this.element.localName !== "head") {
+            this.element.childNodes.forEach((child) => {
+                child.remove()
+            })
+        }
+        this.avitaChildren.forEach((child) => {
+            if (typeof child === "string") {
+                this.element.append(child)
+            } else {
+                this.element.append(child.element)
+            }
+        })
     }
 
     /**
@@ -620,11 +621,14 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Sets the HTML content of the element.
+     * Getter and setter the HTML content of the element.
      * @param value - The HTML content to set for the element.
      * @returns The current `Avita` instance for chaining.
      */
-    html(value: string) {
+    html(value?: string) {
+        if (value === undefined) {
+            return this.element.innerHTML
+        }
         this.element.innerHTML = value
         if (this.elements.length > 0)
             this.elements.forEach((element) => {
@@ -726,22 +730,13 @@ export default class Avita<T extends HTMLTag> {
      */
     removeChild(child: Avita<T>) {
         //todo: test
-        this.avitaChildren.filter((c) => c.element !== child.element)
+        this.avitaChildren.filter((c) => {
+            if (c instanceof Avita) {
+                c.element !== child.element
+            }
+        })
         this.updateDOMChildren()
         return this
-    }
-
-    /**
-     * Updates the DOM children of the current `Avita` instance to match the `avitaChildren` array.
-     * This removes any existing child nodes and appends the new child elements.
-     */
-    private updateDOMChildren() {
-        this.element.childNodes.forEach((child) => {
-            child.remove()
-        })
-        this.avitaChildren.forEach((child) => {
-            this.element.appendChild(child.element)
-        })
     }
 
     /**
@@ -1077,7 +1072,7 @@ export default class Avita<T extends HTMLTag> {
         }
 
         const pseudoCSS = `.${uniqueClass}:${pseudoClass} {\n${body}\n}`
-        $("head").append(style().text(pseudoCSS))
+        $("head").append(style(pseudoCSS))
 
         return this
     }
