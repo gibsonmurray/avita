@@ -1,5 +1,4 @@
-import { style } from "./elements"
-import { camelToKebab, defaultStyles, generateClass } from "./utils"
+import { camelToKebab, CSS_ID, DEFAULT_STYLES, generateClass } from "./utils"
 
 export type EL = EventListenerOrEventListenerObject
 export type HTMLTag = HTMLElement | SVGElement
@@ -10,25 +9,13 @@ export default class Avita<T extends HTMLTag> {
     private elements: T[] = [] // mostly used when querying for multiple elements, otherwise empty
     private avitaChildren: Children<T> = []
 
-    /**
-     * Creates a new instance of the Avita class.
-     * @param tag - The tag name of the HTML element to create.
-     */
-    constructor(tag: string, children?: Children<T>)
-
-    /**
-     * Creates a new instance of the Avita class.
-     * @param element - The HTML element to wrap.
-     */
-    constructor(element: T, children?: Children<T>)
-
-    /**
-     * Creates a new instance of the Avita class.
-     * @param elements - The HTML elements to wrap.
-     */
-    constructor(elements: T[], children?: Children<T>)
+    private static avitaCSS = false
 
     constructor(tagOrElement: string | T | T[], children: Children<T> = []) {
+        if (!Avita.avitaCSS) {
+            this.createAvitaCSS()
+            Avita.avitaCSS = true
+        }
         if (Array.isArray(tagOrElement)) {
             if (tagOrElement.length === 0) {
                 throw new Error("The elements array should not be empty.")
@@ -45,7 +32,11 @@ export default class Avita<T extends HTMLTag> {
         children.forEach((child) => {
             this.avitaChildren.push(child)
         })
-        this.updateDOMChildren()
+        this.updateDOMChildren(tagOrElement)
+    }
+
+    toString(): string {
+        return this.element.outerHTML
     }
 
     /**
@@ -57,18 +48,10 @@ export default class Avita<T extends HTMLTag> {
      */
     static render<T extends HTMLTag>(
         child: Avita<T>,
-        selector: string = "#root",
-        options: {
-            defaultStyles?: boolean
-        } = {
-            defaultStyles: true,
-        }
+        selector: string = "#root"
     ) {
         const root = document.querySelector(selector)
         if (root) {
-            if (options?.defaultStyles) {
-                defaultStyles()
-            }
             root.innerHTML = ""
             root.append(child.element)
         } else {
@@ -79,8 +62,28 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Returns a new `Avita` instance wrapping the parent element of the current element or `null` if the parent element does not exist.
-     * @returns A new `Avita` instance wrapping the parent element of the current element or `null` if the parent element does not exist.
+     * Creates the default Avita CSS styles and appends them to the document head.
+     *
+     * This method is responsible for initializing the Avita CSS styles, which are
+     * used to provide a consistent styling for the Avita components. By default,
+     * it will add the `DEFAULT_STYLES` to the document, but this can be
+     * overridden by passing `false` to the `defaultCSS` parameter.
+     *
+     * @param defaultCSS - Whether to include the default Avita CSS styles. Defaults to `true`.
+     */
+    private createAvitaCSS(defaultCSS: boolean = true) {
+        const css = document.createElement("style")
+        css.id = CSS_ID
+        document.head.append(css)
+        if (defaultCSS) {
+            css.innerHTML = `${DEFAULT_STYLES} `
+        }
+    }
+
+    /**
+     * Returns the parent element of the current Avita instance as a new Avita instance, or null if there is no parent.
+     *
+     * @returns {Avita<T> | null} The parent element as a new Avita instance, or null if there is no parent.
      */
     parent(): Avita<T> | null {
         const parent = this.element.parentElement
@@ -88,22 +91,29 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Returns the child elements of the current `Avita` instance.
-     * @returns An array of `Avita` instances representing the child elements, or `null` if the current element has no children.
+     * Returns a new `Avita` instance containing the child elements of the current `Avita` instance.
+     *
+     * @returns {Avita<T> | null} A new `Avita` instance containing the child elements, or `null` if there are no child elements.
      */
-    children(): Children<T> | null {
-        return this.avitaChildren.length > 0 ? this.avitaChildren : null
+    children(): Avita<T> | null {
+        if (this.element.children.length > 0) {
+            return new Avita(
+                Array.from(this.element.children).map((child) => child as T)
+            )
+        }
+        return null
     }
 
     /**
-     * Returns a new `Avita` instance wrapping the sibling elements of the current element.
-     * @returns A new `Avita` instance wrapping the sibling elements of the current element, or `null` if the current element has no parent.
+     * Returns a new `Avita` instance containing the sibling elements of the current `Avita` instance.
+     *
+     * @returns {Avita<T> | null} A new `Avita` instance containing the sibling elements, or `null` if there are no sibling elements.
      */
     siblings(): Avita<T> | null {
         const elmt = this.element as HTMLElement
         const parent = elmt.parentElement
 
-        if (!parent) return null
+        if (!parent || parent.children.length === 1) return null
 
         const siblings = Array.from(parent.children).filter(
             (child) => child !== elmt
@@ -113,15 +123,61 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Updates the DOM children of the current `Avita` instance to match the `avitaChildren` array.
-     * This removes any existing child nodes and appends the new child elements.
+     * Returns the next sibling element of the current `Avita` instance as a new `Avita` instance, or `null` if there is no next sibling.
+     *
+     * @returns {Avita<T> | null} The next sibling element as a new `Avita` instance, or `null` if there is no next sibling.
      */
-    private updateDOMChildren() {
-        if (this.element.localName !== "head") {
-            this.element.childNodes.forEach((child) => {
-                child.remove()
-            })
+    next(): Avita<T> | null {
+        const elmt = this.element as HTMLElement
+        const nextSibling = elmt.nextElementSibling
+        return nextSibling ? new Avita(nextSibling as T) : null
+    }
+
+    /**
+     * Returns the previous sibling element of the current `Avita` instance as a new `Avita` instance, or `null` if there is no previous sibling.
+     *
+     * @returns {Avita<T> | null} The previous sibling element as a new `Avita` instance, or `null` if there is no previous sibling.
+     */
+    prev(): Avita<T> | null {
+        const elmt = this.element as HTMLElement
+        const prevSibling = elmt.previousElementSibling
+        return prevSibling ? new Avita(prevSibling as T) : null
+    }
+
+    /**
+     * Checks if the current Avita element matches the given CSS selector.
+     * @param selector - The CSS selector to match against.
+     * @returns `true` if the current element matches the selector, `false` otherwise.
+     */
+    is(selector: string): boolean {
+        return this.element.matches(selector)
+    }
+
+    /**
+     * Filters the elements in the current `Avita` instance to those that match the given CSS selector.
+     * @param selector - The CSS selector to match against.
+     * @returns A new `Avita` instance containing the filtered elements.
+     */
+    filter(selector: string): Avita<T> {
+        const elmts = this.elements.filter((element) =>
+            element.matches(selector)
+        )
+        return new Avita(elmts)
+    }
+
+    /**
+     * Updates the DOM children of the current Avita instance by removing all existing child nodes and appending the Avita children.
+     *
+     * @param tagOrElement - An optional string representing a tag name, or an Avita instance or array of Avita instances to be appended as children.
+     * @returns Void
+     */
+    private updateDOMChildren(tagOrElement?: string | T | T[]) {
+        if (tagOrElement !== undefined && typeof tagOrElement !== "string") {
+            return
         }
+        this.element.childNodes.forEach((child) => {
+            child.remove()
+        })
         this.avitaChildren.forEach((child) => {
             if (typeof child === "string") {
                 this.element.append(child)
@@ -132,23 +188,11 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Finds the element(s) with the given selector in the DOM tree.
-     * @param selector - The CSS selector to match against.
-     * @returns An Avita instance matching the selector or `null` if not found.
+     * Finds elements in the DOM that match the given CSS selector.
+     * @param selector - The CSS selector to use for finding elements.
+     * @param raw - If true, returns the raw DOM elements. If false, returns Avita instances wrapping the elements.
+     * @returns Either an Avita instance, a single raw element, an array of raw elements, or null if no elements were found.
      */
-    static find<T extends HTMLTag>(selector: string): Avita<T>
-
-    /**
-     * Finds the element(s) with the given selector in the DOM tree.
-     * @param selector - The CSS selector to match against.
-     * @param raw - A boolean indicating whether to return the raw HTML element(s).
-     * @returns The raw HTML element(s) matching the selector or `null` if not found.
-     */
-    static find<T extends HTMLTag>(
-        selector: string,
-        raw: boolean
-    ): Avita<T> | T | T[]
-
     static find<T extends HTMLTag>(
         selector: string,
         raw: boolean = false
@@ -176,8 +220,8 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Waits for the DOM to be fully loaded and then executes the provided callback function.
-     * @param callback - The function to be executed when the DOM is ready.
+     * Executes the provided callback function when the DOM is ready or when the popstate event is triggered.
+     * @param callback - The function to be executed when the DOM is ready or when the popstate event is triggered.
      */
     static ready(callback: () => void) {
         if (document.readyState === "complete") {
@@ -189,25 +233,11 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Finds the element(s) with the given selector in the local DOM subtree.
-     * @param selector - The CSS selector to match against.
-     * @returns An Avita instance matching the selector.
-     * @throws {Error} If no element is found with the given selector.
+     * Finds elements in the element subtree that match the given CSS selector.
+     * @param selector - The CSS selector to use for finding elements.
+     * @param raw - If true, returns the raw DOM elements. If false, returns Avita instances wrapping the elements.
+     * @returns Either an Avita instance, a single raw element, an array of raw elements, or null if no elements were found.
      */
-    find<T extends HTMLElement>(selector: string): Avita<T>
-
-    /**
-     * Finds the element(s) with the given selector in the local DOM subtree.
-     * @param selector - The CSS selector to match against.
-     * @param raw - A boolean indicating whether to return the raw HTML element(s).
-     * @returns The raw HTML element(s) matching the selector.
-     * @throws {Error} If no element is found with the given selector.
-     */
-    find<T extends HTMLElement>(
-        selector: string,
-        raw: boolean
-    ): Avita<T> | T | T[]
-
     find<T extends HTMLElement>(
         selector: string,
         raw: boolean = false
@@ -237,18 +267,10 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Gets the ID of the current Avita element.
-     * @returns The ID of the current Avita element as a string.
+     * Gets or sets the ID of the element.
+     * @param id - The new ID to set for the element, or undefined to get the current ID.
+     * @returns The Avita instance, or the current ID if no ID was provided.
      */
-    id(): string
-
-    /**
-     * Sets the ID of the current `Avita` element.
-     * @param id - The new ID to set for the `Avita` element.
-     * @returns The current `Avita` instance for chaining.
-     */
-    id(id: string): this
-
     id(id?: string) {
         if (id === undefined) {
             return this.element.id
@@ -256,19 +278,16 @@ export default class Avita<T extends HTMLTag> {
         this.element.id = id
         return this
     }
-    /**
-     * Gets the CSS class(es) of the `Avita` instance.
-     * @returns The current CSS classes as a string.
-     */
-    class(): string
 
     /**
-     * Sets the CSS class(es) of the `Avita` instance, concatenating them with the existing classes.
-     * @param className - The CSS class(es) to add to the element(s).
-     * @returns The current Avita instance for chaining.
+     * Gets or sets the class names of the element.
+     *
+     * If no class names are provided, this method returns the current class names as a string.
+     * If one or more class names are provided, this method adds the new class names to the element.
+     *
+     * @param classNames - The new class names to add to the element, or undefined to get the current class names.
+     * @returns The Avita instance, or the current class names if no class names were provided.
      */
-    class(...classNames: string[]): this
-
     class(...classNames: string[]) {
         if (classNames.length === 0) {
             // Getter: Return the class names as a string
@@ -286,9 +305,9 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Toggles the specified CSS class on the current element/all elements in the collection.
+     * Toggles the specified CSS class on the current Avita element and all its child elements.
      * @param className - The CSS class to toggle.
-     * @returns The current `Avita` instance for chaining.
+     * @returns The current Avita instance, for method chaining.
      */
     toggleClass(className: string) {
         this.element.classList.toggle(className)
@@ -301,9 +320,9 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Adds the specified CSS class(es) to the current element/all elements in the collection.
+     * Adds the specified CSS class(es) to the current Avita element and all its child elements.
      * @param classNames - The CSS class(es) to add.
-     * @returns The current `Avita` instance for chaining.
+     * @returns The current Avita instance, for method chaining.
      */
     addClass(...classNames: string[]) {
         this.element.classList.add(...classNames)
@@ -316,9 +335,9 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Removes the specified CSS class(es) from the current element/all elements in the collection.
+     * Removes the specified CSS class(es) from the current Avita element and all its child elements.
      * @param classNames - The CSS class(es) to remove.
-     * @returns The current `Avita` instance for chaining.
+     * @returns The current Avita instance, for method chaining.
      */
     removeClass(...classNames: string[]) {
         this.element.classList.remove(...classNames)
@@ -331,12 +350,29 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Checks if the current element or any elements in the collection have the specified CSS class.
+     * Checks if the current Avita element has the specified CSS class.
      * @param className - The CSS class to check for.
-     * @returns `true` if the element or any elements in the collection have the specified class, `false` otherwise.
+     * @returns `true` if the element has the specified class, `false` otherwise.
      */
     hasClass(className: string): boolean {
         return this.element.classList.contains(className)
+    }
+
+    /**
+     * Generates a unique CSS class name for the current Avita element.
+     * @returns The unique CSS class name.
+     */
+    private uniqueClass(): string {
+        let uniqueClass = ""
+        if (!this.class().includes(CSS_ID)) {
+            uniqueClass = generateClass()
+            this.addClass(uniqueClass)
+        } else {
+            uniqueClass = this.class()
+                .split(" ")
+                .find((c: string) => c.includes(CSS_ID))!
+        }
+        return uniqueClass
     }
 
     /**
@@ -376,19 +412,17 @@ export default class Avita<T extends HTMLTag> {
             | Partial<CSSStyleDeclaration>,
         value?: string
     ): string | this | CSSStyleDeclaration | undefined {
-        const computedStyle = getComputedStyle(this.element)
+        const styles = getComputedStyle(this.element)
 
         if (propertyOrProps === undefined && value === undefined) {
             // Return all computed styles when no arguments are provided
-            return computedStyle
+            return styles
         }
 
         if (typeof propertyOrProps === "string") {
             if (value === undefined) {
                 // Get the value of a single CSS property
-                return (
-                    computedStyle.getPropertyValue(propertyOrProps) || undefined
-                )
+                return styles.getPropertyValue(propertyOrProps) || undefined
             } else {
                 // Set a single CSS property
                 this.applyStyle(
@@ -414,7 +448,7 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Applies the specified CSS style property and value to the current element and all elements in the Avita instance.
+     * Applies a CSS style property to the current element and all elements in the Avita instance.
      * @param prop - The CSS property to apply.
      * @param val - The value to set for the CSS property.
      */
@@ -506,7 +540,7 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Sets an attribute on the main element and all other elements in the collection.
+     * Sets the value of an attribute on the current element and all elements in the elements array.
      * @param name - The name of the attribute to set.
      * @param value - The value to set for the attribute.
      */
@@ -517,6 +551,21 @@ export default class Avita<T extends HTMLTag> {
                 element.setAttribute(name, value)
             })
         }
+    }
+
+    /**
+     * Removes the specified attribute from the current element and all elements in the elements array.
+     * @param name - The name of the attribute to remove.
+     * @returns The current Avita instance for chaining.
+     */
+    removeAttr(name: string): this {
+        this.element.removeAttribute(name)
+        if (this.elements.length > 0) {
+            this.elements.forEach((element) => {
+                element.removeAttribute(name)
+            })
+        }
+        return this
     }
 
     /**
@@ -592,7 +641,7 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Sets a data attribute on the main element and all other elements in the collection.
+     * Sets the value of a data attribute on the element and all associated elements.
      * @param key - The name of the data attribute to set.
      * @param value - The value to set for the data attribute.
      */
@@ -606,11 +655,27 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Sets the text content of the element.
-     * @param value - The text content to set for the element.
-     * @returns The current `Avita` instance for chaining.
+     * Removes the specified data attribute from the element and all associated elements.
+     * @param key - The name of the data attribute to remove.
+     * @returns The current Avita instance for chaining.
      */
-    text(value: string) {
+    removeData(key: string): this {
+        delete this.element.dataset[key]
+        if (this.elements.length > 0) {
+            this.elements.forEach((element) => {
+                delete element.dataset[key]
+            })
+        }
+        return this
+    }
+
+    /**
+     * Sets the text content of the current element and all associated elements.
+     * @param value - The text content to set. If not provided, returns the current text content.
+     * @returns The current Avita instance for chaining.
+     */
+    text(value?: string) {
+        if (value === undefined) return this.element.textContent
         this.element.textContent = value
         if (this.elements.length > 0) {
             this.elements.forEach((element) => {
@@ -621,9 +686,9 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Getter and setter the HTML content of the element.
-     * @param value - The HTML content to set for the element.
-     * @returns The current `Avita` instance for chaining.
+     * Sets the HTML content of the current element and all associated elements.
+     * @param value - The HTML content to set. If not provided, returns the current HTML content.
+     * @returns The current Avita instance for chaining.
      */
     html(value?: string) {
         if (value === undefined) {
@@ -638,19 +703,10 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Appends the provided `Avita` instance to the current `Avita` instance.
-     * @param child - The `Avita` instance to append to the current instance.
-     * @returns The current `Avita` instance for chaining.
+     * Appends the specified Avita instances as children to the current Avita instance and its associated elements.
+     * @param children - The Avita instances to append as children.
+     * @returns The current Avita instance for chaining.
      */
-    append(child: Avita<T>): this
-
-    /**
-     * Appends one or more `Avita` instances to the current `Avita` instance.
-     * @param children - The `Avita` instances to append to the current instance.
-     * @returns The current `Avita` instance for chaining.
-     */
-    append(...children: Avita<T>[]): this
-
     append(...children: Avita<T>[]) {
         children.forEach((child) => {
             this.element.append(child.element)
@@ -663,25 +719,46 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Prepends the provided `Avita` instance to the current `Avita` instance.
-     * @param child - The `Avita` instance to prepend to the current instance.
-     * @returns The current `Avita` instance for chaining.
+     * Prepends the specified Avita instances as children to the current Avita instance and its associated elements.
+     * @param children - The Avita instances to prepend as children.
+     * @returns The current Avita instance for chaining.
      */
-    prepend(child: Avita<T>): this
-
-    /**
-     * Prepends one or more `Avita` instances to the current `Avita` instance.
-     * @param children - The `Avita` instances to prepend to the current instance.
-     * @returns The current `Avita` instance for chaining.
-     */
-    prepend(...children: Avita<T>[]): this
-
     prepend(...children: Avita<T>[]) {
         children.forEach((child) => {
             this.element.prepend(child.element)
             this.elements.forEach((el) => {
                 // once again why? because we can...
                 el.prepend(child.element.cloneNode(true))
+            })
+        })
+        return this
+    }
+
+    /**
+     * Inserts the specified Avita instances before the current Avita instance and its associated elements.
+     * @param children - The Avita instances to insert before the current instance.
+     * @returns The current Avita instance for chaining.
+     */
+    before(...children: Avita<T>[]) {
+        children.forEach((child) => {
+            this.element.before(child.element)
+            this.elements.forEach((el) => {
+                el.before(child.element.cloneNode(true))
+            })
+        })
+        return this
+    }
+
+    /**
+     * Inserts the specified Avita instances after the current Avita instance and its associated elements.
+     * @param children - The Avita instances to insert after the current instance.
+     * @returns The current Avita instance for chaining.
+     */
+    after(...children: Avita<T>[]) {
+        children.forEach((child) => {
+            this.element.after(child.element)
+            this.elements.forEach((el) => {
+                el.after(child.element.cloneNode(true))
             })
         })
         return this
@@ -724,8 +801,8 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Removes the child element at the specified index from the current `Avita` instance.
-     * @param index - The index of the child element to remove.
+     * Removes the specified `Avita` child from the current `Avita` instance.
+     * @param child - The `Avita` instance to remove.
      * @returns The current `Avita` instance for chaining.
      */
     removeChild(child: Avita<T>) {
@@ -754,26 +831,6 @@ export default class Avita<T extends HTMLTag> {
         })
 
         return this
-    }
-
-    /**
-     * Gets the value of the current `Avita` instance if it is an `HTMLInputElement`.
-     * @returns The value of the current `Avita` instance if it is an `HTMLInputElement`. Otherwise, returns an empty string.
-     */
-    value(): string | undefined
-
-    /**
-     * Sets the value of the current `Avita` instance if it is an `HTMLInputElement`.
-     * @param value - The value to set for the `HTMLInputElement`.
-     * @returns The current `Avita` instance for chaining.
-     */
-    value(value: string): this
-
-    value(value?: string): string | this | undefined {
-        if (value === undefined) {
-            return this.attr("value")
-        }
-        this.attr("value", value)
     }
 
     /**
@@ -835,26 +892,6 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Gets the placeholder text of the current `Avita` instance if it is an `HTMLInputElement`.
-     * @returns The placeholder text of the input element, or `undefined` if it is not set.
-     */
-    placeholder(): string | undefined
-
-    /**
-     * Sets the placeholder text of the current `Avita` instance if it is an `HTMLInputElement`.
-     * @param value - The placeholder text to set for the input element.
-     * @returns The current `Avita` instance for chaining.
-     */
-    placeholder(value: string): this
-
-    placeholder(value?: string): string | this | undefined {
-        if (value === undefined) {
-            return this.attr("placeholder")
-        }
-        this.attr("placeholder", value)
-    }
-
-    /**
      * Returns a new `Avita` instance with the first element from the current `Avita` instance.
      * Typically only used with `find()`.
      * @returns A new `Avita` instance with the first element.
@@ -875,47 +912,58 @@ export default class Avita<T extends HTMLTag> {
     // Event Listeners
 
     /**
-     * Attaches an event listener to the current `Avita` instance. Works with both single and multiple elements.
+     * Attaches the specified event listener to the current `Avita` instance and all its elements.
+     * This allows adding event listeners to the elements.
      * @param event - The name of the event to listen for.
      * @param callback - The callback function to be executed when the event is triggered.
+     * @param thisElement - If true, the event listener will be added to the window instead of the elements.
      * @returns The current `Avita` instance for chaining.
      */
-    on(event: string, callback: EL, thisElement?: true) {
+    on<E extends keyof HTMLElementEventMap>(
+        event: E,
+        callback: (event: HTMLElementEventMap[E]) => void,
+        thisElement?: true
+    ) {
         if (
-            (event === "onscroll" || event === "onresize") &&
+            (event === "scroll" || event === "resize") &&
             thisElement !== undefined
         ) {
-            window.addEventListener(event, callback)
+            window.addEventListener(event, callback as EventListener)
             return this
         }
-        this.element.addEventListener(event, callback)
+        this.element.addEventListener(event, callback as EventListener)
         if (this.elements.length > 0) {
             this.elements.forEach((element) => {
-                element.addEventListener(event, callback)
+                element.addEventListener(event, callback as EventListener)
             })
         }
         return this
     }
 
     /**
-     * Removes an event listener from the current `Avita` instance.
-     * Works with both single and multiple elements.
+     * Removes the specified event listener from the current `Avita` instance and all its elements.
+     * This allows removing event listeners from the elements.
      * @param event - The name of the event to remove the listener for.
-     * @param callback - The callback function to be removed.
+     * @param callback - The callback function to remove.
+     * @param thisElement - If true, the event listener will be removed from the window instead of the elements.
      * @returns The current `Avita` instance for chaining.
      */
-    off(event: string, callback: EL, thisElement?: true) {
+    off<E extends keyof HTMLElementEventMap>(
+        event: E,
+        callback: (event: HTMLElementEventMap[E]) => void,
+        thisElement?: true
+    ) {
         if (
-            (event === "onscroll" || event === "onresize") &&
+            (event === "scroll" || event === "resize") &&
             thisElement !== undefined
         ) {
-            window.removeEventListener(event, callback)
+            window.removeEventListener(event, callback as EventListener)
             return this
         }
-        this.element.removeEventListener(event, callback)
+        this.element.removeEventListener(event, callback as EventListener)
         if (this.elements.length > 0) {
             this.elements.forEach((element) => {
-                element.removeEventListener(event, callback)
+                element.removeEventListener(event, callback as EventListener)
             })
         }
         return this
@@ -925,7 +973,6 @@ export default class Avita<T extends HTMLTag> {
      * Triggers the specified event on the current `Avita` instance and all its elements.
      * This allows programmatically dispatching events on the elements.
      * @param event - The name of the event to trigger.
-     * @param options - Additional data to include in the event object.
      * @returns The current `Avita` instance for chaining.
      */
     trigger(event: string) {
@@ -959,6 +1006,42 @@ export default class Avita<T extends HTMLTag> {
     // Pseudoclasses onEventCSS methods
 
     /**
+     * Method to apply CSS for a given pseudoclass.
+     * @param pseudoClass - The pseudoclass to apply (e.g., "hover", "active").
+     * @param propsOrProperty - The CSS properties or property to apply.
+     * @param value - The value to set for the CSS property (if a single property is provided).
+     * @returns The current `Avita` instance for chaining.
+     */
+    pseudo(
+        pseudoClass: string,
+        propsOrProperty:
+            | Partial<CSSStyleDeclaration>
+            | keyof CSSStyleDeclaration,
+        value?: string
+    ) {
+        const className = this.uniqueClass()
+
+        let body = ""
+
+        if (typeof propsOrProperty === "string" && value) {
+            body = `${camelToKebab(propsOrProperty)}: ${value} !important; `
+        }
+
+        if (typeof propsOrProperty === "object") {
+            Object.entries(propsOrProperty).forEach(([prop, val]) => {
+                body += `${camelToKebab(prop)}: ${val} !important; `
+            })
+        }
+
+        const pseudoCSS = `.${className}:${pseudoClass} { ${body} } `
+
+        const avitaCSS = $(`#${CSS_ID}`)
+        avitaCSS.text(avitaCSS.text() + pseudoCSS)
+
+        return this
+    }
+
+    /**
      * Attaches a CSS hover effect to the current `Avita` instance.
      * The hover effect is defined by the provided CSS properties or a single property-value pair.
      * A unique CSS class is generated and applied to the element to scope the hover effect.
@@ -983,7 +1066,7 @@ export default class Avita<T extends HTMLTag> {
             | keyof CSSStyleDeclaration,
         value?: string
     ) {
-        return this.applyPseudoClassCSS("hover", propsOrProperty, value)
+        return this.pseudo("hover", propsOrProperty, value)
     }
 
     /**
@@ -1011,7 +1094,7 @@ export default class Avita<T extends HTMLTag> {
             | keyof CSSStyleDeclaration,
         value?: string
     ) {
-        return this.applyPseudoClassCSS("active", propsOrProperty, value)
+        return this.pseudo("active", propsOrProperty, value)
     }
 
     /**
@@ -1039,42 +1122,7 @@ export default class Avita<T extends HTMLTag> {
             | keyof CSSStyleDeclaration,
         value?: string
     ) {
-        return this.applyPseudoClassCSS("focus", propsOrProperty, value)
-    }
-
-    /**
-     * Helper method to apply CSS for a given pseudoclass.
-     * @param pseudoClass - The pseudoclass to apply (e.g., "hover", "active").
-     * @param propsOrProperty - The CSS properties or property to apply.
-     * @param value - The value to set for the CSS property (if a single property is provided).
-     * @returns The current `Avita` instance for chaining.
-     */
-    private applyPseudoClassCSS(
-        pseudoClass: string,
-        propsOrProperty:
-            | Partial<CSSStyleDeclaration>
-            | keyof CSSStyleDeclaration,
-        value?: string
-    ) {
-        const uniqueClass = generateClass()
-        this.addClass(uniqueClass)
-
-        let body = ""
-
-        if (typeof propsOrProperty === "string" && value) {
-            body = `${camelToKebab(propsOrProperty)}: ${value}!important;\n`
-        }
-
-        if (typeof propsOrProperty === "object") {
-            Object.entries(propsOrProperty).forEach(([prop, val]) => {
-                body += `${camelToKebab(prop)}: ${val}!important;\n`
-            })
-        }
-
-        const pseudoCSS = `.${uniqueClass}:${pseudoClass} {\n${body}\n}`
-        $("head").append(style(pseudoCSS))
-
-        return this
+        return this.pseudo("focus", propsOrProperty, value)
     }
 
     /**
@@ -1144,27 +1192,19 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Manually generates the CSS for a particular media query on the current `Avita` element.
-     * @param query - The media query to generate the CSS for
-     * @param props - The applied CSS properties to the media query
+     * Applies the provided CSS styles to the current Avita instance when the specified media query is true.
+     *
+     * @param query - The media query to apply the styles to.
+     * @param propsOrProperty - Either a string representing a CSS property or an object of CSS properties and values.
+     * @param value - The value to set for the CSS property if `propsOrProperty` is a string.
+     * @returns The current Avita instance for chaining.
      */
-    media(query: string, props: Partial<CSSStyleDeclaration>): this
-
-    /**
-     * Manually generates the CSS rules for a particular media query on the current `Avita` element.
-     * @param query - The media query to generate the CSS for
-     * @param property - The CSS property to apply to the media query
-     * @param value - The value to set for the CSS property
-     */
-    media(query: string, property: string, value: string): this
-
     media(
         query: string,
         propsOrProperty: Partial<CSSStyleDeclaration> | string,
         value?: string
     ) {
-        const uniqueClass = generateClass()
-        this.addClass(uniqueClass)
+        const className = this.uniqueClass()
 
         let body = ""
 
@@ -1178,28 +1218,21 @@ export default class Avita<T extends HTMLTag> {
             })
         }
 
-        let mediaQuery = `.${uniqueClass} { ${body} }`
+        let mediaQuery = `.${className} { ${body} }`
 
-        $("head").append(style().text(`@media ${query} { ${mediaQuery} }`))
+        const css = $(`#${CSS_ID}`)
+        css.text(css.text() + `@media ${query} { ${mediaQuery} } `)
 
         return this
     }
 
     /**
-     * Applies the provided CSS properties when the current viewport width is at most 640px.
-     * @param props - The CSS properties to apply to the element when the viewport width is at most 640px.
-     * @returns The current `Avita` instance for chaining.
+     * Applies the provided CSS styles to the current Avita instance when the screen width is at least 640px.
+     *
+     * @param propertyOrProps - Either a string representing a CSS property or an object of CSS properties and values.
+     * @param value - The value to set for the CSS property if `propertyOrProps` is a string.
+     * @returns The current Avita instance for chaining.
      */
-    sm(props: Partial<CSSStyleDeclaration>): this
-
-    /**
-     * Applies the provided CSS property and value when the current viewport width is at most 640px.
-     * @param property - The CSS property to apply to the element when the viewport width is at most 640px.
-     * @param value - The value to set for the CSS property
-     * @returns The current `Avita` instance for chaining.
-     */
-    sm(property: string, value: string): this
-
     sm(propertyOrProps: string | Partial<CSSStyleDeclaration>, value?: string) {
         if (typeof propertyOrProps === "string" && value) {
             this.media("(min-width: 640px)", propertyOrProps, value)
@@ -1211,20 +1244,12 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Applies the provided CSS properties when the current viewport width is at most 768px.
-     * @param props - The CSS properties to apply to the element when the viewport width is at most 768px.
-     * @returns The current `Avita` instance for chaining.
+     * Applies the provided CSS styles to the current Avita instance when the screen width is at least 768px.
+     *
+     * @param propertyOrProps - Either a string representing a CSS property or an object of CSS properties and values.
+     * @param value - The value to set for the CSS property if `propertyOrProps` is a string.
+     * @returns The current Avita instance for chaining.
      */
-    md(props: Partial<CSSStyleDeclaration>): this
-
-    /**
-     * Applies the provided CSS property and value when the current viewport width is at most 768px.
-     * @param property - The CSS property to apply to the element when the viewport width is at most 768px.
-     * @param value - The value to set for the CSS property.
-     * @returns The current `Avita` instance for chaining.
-     */
-    md(property: string, value: string): this
-
     md(propertyOrProps: string | Partial<CSSStyleDeclaration>, value?: string) {
         if (typeof propertyOrProps === "string" && value) {
             this.media("(min-width: 768px)", propertyOrProps, value)
@@ -1235,20 +1260,12 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Applies the provided CSS properties when the current viewport width is at most 1024px.
-     * @param props - The CSS properties to apply to the element when the viewport width is at most 1024px.
-     * @returns The current `Avita` instance for chaining.
+     * Applies the provided CSS styles to the current Avita instance when the screen width is at least 1024px.
+     *
+     * @param propertyOrProps - Either a string representing a CSS property or an object of CSS properties and values.
+     * @param value - The value to set for the CSS property if `propertyOrProps` is a string.
+     * @returns The current Avita instance for chaining.
      */
-    lg(props: Partial<CSSStyleDeclaration>): this
-
-    /**
-     * Applies the provided CSS property and value when the current viewport width is at most 1024px.
-     * @param property - The CSS property to apply to the element when the viewport width is at most 1024px.
-     * @param value - The value to set for the CSS property.
-     * @returns The current `Avita` instance for chaining.
-     */
-    lg(property: string, value: string): this
-
     lg(propertyOrProps: string | Partial<CSSStyleDeclaration>, value?: string) {
         if (typeof propertyOrProps === "string" && value) {
             this.media("(min-width: 1024px)", propertyOrProps, value)
@@ -1259,20 +1276,12 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Applies the provided CSS properties when the current viewport width is at most 1280px.
-     * @param props - The CSS properties to apply to the element when the viewport width is at most 1280px.
-     * @returns The current `Avita` instance for chaining.
+     * Applies the provided CSS styles to the current Avita instance when the screen width is at least 1280px.
+     *
+     * @param propertyOrProps - Either a string representing a CSS property or an object of CSS properties and values.
+     * @param value - The value to set for the CSS property if `propertyOrProps` is a string.
+     * @returns The current Avita instance for chaining.
      */
-    xl(props: Partial<CSSStyleDeclaration>): this
-
-    /**
-     * Applies the provided CSS property and value when the current viewport width is at most 1280px.
-     * @param property - The CSS property to apply to the element when the viewport width is at most 1280px.
-     * @param value - The value to set for the CSS property.
-     * @returns The current `Avita` instance for chaining.
-     */
-    xl(property: string, value: string): this
-
     xl(propertyOrProps: string | Partial<CSSStyleDeclaration>, value?: string) {
         if (typeof propertyOrProps === "string" && value) {
             this.media("(min-width: 1280px)", propertyOrProps, value)
@@ -1283,20 +1292,12 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Applies the provided CSS properties when the current viewport width is at most 1536px.
-     * @param props - The CSS properties to apply to the element when the viewport width is at most 1536px.
-     * @returns The current `Avita` instance for chaining.
+     * Applies the provided CSS styles to the current Avita instance when the screen width is at least 1536px.
+     *
+     * @param propertyOrProps - Either a string representing a CSS property or an object of CSS properties and values.
+     * @param value - The value to set for the CSS property if `propertyOrProps` is a string.
+     * @returns The current Avita instance for chaining.
      */
-    xxl(props: Partial<CSSStyleDeclaration>): this
-
-    /**
-     * Applies the provided CSS property and value when the current viewport width is at most 1536px.
-     * @param property - The CSS property to apply to the element when the viewport width is at most 1536px.
-     * @param value - The value to set for the CSS property.
-     * @returns The current `Avita` instance for chaining.
-     */
-    xxl(property: string, value: string): this
-
     xxl(
         propertyOrProps: string | Partial<CSSStyleDeclaration>,
         value?: string
@@ -1322,19 +1323,13 @@ export default class Avita<T extends HTMLTag> {
         this.element.scrollIntoView({ block, behavior })
         return this
     }
-    /**
-     * Scrolls the window to the x and y coordinates.
-     * @param y - The y coordinate to scroll to.
-     * @param x - (optional) The x coordinate to scroll to.
-     */
-    static scroll(y: number, x?: number): void
 
     /**
-     * Scrolls the window using the specified options.
-     * @param options - The y coordinate to scroll to, or an object containing options for the scroll operation.
+     * Scrolls the window to the specified position.
+     *
+     * @param yOrOptions - The vertical position to scroll to, or an object with options for the scroll operation.
+     * @param x - The horizontal position to scroll to, if `yOrOptions` is a number.
      */
-    static scroll(options: ScrollToOptions): void
-
     static scroll(yOrOptions: number | ScrollToOptions, x?: number): void {
         if (typeof yOrOptions === "number") {
             window.scroll(x || 0, yOrOptions)
@@ -1344,25 +1339,14 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Scrolls the window to the specified x and y coordinates.
-     * @param y - The y coordinate to scroll to.
-     * @param x - (optional) The x coordinate to scroll to.
-     * @returns The current `Avita` instance for chaining.
+     * Scrolls the window to the specified position.
+     *
+     * @param yOrOptions - The vertical position to scroll to, or an object with options for the scroll operation.
+     * @param x - The horizontal position to scroll to, if `yOrOptions` is a number.
+     * @returns The current `Avita` instance, allowing for method chaining.
      */
-    scroll(y: number, x?: number): void
-
-    /**
-     * Scrolls the window using the specified options
-     * @param options - The options to use for the scroll operation.
-     */
-    scroll(options: ScrollToOptions): void
-
     scroll(yOrOptions: number | ScrollToOptions, x?: number) {
-        if (x === undefined && typeof yOrOptions === "object") {
-            Avita.scroll(yOrOptions as ScrollToOptions)
-        } else if (typeof yOrOptions === "number") {
-            Avita.scroll(yOrOptions, x)
-        }
+        Avita.scroll(yOrOptions, x)
         return this
     }
 
@@ -1468,6 +1452,22 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
+     * Returns the current height of the element in the current Avita instance.
+     * @returns The current height of the element in pixels.
+     */
+    height(): number {
+        return this.element.clientHeight
+    }
+
+    /**
+     * Returns the current width of the element in the current Avita instance.
+     * @returns The current width of the element in pixels.
+     */
+    width(): number {
+        return this.element.clientWidth
+    }
+
+    /**
      * Iterates over the elements in the current Avita instance and calls the provided callback function for each element.
      * @param callback - The function to call for each element. The function will receive the Avita instance for the current element and the index of the element.
      * @returns The current Avita instance, allowing for method chaining.
@@ -1488,24 +1488,12 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Shorthand that returns the current height of the window.
-     * @returns The current height of the window in pixels.
-     */
-    static h = Avita.height
-
-    /**
      * Returns the current width of the window.
      * @returns The current width of the window in pixels.
      */
     static width(): number {
         return window.innerWidth
     }
-
-    /**
-     * Shorthand that returns the current width of the window.
-     * @returns The current width of the window in pixels.
-     */
-    static w = Avita.width
 }
 
 /**

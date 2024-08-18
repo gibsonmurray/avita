@@ -1,46 +1,13 @@
-import { $ } from "./avita"
-import { style } from "./elements"
+export const DEFAULT_STYLES = `* { box-sizing: border-box; padding: 0; margin: 0; color: inherit; } body { font-family: sans-serif; } a { cursor: pointer; text-decoration: none; } button { border: none; background: none; padding: 0; margin: 0; cursor: pointer; }`
 
-/**
- * Applies a set of default styles to the linked HTML document.
- * These styles are commonly used as a starting point for web applications to ensure consistent layout and appearance across different browsers.
- */
-export function defaultStyles() {
-    $("head").append(
-        style(`
-            * {
-                box-sizing: border-box;
-                padding: 0;
-                margin: 0;
-                color: inherit;
-            }
-
-            body {
-                font-family: sans-serif;
-            }
-
-            a {
-                cursor: pointer;
-                text-decoration: none;
-            }
-
-            button {
-                border: none;
-                background: none;
-                padding: 0;
-                margin: 0;
-                cursor: pointer;
-            }
-        `)
-    )
-}
+export const CSS_ID = "avita-css"
 
 /**
  * Generates a unique class name string.
  * @returns A unique class name string in the format `class-{randomString}`.
  */
 export function generateClass(): string {
-    return `class-${crypto.randomUUID()}`
+    return `${CSS_ID}-${crypto.randomUUID()}`
 }
 
 /**
