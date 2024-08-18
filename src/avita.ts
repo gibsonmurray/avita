@@ -11,6 +11,24 @@ export default class Avita<T extends HTMLTag> {
 
     private static avitaCSS = false
 
+    /**
+     * Creates a new instance of the Avita class.
+     * @param tag - The tag name of the HTML element to create.
+     */
+    constructor(tag: string, children?: Children<T>)
+
+    /**
+     * Creates a new instance of the Avita class.
+     * @param element - The HTML element to wrap.
+     */
+    constructor(element: T, children?: Children<T>)
+
+    /**
+     * Creates a new instance of the Avita class.
+     * @param elements - The HTML elements to wrap.
+     */
+    constructor(elements: T[], children?: Children<T>)
+
     constructor(tagOrElement: string | T | T[], children: Children<T> = []) {
         if (!Avita.avitaCSS) {
             this.createAvitaCSS()
@@ -30,7 +48,13 @@ export default class Avita<T extends HTMLTag> {
             this.element = tagOrElement
         }
         children.forEach((child) => {
-            this.avitaChildren.push(child)
+            if (Array.isArray(child)) {
+                child.forEach((grandchild) => {
+                    this.avitaChildren.push(grandchild)
+                })
+            } else {
+                this.avitaChildren.push(child)
+            }
         })
         this.updateDOMChildren(tagOrElement)
     }
@@ -267,10 +291,18 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Gets or sets the ID of the element.
-     * @param id - The new ID to set for the element, or undefined to get the current ID.
-     * @returns The Avita instance, or the current ID if no ID was provided.
+     * Gets the ID of the current Avita element.
+     * @returns The ID of the current Avita element as a string.
      */
+    id(): string
+
+    /**
+     * Sets the ID of the current `Avita` element.
+     * @param id - The new ID to set for the `Avita` element.
+     * @returns The current `Avita` instance for chaining.
+     */
+    id(id: string): this
+
     id(id?: string) {
         if (id === undefined) {
             return this.element.id
@@ -280,14 +312,18 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Gets or sets the class names of the element.
-     *
-     * If no class names are provided, this method returns the current class names as a string.
-     * If one or more class names are provided, this method adds the new class names to the element.
-     *
-     * @param classNames - The new class names to add to the element, or undefined to get the current class names.
-     * @returns The Avita instance, or the current class names if no class names were provided.
+     * Gets the CSS class(es) of the `Avita` instance.
+     * @returns The current CSS classes as a string.
      */
+    class(): string
+
+    /**
+     * Sets the CSS class(es) of the `Avita` instance, concatenating them with the existing classes.
+     * @param className - The CSS class(es) to add to the element(s).
+     * @returns The current Avita instance for chaining.
+     */
+    class(...classNames: string[]): this
+
     class(...classNames: string[]) {
         if (classNames.length === 0) {
             // Getter: Return the class names as a string
@@ -670,10 +706,18 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
+     * Gets the text content of the current element.
+     * @returns The text content of the current element.
+     */
+    text(): string
+
+    /**
      * Sets the text content of the current element and all associated elements.
      * @param value - The text content to set. If not provided, returns the current text content.
      * @returns The current Avita instance for chaining.
      */
+    text(value: string): this
+
     text(value?: string) {
         if (value === undefined) return this.element.textContent
         this.element.textContent = value
@@ -686,10 +730,18 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
-     * Sets the HTML content of the current element and all associated elements.
+     * Gets the HTML content of the current element.
+     * @returns The HTML content of the current element.
+     */
+    html(): string
+
+    /**
+     * Sets the HTML content of the current Avita instance and all associated elements.
      * @param value - The HTML content to set. If not provided, returns the current HTML content.
      * @returns The current Avita instance for chaining.
      */
+    html(value: string): this
+
     html(value?: string) {
         if (value === undefined) {
             return this.element.innerHTML
