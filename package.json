@@ -32,9 +32,7 @@
     ],
     "license": "MIT",
     "scripts": {
-        "build": "tsup",
-        "dev": "bun run index.ts",
-        "docs": "bun typedoc"
+        "build": "tsup"
     },
     "type": "module",
     "types": "dist/index.d.ts"

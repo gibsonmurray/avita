@@ -13,3 +13,4 @@ bun.lockb
 typedoc.json
 
 *.map
+.npmignore
