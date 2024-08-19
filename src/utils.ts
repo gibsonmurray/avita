@@ -1,56 +1,13 @@
-import { $ } from "./avita"
-import { style } from "./elements"
+export const DEFAULT_STYLES = `@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap'); * { box-sizing: border-box; padding: 0; margin: 0; color: inherit; } body { font-family: Inter, sans-serif; } a { cursor: pointer; text-decoration: none; } `
 
-/**
- * Applies a set of default styles to the linked HTML document.
- * These styles are commonly used as a starting point for web applications to ensure consistent layout and appearance across different browsers.
- *
- * @param body - The HTML body element to apply the default styles to.
- */
-export function defaultStyles() {
-    $("head").append(
-        style().text(`
-            * {
-                box-sizing: border-box;
-                padding: 0;
-                margin: 0;
-                color: inherit;
-            }
-
-            body {
-                font-family: sans-serif;
-            }
-
-            a {
-                cursor: pointer;
-                text-decoration: none;
-            }
-
-            button {
-                border: none;
-                background: none;
-                padding: 0;
-                margin: 0;
-                cursor: pointer;
-            }
-        `)
-    )
-}
+export const CSS_ID = "avita-css"
 
 /**
  * Generates a unique class name string.
  * @returns A unique class name string in the format `class-{randomString}`.
  */
 export function generateClass(): string {
-    return `class-${Math.random().toString(36).substring(2, 15)}`
-}
-
-/**
- * Generates a unique identifier string.
- * @returns A unique identifier string in the format `id-{random_string}`.
- */
-export function generateId(): string {
-    return `id-${Math.random().toString(36).substring(2, 15)}`
+    return `${CSS_ID}-${crypto.randomUUID()}`
 }
 
 /**

@@ -1,16 +1,17 @@
+import type { HTMLTag } from "./avita"
 import Avita, { $ } from "./avita"
 import { div } from "./elements"
 
 export default class AvitaRouter {
     private routes: {
         [path: string]: {
-            element: Avita<HTMLElement | SVGElement>
+            element: () => Avita<HTMLTag>
             title?: string
         }
     } = {}
-    private root: Avita<HTMLElement | SVGElement> | null = null
+    private root: Avita<HTMLTag> | null = null
     private notFoundPath: {
-        element: Avita<HTMLElement | SVGElement>
+        element: () => Avita<HTMLTag>
         title?: string
     } | null = null
 
@@ -39,11 +40,7 @@ export default class AvitaRouter {
      * @param path - The URL path to associate with the Avita element.
      * @param avitaElement - The Avita element to render when the specified path is navigated to.
      */
-    register(
-        path: string,
-        avitaElement: Avita<HTMLElement | SVGElement>,
-        title?: string
-    ) {
+    register(path: string, avitaElement: () => Avita<HTMLTag>, title?: string) {
         this.routes[path] = { element: avitaElement, title: title }
     }
 
@@ -51,7 +48,7 @@ export default class AvitaRouter {
      * Sets the not found path for the router.
      * @param avitaElement - The Avita element to render when a route is not found.
      */
-    setNotFound(avitaElement: Avita<HTMLElement | SVGElement>, title?: string) {
+    setNotFound(avitaElement: () => Avita<HTMLTag>, title?: string) {
         this.notFoundPath = { element: avitaElement, title: title }
     }
 
@@ -73,11 +70,11 @@ export default class AvitaRouter {
         const route = this.routes[path]
         if (route) {
             this.clearRoot()
-            Avita.render(route.element)
+            Avita.render(route.element())
             document.title = route.title || path
         } else if (this.notFoundPath) {
             this.clearRoot()
-            Avita.render(this.notFoundPath.element)
+            Avita.render(this.notFoundPath.element())
             document.title = this.notFoundPath.title || "Not Found"
         } else {
             this.displayError(`No route found for path: ${path}`)
@@ -97,7 +94,7 @@ export default class AvitaRouter {
      * @param message - The error message to display.
      */
     private displayError(message: string) {
-        const errorElement = div().text(message)
+        const errorElement = div(message)
         Avita.render(errorElement)
     }
 }

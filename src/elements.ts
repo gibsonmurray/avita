@@ -1,1021 +1,1066 @@
+import type { HTMLTag, Children } from "./avita"
 import Avita from "./avita"
+
+export function element<T extends HTMLTag>(
+    tag: string,
+    children: Children<T>
+): Avita<HTMLTag> {
+    return new Avita(tag, children)
+}
 
 /**
  * Creates A new `Avita<div>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLDivElement>} A new Avita wrapped `div>` element.
+ * @param {Children<T>} children - The children of the `div` element.
+ * @returns {Avita<HTMLTag>} A new Avita wrapped `div>` element.
  */
-export function div(): Avita<HTMLDivElement> {
-    return new Avita<HTMLDivElement>("div")
+export function div<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("div", children) 
 }
 
 /**
- * Creates A new `Avita<span>` element. Has properties of AvitaElement
+ * Creates a new `Avita<span>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLSpanElement>} A new `Avita<span>` element.
+ * @param {Children<T>} children - The children of the `span` element.
+ * @returns {Avita<HTMLTag>} A new Avita wrapped `span>` element.
  */
-export function span(): Avita<HTMLSpanElement> {
-    return new Avita<HTMLSpanElement>("span")
+export function span<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("span", children)
 }
 
 /**
- * Creates A new `Avita<button>` element. Has properties of AvitaElement
+ * Creates a new `Avita<button>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLButtonElement>} A new `Avita<button>` element.
+ * @param {Children<T>} children - The children of the `button` element.
+ * @returns {Avita<HTMLTag>} A new Avita wrapped `button>` element.
  */
-export function button(): Avita<HTMLButtonElement> {
-    return new Avita<HTMLButtonElement>("button")
+export function button<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("button", children)
 }
 
 /**
- * Creates A new `Avita<input>` element. Has properties of AvitaElement
+ * Creates a new `Avita<input>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLInputElement>} A new `Avita<input>` element.
+ * @param {Children<T>} children - The children of the `input` element.
+ * @returns {Avita<HTMLTag>} A new Avita wrapped `input>` element.
  */
-export function input(): Avita<HTMLInputElement> {
-    return new Avita<HTMLInputElement>("input")
+export function input<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("div", children)
 }
 
-/**
- * Creates A new `Avita<h1>` element. Has properties of AvitaElement
- * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLHeadingElement>} A new `Avita<h1>` element.
- */
-export function h1(): Avita<HTMLHeadingElement> {
-    return new Avita<HTMLHeadingElement>("h1")
+export function h1<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("h1", children)
 }
 
 /**
  * Creates A new `Avita<h2>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLHeadingElement>} A new `Avita<h2>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<h2>` element.
  */
-export function h2(): Avita<HTMLHeadingElement> {
-    return new Avita<HTMLHeadingElement>("h2")
+export function h2<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("h2", children)
 }
 
 /**
  * Creates A new `Avita<h3>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLHeadingElement>} A new `Avita<h3>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<h3>` element.
  */
-export function h3(): Avita<HTMLHeadingElement> {
-    return new Avita<HTMLHeadingElement>("h3")
+export function h3<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("h3", children)
 }
 
 /**
  * Creates A new `Avita<h4>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLHeadingElement>} A new `Avita<h4>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<h4>` element.
  */
-export function h4(): Avita<HTMLHeadingElement> {
-    return new Avita<HTMLHeadingElement>("h4")
+export function h4<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("h4", children)
 }
 
 /**
  * Creates A new `Avita<h5>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLHeadingElement>} A new `Avita<h5>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<h5>` element.
  */
-export function h5(): Avita<HTMLHeadingElement> {
-    return new Avita<HTMLHeadingElement>("h5")
+export function h5<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("h5", children)
 }
 
 /**
  * Creates A new `Avita<h6>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLHeadingElement>} A new `Avita<h6>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<h6>` element.
  */
-export function h6(): Avita<HTMLHeadingElement> {
-    return new Avita<HTMLHeadingElement>("h6")
+export function h6<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("h6", children)
 }
 
 /**
  * Creates A new `Avita<p>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLParagraphElement>} A new `Avita<p>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<p>` element.
  */
-export function p(): Avita<HTMLParagraphElement> {
-    return new Avita<HTMLParagraphElement>("p")
+export function p<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("p", children)
 }
 
 /**
  * Creates A new `Avita<ul>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLUListElement>} A new `Avita<ul>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<ul>` element.
  */
-export function ul(): Avita<HTMLUListElement> {
-    return new Avita<HTMLUListElement>("ul")
+export function ul<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("ul", children)
 }
 
 /**
  * Creates A new `Avita<ol>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLOListElement>} A new `Avita<ol>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<ol>` element.
  */
-export function ol(): Avita<HTMLOListElement> {
-    return new Avita<HTMLOListElement>("ol")
+export function ol<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("ol", children)
 }
 
 /**
  * Creates A new `Avita<li>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLLIElement>} A new `Avita<li>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<li>` element.
  */
-export function li(): Avita<HTMLLIElement> {
-    return new Avita<HTMLLIElement>("li")
+export function li<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("li", children)
 }
 
 /**
  * Creates A new `Avita<img>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLImageElement>} A new `Avita<img>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<img>` element.
  */
-export function img(): Avita<HTMLImageElement> {
-    return new Avita<HTMLImageElement>("img")
+export function img<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("img", children)
 }
 
 /**
  * Creates A new `Avita<iframe>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLIFrameElement>} A new `Avita<iframe>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<iframe>` element.
  */
-export function iframe(): Avita<HTMLIFrameElement> {
-    return new Avita<HTMLIFrameElement>("iframe")
+export function iframe<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("iframe", children)
 }
 
 /**
  * Creates A new `Avita<a>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLAnchorElement>} A new `Avita<a>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<a>` element.
  */
-export function a(): Avita<HTMLAnchorElement> {
-    return new Avita<HTMLAnchorElement>("a")
+export function a<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("a", children)
 }
 
 /**
  * Creates A new `Avita<form>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLFormElement>} A new `Avita<form>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<form>` element.
  */
-export function form(): Avita<HTMLFormElement> {
-    return new Avita<HTMLFormElement>("form")
+export function form<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("form", children)
 }
 
 /**
  * Creates A new `Avita<input>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLLabelElement>} A new `Avita<input>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<input>` element.
  */
-export function label(): Avita<HTMLLabelElement> {
-    return new Avita<HTMLLabelElement>("label")
+export function label<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("label", children)
 }
 
 /**
  * Creates A new `Avita<textarea>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLTextAreaElement>} A new `Avita<textarea>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<textarea>` element.
  */
-export function textarea(): Avita<HTMLTextAreaElement> {
-    return new Avita<HTMLTextAreaElement>("textarea")
+export function textarea<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("textarea", children)
 }
 
 /**
  * Creates A new `Avita<select>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLSelectElement>} A new `Avita<select>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<select>` element.
  */
-export function select(): Avita<HTMLSelectElement> {
-    return new Avita<HTMLSelectElement>("select")
+export function select<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("select", children)
 }
 
 /**
  * Creates A new `Avita<option>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLOptionElement>} A new `Avita<option>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<option>` element.
  */
-export function option(): Avita<HTMLOptionElement> {
-    return new Avita<HTMLOptionElement>("option")
+export function option<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("option", children)
 }
 
 /**
  * Creates A new `Avita<table>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLTableElement>} A new `Avita<table>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<table>` element.
  */
-export function table(): Avita<HTMLTableElement> {
-    return new Avita<HTMLTableElement>("table")
+export function table<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("table", children)
 }
 
 /**
  * Creates A new `Avita<thead>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLTableSectionElement>} A new `Avita<thead>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<thead>` element.
  */
-export function thead(): Avita<HTMLTableSectionElement> {
-    return new Avita<HTMLTableSectionElement>("thead")
+export function thead<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("thead", children)
 }
 
 /**
  * Creates A new `Avita<tbody>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLTableSectionElement>} A new `Avita<tbody>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<tbody>` element.
  */
-export function tbody(): Avita<HTMLTableSectionElement> {
-    return new Avita<HTMLTableSectionElement>("tbody")
+export function tbody<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("tbody", children)
 }
 
 /**
  * Creates A new `Avita<tr>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLTableRowElement>} A new `Avita<tr>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<tr>` element.
  */
-export function tr(): Avita<HTMLTableRowElement> {
-    return new Avita<HTMLTableRowElement>("tr")
+export function tr<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("tr", children)
 }
 
 /**
  * Creates A new `Avita<th>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLTableCellElement>} A new `Avita<th>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<th>` element.
  */
-export function th(): Avita<HTMLTableCellElement> {
-    return new Avita<HTMLTableCellElement>("th")
+export function th<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("th", children)
 }
 
 /**
  * Creates A new `Avita<td>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLTableCellElement>} A new `Avita<td>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<td>` element.
  */
-export function td(): Avita<HTMLTableCellElement> {
-    return new Avita<HTMLTableCellElement>("td")
+export function td<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("td", children)
 }
 
 /**
  * Creates A new `Avita<nav>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<nav>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<nav>` element.
  */
-export function nav(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("nav")
+export function nav<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("nav", children)
 }
 
 /**
  * Creates A new `Avita<header>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<header>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<header>` element.
  */
-export function header(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("header")
+export function header<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("header", children)
 }
 
 /**
  * Creates A new `Avita<footer>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<footer>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<footer>` element.
  */
-export function footer(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("footer")
+export function footer<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("footer", children)
 }
 
 /**
  * Creates A new `Avita<section>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<section>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<section>` element.
  */
-export function section(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("section")
+export function section<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("section", children)
 }
 
 /**
  * Creates A new `Avita<article>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<article>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<article>` element.
  */
-export function article(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("article")
+export function article<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("article", children)
 }
 
 /**
  * Creates A new `Avita<aside>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<aside>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<aside>` element.
  */
-export function aside(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("aside")
+export function aside<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("aside", children)
 }
 
 /**
  * Creates A new `Avita<main>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<main>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<main>` element.
  */
-export function main(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("main")
+export function main<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("main", children)
 }
 
 /**
  * Creates A new `Avita<figure>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<figure>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<figure>` element.
  */
-export function figure(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("figure")
+export function figure<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("figure", children)
 }
 
 /**
  * Creates A new `Avita<figcaption>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<figcaption>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<figcaption>` element.
  */
-export function figcaption(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("figcaption")
+export function figcaption<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("figcaption", children)
 }
 
 /**
  * Creates A new `Avita<video>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLVideoElement>} A new `Avita<video>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<video>` element.
  */
-export function video(): Avita<HTMLVideoElement> {
-    return new Avita<HTMLVideoElement>("video")
+export function video<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("video", children)
 }
 
 /**
  * Creates A new `Avita<audio>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLAudioElement>} A new `Avita<audio>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<audio>` element.
  */
-export function audio(): Avita<HTMLAudioElement> {
-    return new Avita<HTMLAudioElement>("audio")
+export function audio<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("audio", children)
 }
 
 /**
  * Creates A new `Avita<source>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLSourceElement>} A new `Avita<source>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<source>` element.
  */
-export function source(): Avita<HTMLSourceElement> {
-    return new Avita<HTMLSourceElement>("source")
+export function source<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("source", children)
 }
 
 /**
  * Creates A new `Avita<embed>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLEmbedElement>} A new `Avita<embed>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<embed>` element.
  */
-export function embed(): Avita<HTMLEmbedElement> {
-    return new Avita<HTMLEmbedElement>("embed")
+export function embed<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("embed", children)
 }
 
 /**
  * Creates A new `Avita<object>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLObjectElement>} A new `Avita<object>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<object>` element.
  */
-export function object(): Avita<HTMLObjectElement> {
-    return new Avita<HTMLObjectElement>("object")
+export function object<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("object", children)
 }
 
 /**
  * Creates A new `Avita<style>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLStyleElement>} A new `Avita<style>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<style>` element.
  */
-export function style(): Avita<HTMLStyleElement> {
-    return new Avita<HTMLStyleElement>("style")
+export function style<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("style", children)
 }
 
 /**
  * Creates A new `Avita<head>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLHeadElement>} A new `Avita<head>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<head>` element.
  */
-export function head(): Avita<HTMLHeadElement> {
-    return new Avita<HTMLHeadElement>("head")
+export function head<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("head", children)
 }
 
 /**
  * Creates A new `Avita<link>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLLinkElement>} A new `Avita<link>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<link>` element.
  */
-export function link(): Avita<HTMLLinkElement> {
-    return new Avita<HTMLLinkElement>("link")
+export function link<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("link", children)
 }
 
 /**
  * Creates A new `Avita<meta>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLMetaElement>} A new `Avita<meta>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<meta>` element.
  */
-export function meta(): Avita<HTMLMetaElement> {
-    return new Avita<HTMLMetaElement>("meta")
+export function meta<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("meta", children)
 }
 
 /**
  * Creates A new `Avita<title>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLTitleElement>} A new `Avita<title>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<title>` element.
  */
-export function title(): Avita<HTMLTitleElement> {
-    return new Avita<HTMLTitleElement>("title")
+export function title<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("title", children)
 }
 
 /**
  * Creates A new `Avita<base>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLBaseElement>} A new `Avita<base>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<base>` element.
  */
-export function base(): Avita<HTMLBaseElement> {
-    return new Avita<HTMLBaseElement>("base")
+export function base<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("base", children)
 }
 
 /**
  * Creates A new `Avita<script>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLScriptElement>} A new `Avita<script>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<script>` element.
  */
-export function script(): Avita<HTMLScriptElement> {
-    return new Avita<HTMLScriptElement>("script")
+export function script<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("script", children)
 }
 
 /**
  * Creates A new `Avita<noscript>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<noscript>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<noscript>` element.
  */
-export function noscript(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("noscript")
+export function noscript<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("noscript", children)
 }
 
 /**
  * Creates A new `Avita<template>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLTemplateElement>} A new `Avita<template>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<template>` element.
  */
-export function template(): Avita<HTMLTemplateElement> {
-    return new Avita<HTMLTemplateElement>("template")
+export function template<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("template", children)
 }
 
 /**
  * Creates A new `Avita<html>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation. Why would this be made? It exists because it can.
- * @returns {Avita<HTMLHtmlElement>} A new `Avita<html>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<html>` element.
  */
-export function html(): Avita<HTMLHtmlElement> {
-    return new Avita<HTMLHtmlElement>("html")
+export function html<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("html", children)
 }
 
 /**
  * Creates A new `Avita<body>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation. No clue why u would need this.
- * @returns {Avita<HTMLBodyElement>} A new `Avita<body>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<body>` element.
  */
-export function body(): Avita<HTMLBodyElement> {
-    return new Avita<HTMLBodyElement>("body")
+export function body<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("body", children)
 }
 
 /**
  * Creates a new `Avita<i>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<i>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<i>` element.
  */
-export function i(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("i")
+export function i<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("i", children)
 }
 
 /**
  * Creates a new `Avita<b>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<b>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<b>` element.
  */
-export function b(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("b")
+export function b<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("b", children)
 }
 
 /**
  * Creates a new `Avita<br>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLBRElement>} A new `Avita<br>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<br>` element.
  */
-export function br(): Avita<HTMLBRElement> {
-    return new Avita<HTMLBRElement>("br")
+export function br<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("br", children)
 }
 
 /**
  * Creates a new `Avita<hr>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLHRElement>} A new `Avita<hr>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<hr>` element.
  */
-export function hr(): Avita<HTMLHRElement> {
-    return new Avita<HTMLHRElement>("hr")
+export function hr<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("hr", children)
 }
 
 /**
  * Creates a new `Avita<sup>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<sup>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<sup>` element.
  */
-export function sup(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("sup")
+export function sup<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("sup", children)
 }
 
 /**
  * Creates a new `Avita<sub>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<sub>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<sub>` element.
  */
-export function sub(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("sub")
+export function sub<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("sub", children)
 }
 
 /**
  * Creates a new `Avita<em>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<em>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<em>` element.
  */
-export function em(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("em")
+export function em<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("em", children)
 }
 
 /**
  * Creates a new `Avita<strong>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<strong>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<strong>` element.
  */
-export function strong(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("strong")
+export function strong<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("strong", children)
 }
 
 /**
  * Creates a new `Avita<kbd>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<kbd>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<kbd>` element.
  */
-export function kbd(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("kbd")
+export function kbd<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("kbd", children)
 }
 
 /**
  * Creates a new `Avita<code>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<code>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<code>` element.
  */
-export function code(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("code")
+export function code<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("code", children)
 }
 
 /**
  * Creates a new `Avita<samp>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<samp>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<samp>` element.
  */
-export function samp(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("samp")
+export function samp<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("samp", children)
 }
 
 /**
  * Creates a new `Avita<cite>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<cite>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<cite>` element.
  */
-export function cite(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("cite")
+export function cite<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("cite", children)
 }
 
 /**
  * Creates a new `Avita<var>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<var>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<var>` element.
  */
-export function varElement(): Avita<HTMLElement> {
+export function varElement<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
     // 'var' is a reserved keyword
-    return new Avita<HTMLElement>("var")
+    return element("var", children)
 }
 
 /**
  * Creates a new `Avita<big>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<big>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<big>` element.
  */
-export function big(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("big")
+export function big<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("big", children)
 }
 
 /**
  * Creates a new `Avita<small>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<small>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<small>` element.
  */
-export function small(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("small")
+export function small<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("small", children)
 }
 
 /**
  * Creates a new `Avita<dfn>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<dfn>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<dfn>` element.
  */
-export function dfn(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("dfn")
+export function dfn<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("dfn", children)
 }
 
 /**
  * Creates a new `Avita<abbr>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLElement>} A new `Avita<abbr>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<abbr>` element.
  */
-export function abbr(): Avita<HTMLElement> {
-    return new Avita<HTMLElement>("abbr")
+export function abbr<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("abbr", children)
 }
 
 /**
  * Creates a new `Avita<blockquote>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLQuoteElement>} A new `Avita<blockquote>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<blockquote>` element.
  */
-export function blockquote(): Avita<HTMLQuoteElement> {
-    return new Avita<HTMLQuoteElement>("blockquote")
+export function blockquote<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("blockquote", children)
 }
 
 /**
  * Creates a new `Avita<q>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLQuoteElement>} A new `Avita<q>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<q>` element.
  */
-export function q(): Avita<HTMLQuoteElement> {
-    return new Avita<HTMLQuoteElement>("q")
+export function q<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("q", children)
 }
 
 /**
  * Creates a new `Avita<time>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLTimeElement>} A new `Avita<time>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<time>` element.
  */
-export function time(): Avita<HTMLTimeElement> {
-    return new Avita<HTMLTimeElement>("time")
+export function time<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("time", children)
 }
 
 /**
  * Creates a new `Avita<pre>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLPreElement>} A new `Avita<pre>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<pre>` element.
  */
-export function pre(): Avita<HTMLPreElement> {
-    return new Avita<HTMLPreElement>("pre")
+export function pre<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("pre", children)
 }
 
 /**
  * Creates a new `Avita<map>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLMapElement>} A new `Avita<map>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<map>` element.
  */
-export function map(): Avita<HTMLMapElement> {
-    return new Avita<HTMLMapElement>("map")
+export function map<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("map", children)
 }
 
 /**
  * Creates a new `Avita<area>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLAreaElement>} A new `Avita<area>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<area>` element.
  */
-export function area(): Avita<HTMLAreaElement> {
-    return new Avita<HTMLAreaElement>("area")
+export function area<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("area", children)
 }
 
 /**
  * Creates a new `Avita<canvas>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<HTMLCanvasElement>} A new `Avita<canvas>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<canvas>` element.
  */
-export function canvas(): Avita<HTMLCanvasElement> {
-    return new Avita<HTMLCanvasElement>("canvas")
+export function canvas<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("canvas", children)
 }
 
 /**
  * Creates a new `Avita<svg>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGSVGElement>} A new `Avita<svg>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<svg>` element.
  */
-export function svg(): Avita<SVGSVGElement> {
-    return new Avita<SVGSVGElement>("svg")
+export function svg<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("svg", children)
 }
 
 /**
  * Creates a new `Avita<path>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGPathElement>} A new `Avita<path>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<path>` element.
  */
-export function path(): Avita<SVGPathElement> {
-    return new Avita<SVGPathElement>("path")
+export function path<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("path", children)
 }
 
 /**
- * Creates a new `Avita<SVGRectElement>` element. Has properties of AvitaElement
+ * Creates a new `Avita<HTMLTag>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGRectElement>} A new `Avita<rect>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<rect>` element.
  */
-export function rect(): Avita<SVGRectElement> {
-    return new Avita<SVGRectElement>("rect")
+export function rect<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("rect", children)
 }
 
 /**
- * Creates a new `Avita<SVGCircleElement>` element. Has properties of AvitaElement
+ * Creates a new `Avita<HTMLTag>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGCircleElement>} A new `Avita<SVGCircleElement>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<HTMLTag>` element.
  */
-export function circle(): Avita<SVGCircleElement> {
-    return new Avita<SVGCircleElement>("circle")
+export function circle<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("circle", children)
 }
 
 /**
- * Creates a new `Avita<SVGEllipseElement>` element. Has properties of AvitaElement
+ * Creates a new `Avita<HTMLTag>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGEllipseElement>} A new `Avita<ellipse>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<ellipse>` element.
  */
-export function ellipse(): Avita<SVGEllipseElement> {
-    return new Avita<SVGEllipseElement>("ellipse")
+export function ellipse<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("ellipse", children)
 }
 /**
  * Creates a new `Avita<line>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGLineElement>} A new `Avita<line>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<line>` element.
  */
-export function line(): Avita<SVGLineElement> {
-    return new Avita<SVGLineElement>("line")
+export function line<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("line", children)
 }
 
 /**
  * Creates a new `Avita<polygon>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGPolygonElement>} A new `Avita<polygon>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<polygon>` element.
  */
-export function polygon(): Avita<SVGPolygonElement> {
-    return new Avita<SVGPolygonElement>("polygon")
+export function polygon<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("polygon", children)
 }
 
 /**
  * Creates a new `Avita<polyline>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGPolylineElement>} A new `Avita<polyline>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<polyline>` element.
  */
-export function polyline(): Avita<SVGPolylineElement> {
-    return new Avita<SVGPolylineElement>("polyline")
+export function polyline<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("polyline", children)
 }
 
 /**
- * Creates a new `Avita<SVGTextElement>` element. Has properties of AvitaElement
+ * Creates a new `Avita<HTMLTag>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGTextElement>} A new `Avita<text>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<text>` element.
  */
-export function text(): Avita<SVGTextElement> {
-    return new Avita<SVGTextElement>("text")
+export function text<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("text", children)
 }
 
 /**
- * Creates a new `Avita<SVGTextPathElement>` element. Has properties of AvitaElement
+ * Creates a new `Avita<HTMLTag>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGTextPathElement>} A new `Avita<textPath>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<textPath>` element.
  */
-export function textPath(): Avita<SVGTextPathElement> {
-    return new Avita<SVGTextPathElement>("textPath")
+export function textPath<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("textPath", children)
 }
 
 /**
  * Creates a new `Avita<marker>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGMarkerElement>} A new `Avita<marker>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<marker>` element.
  */
-export function marker(): Avita<SVGMarkerElement> {
-    return new Avita<SVGMarkerElement>("marker")
+export function marker<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("marker", children)
 }
 
 /**
- * Creates a new `Avita<SVGGElement>` element. Has properties of AvitaElement
+ * Creates a new `Avita<HTMLTag>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGGElement>} A new `Avita<g>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<symbol>` element.
  */
-export function g(): Avita<SVGGElement> {
-    return new Avita<SVGGElement>("g")
+export function symbol<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("symbol", children)
 }
 
 /**
- * Creates a new `Avita<defs>` element. Has properties of AvitaElement
+ * Creates a new `Avita<HTMLTag>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGDefsElement>} A new `Avita<defs>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<image>` element.
  */
-export function defs(): Avita<SVGDefsElement> {
-    return new Avita<SVGDefsElement>("defs")
-}
-
-/**
- * Creates a new `Avita<SVGUseElement>` element. Has properties of AvitaElement
- * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGUseElement>} A new `Avita<use>` element.
- */
-export function use(): Avita<SVGUseElement> {
-    return new Avita<SVGUseElement>("use")
-}
-
-/**
- * Creates a new `Avita<SVGSymbolElement>` element. Has properties of AvitaElement
- * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGSymbolElement>} A new `Avita<symbol>` element.
- */
-export function symbol(): Avita<SVGSymbolElement> {
-    return new Avita<SVGSymbolElement>("symbol")
-}
-
-/**
- * Creates a new `Avita<SVGImageElement>` element. Has properties of AvitaElement
- * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGImageElement>} A new `Avita<image>` element.
- */
-export function image(): Avita<SVGImageElement> {
-    return new Avita<SVGImageElement>("image")
+export function image<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("image", children)
 }
 
 /**
  * Creates a new `Avita<clipPath>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGClipPathElement>} A new `Avita<clipPath>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<clipPath>` element.
  */
-export function clipPath(): Avita<SVGClipPathElement> {
-    return new Avita<SVGClipPathElement>("clipPath")
+export function clipPath<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("clipPath", children)
 }
 
 /**
- * Creates a new `Avita<SVGMaskElement>` element. Has properties of AvitaElement
+ * Creates a new `Avita<HTMLTag>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGMaskElement>} A new `Avita<mask>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<mask>` element.
  */
-export function mask(): Avita<SVGMaskElement> {
-    return new Avita<SVGMaskElement>("mask")
+export function mask<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("mask", children)
 }
 
 /**
- * Creates a new `Avita<SVGPatternElement>` element. Has properties of AvitaElement
+ * Creates a new `Avita<HTMLTag>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGPatternElement>} A new `Avita<pattern>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<pattern>` element.
  */
-export function pattern(): Avita<SVGPatternElement> {
-    return new Avita<SVGPatternElement>("pattern")
+export function pattern<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("pattern", children)
 }
 
 /**
- * Creates a new `Avita<SVGFilterElement>` element. Has properties of AvitaElement
+ * Creates a new `Avita<HTMLTag>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGFilterElement>} A new `Avita<filter>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<filter>` element.
  */
-export function filter(): Avita<SVGFilterElement> {
-    return new Avita<SVGFilterElement>("filter")
+export function filter<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("filter", children)
 }
 
 /**
- * Creates a new `Avita<SVGLinearGradientElement>` element. Has properties of AvitaElement
+ * Creates a new `Avita<HTMLTag>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGLinearGradientElement>} A new `Avita<linearGradient>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<linearGradient>` element.
  */
-export function linearGradient(): Avita<SVGLinearGradientElement> {
-    return new Avita<SVGLinearGradientElement>("linearGradient")
-}
-/**
- * Creates a new `Avita<SVGRadialGradientElement>` element. Has properties of AvitaElement
- * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGRadialGradientElement>} A new `Avita<radialGradient>` element.
- */
-export function radialGradient(): Avita<SVGRadialGradientElement> {
-    return new Avita<SVGRadialGradientElement>("radialGradient")
-}
-/**
- * Creates a new `Avita<SVGStopElement>` element. Has properties of AvitaElement
- * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGStopElement>} A new `Avita<stop>` element.
- */
-export function stop(): Avita<SVGStopElement> {
-    return new Avita<SVGStopElement>("stop")
+export function linearGradient<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("linearGradient", children)
 }
 
 /**
- * Creates a new `Avita<SVGSetElement>` element. Has properties of AvitaElement
+ * Creates a new `Avita<HTMLTag>` element. Has properties of AvitaElement
  * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGSetElement>} A new `Avita<set>` element.
+ * @returns {Avita<HTMLTag>} A new `Avita<radialGradient>` element.
  */
-export function set(): Avita<SVGSetElement> {
-    return new Avita<SVGSetElement>("set")
-}
-/**
- * Creates a new `Avita<SVGAnimateElement>` element. Has properties of AvitaElement
- * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGAnimateElement>} A new `Avita<animate>` element.
- */
-export function animate(): Avita<SVGAnimateElement> {
-    return new Avita<SVGAnimateElement>("animate")
-}
-
-/**
- * Creates a new `Avita<SVGAnimateMotionElement>` element. Has properties of AvitaElement
- * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGAnimateMotionElement>} A new `Avita<animateMotion>` element.
- */
-export function animateMotion(): Avita<SVGAnimateMotionElement> {
-    return new Avita<SVGAnimateMotionElement>("animateMotion")
-}
-/**
- * Creates a new `Avita<SVGAnimateTransformElement>` element. Has properties of AvitaElement
- * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGAnimateTransformElement>} A new `Avita<animateTransform>` element.
- */
-export function animateTransform(): Avita<SVGAnimateTransformElement> {
-    return new Avita<SVGAnimateTransformElement>("animateTransform")
-}
-
-/**
- * Creates a new `Avita<SVGMPathElement>` element. Has properties of AvitaElement
- * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGMPathElement>} A new `Avita<mpath>` element.
- */
-export function mpath(): Avita<SVGMPathElement> {
-    return new Avita<SVGMPathElement>("mpath")
-}
-
-/**
- * Creates a new `Avita<SVGFEDropShadowElement>` element. Has properties of AvitaElement
- * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGFEDropShadowElement>} A new `Avita<feDropShadow>` element.
- */
-export function feDropShadow(): Avita<SVGFEDropShadowElement> {
-    return new Avita<SVGFEDropShadowElement>("feDropShadow")
-}
-
-/**
- * Creates a new `Avita<SVGFEOffsetElement>` element. Has properties of AvitaElement
- * to allow for seamless DOM manipulation.
- * @returns {Avita<SVGFEOffsetElement>} A new `Avita<feOffset>` element.
- */
-export function feOffset(): Avita<SVGFEOffsetElement> {
-    return new Avita<SVGFEOffsetElement>("feOffset")
-}
-
-// Custom Elements
-
-/**
- * Creates a new `Avita<HTMLDivElement>` element with a vertical stack layout.
- * @param align - The alignment of the stack, defaults to "center".
- * @returns A new `Avita<HTMLDivElement>` element with a vertical stack layout.
- */
-export function vstack(
-    align:
-        | "top"
-        | "center"
-        | "bottom"
-        | "left"
-        | "right"
-        | "between"
-        | "around"
-        | "evenly" = "center"
-): Avita<HTMLDivElement> {
-    return new Avita<HTMLDivElement>("div").vstack(align)
-}
-
-/**
- * Creates a new `Avita<HTMLDivElement>` element with a horizontal stack layout.
- * @param align - The alignment of the stack, defaults to "center".
- * @returns A new `Avita<HTMLDivElement>` element with a horizontal stack layout.
- */
-export function hstack(
-    align:
-        | "top"
-        | "center"
-        | "bottom"
-        | "left"
-        | "right"
-        | "between"
-        | "around"
-        | "evenly" = "center"
-): Avita<HTMLDivElement> {
-    return new Avita<HTMLDivElement>("div").hstack(align)
-}
-
-/**
- * Creates a new `Avita<HTMLDivElement>` element with a stacked layout along the z-axis.
- * @param align - The alignment of the stack, defaults to "center".
- * @returns A new `Avita<HTMLDivElement>` element with a z-axis stack layout.
- */
-export function zstack(
-    align:
-        | "top"
-        | "center"
-        | "bottom"
-        | "left"
-        | "right"
-        | "between"
-        | "around"
-        | "evenly" = "center"
-): Avita<HTMLDivElement> {
-    return new Avita<HTMLDivElement>("div").zstack(align)
+export function radialGradient<T extends HTMLTag>(
+    ...children: Children<T>
+): Avita<HTMLTag> {
+    return element("radialGradient", children)
 }
 
 // interface HTMLElementTagNameMap {
