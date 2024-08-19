@@ -87,7 +87,7 @@ export function li(idAndClass?: string) {
 }
 
 export function img(idAndClass?: string) {
-    return element("img", idAndClass)
+    return element("img", idAndClass)()
 }
 
 export function iframe(idAndClass?: string) {
@@ -107,7 +107,7 @@ export function label(idAndClass?: string) {
 }
 
 export function textarea(idAndClass?: string) {
-    return element("textarea", idAndClass)
+    return element("textarea", idAndClass)()
 }
 
 export function select(idAndClass?: string) {
@@ -187,11 +187,15 @@ export function audio(idAndClass?: string) {
 }
 
 export function source(idAndClass?: string) {
-    return element("source", idAndClass)
+    return element("source", idAndClass)()
 }
 
 export function embed(idAndClass?: string) {
-    return element("embed", idAndClass)
+    return element("embed", idAndClass)()
+}
+
+export function track(idAndClass?: string) {
+    return element("track", idAndClass)()
 }
 
 export function object(idAndClass?: string) {
@@ -207,11 +211,11 @@ export function head(idAndClass?: string) {
 }
 
 export function link(idAndClass?: string) {
-    return element("link", idAndClass)
+    return element("link", idAndClass)()
 }
 
 export function meta(idAndClass?: string) {
-    return element("meta", idAndClass)
+    return element("meta", idAndClass)()
 }
 
 export function title(idAndClass?: string) {
@@ -219,7 +223,7 @@ export function title(idAndClass?: string) {
 }
 
 export function base(idAndClass?: string) {
-    return element("base", idAndClass)
+    return element("base", idAndClass)()
 }
 
 export function script(idAndClass?: string) {
@@ -251,11 +255,11 @@ export function b(idAndClass?: string) {
 }
 
 export function br(idAndClass?: string) {
-    return element("br", idAndClass)
+    return element("br", idAndClass)()
 }
 
 export function hr(idAndClass?: string) {
-    return element("hr", idAndClass)
+    return element("hr", idAndClass)()
 }
 
 export function sup(idAndClass?: string) {
@@ -280,6 +284,10 @@ export function kbd(idAndClass?: string) {
 
 export function code(idAndClass?: string) {
     return element("code", idAndClass)
+}
+
+export function col(idAndClass?: string) {
+    return element("col", idAndClass)()
 }
 
 export function samp(idAndClass?: string) {
@@ -332,6 +340,10 @@ export function map(idAndClass?: string) {
 
 export function area(idAndClass?: string) {
     return element("area", idAndClass)
+}
+
+export function wbr(idAndClass?: string) {
+    return element("wbr", idAndClass)()
 }
 
 export function canvas(idAndClass?: string) {
