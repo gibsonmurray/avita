@@ -7,6 +7,7 @@ export default class Avita<T extends HTMLElement> {
     private element: T
     private elements: T[] = [] // mostly used when querying for multiple elements, otherwise empty
     private avitaChildren: Children<T> = []
+    length: number = 1
 
     private static avitaCSS = false
 
@@ -39,6 +40,7 @@ export default class Avita<T extends HTMLElement> {
             }
             this.element = tagOrElement[0]
             this.elements = tagOrElement
+            this.length = tagOrElement.length
             return
         }
         if (typeof tagOrElement === "string") {
@@ -1554,6 +1556,34 @@ export default class Avita<T extends HTMLElement> {
      */
     static width(): number {
         return window.innerWidth
+    }
+
+    /**
+     * Returns a new array of `Avita` instances, each wrapping one of the elements in the current `Avita` instance.
+     * @returns A new array of `Avita` instances, each wrapping one of the elements in the current `Avita` instance.
+     */
+    toArray(): Avita<T>[] {
+        const elts: Avita<T>[] = []
+        this.elements.forEach((element) => {
+            elts.push(new Avita(element))
+        })
+        return elts
+    }
+
+    /**
+     * Returns the raw HTMLElement represented by the current Avita instance.
+     * @returns The raw HTMLElement.
+     */
+    toRaw(): HTMLElement {
+        return this.element
+    }
+
+    /**
+     * Returns the raw HTMLElement[] represented by the current Avita instance.
+     * @returns The raw HTMLElement[].
+     */
+    toRawArray(): HTMLElement[] {
+        return this.elements
     }
 }
 
