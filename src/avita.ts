@@ -1,10 +1,9 @@
 import { camelToKebab, CSS_ID, DEFAULT_STYLES, generateClass } from "./utils"
 
 export type EL = EventListenerOrEventListenerObject
-export type HTMLTag = HTMLElement | SVGElement
-export type Children<T extends HTMLTag> = (Avita<T> | string)[]
+export type Children<T extends HTMLElement> = (Avita<T> | string)[]
 
-export default class Avita<T extends HTMLTag> {
+export default class Avita<T extends HTMLElement> {
     private element: T
     private elements: T[] = [] // mostly used when querying for multiple elements, otherwise empty
     private avitaChildren: Children<T> = []
@@ -70,7 +69,7 @@ export default class Avita<T extends HTMLTag> {
      * @param selector - (optional) The CSS selector for the root element in the DOM. Default is '#root'.
      * @throws {Error} If the root element with the ID 'root' is not found in the HTML.
      */
-    static render<T extends HTMLTag>(
+    static render<T extends HTMLElement>(
         child: Avita<T>,
         selector: string = "#root"
     ) {
@@ -190,6 +189,16 @@ export default class Avita<T extends HTMLTag> {
     }
 
     /**
+     * Returns a new Avita instance containing the element at the specified index.
+     *
+     * @param index - The index of the element to retrieve.
+     * @returns A new Avita instance containing the element at the specified index.
+     */
+    eq(index: number): Avita<T> {
+        return new Avita(this.elements[index])
+    }
+
+    /**
      * Updates the DOM children of the current Avita instance by removing all existing child nodes and appending the Avita children.
      *
      * @param tagOrElement - An optional string representing a tag name, or an Avita instance or array of Avita instances to be appended as children.
@@ -217,7 +226,7 @@ export default class Avita<T extends HTMLTag> {
      * @param raw - If true, returns the raw DOM elements. If false, returns Avita instances wrapping the elements.
      * @returns Either an Avita instance, a single raw element, an array of raw elements, or null if no elements were found.
      */
-    static find<T extends HTMLTag>(
+    static find<T extends HTMLElement>(
         selector: string,
         raw: boolean = false
     ): Avita<T> | T | T[] | null {
@@ -1553,7 +1562,7 @@ export default class Avita<T extends HTMLTag> {
  * @param selector - The CSS selector to use for selecting the element(s).
  * @returns An `Avita` instance wrapping the selected element(s), or the raw HTMLElement or HTMLElement[] if `raw` is `true`.
  */
-export function $<T extends HTMLTag>(selector: string): Avita<T>
+export function $<T extends HTMLElement>(selector: string): Avita<T>
 
 /**
  * Selects an HTML element or a collection of HTML elements matching the provided CSS selector.
@@ -1561,7 +1570,7 @@ export function $<T extends HTMLTag>(selector: string): Avita<T>
  * @param raw - If set to `true`, the function will return the raw HTMLElement or HTMLElement[] instead of an Avita instance.
  * @returns An `Avita` instance wrapping the selected element(s), or the raw HTMLElement or HTMLElement[] if `raw` is `true`.
  */
-export function $<T extends HTMLTag>(
+export function $<T extends HTMLElement>(
     selector: string,
     raw: boolean
 ): Avita<T> | T | T[]
@@ -1572,7 +1581,7 @@ export function $<T extends HTMLTag>(
  */
 export function $(callback: () => void): void
 
-export function $<T extends HTMLTag>(
+export function $<T extends HTMLElement>(
     selectorOrCallback: string | (() => void),
     raw: boolean = false
 ): Avita<T> | T | T[] | null | void {
