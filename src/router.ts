@@ -39,7 +39,11 @@ export default class AvitaRouter {
      * @param path - The URL path to associate with the Avita element.
      * @param avitaElement - The Avita element to render when the specified path is navigated to.
      */
-    register(path: string, avitaElement: () => Avita<HTMLElement>, title?: string) {
+    register(
+        path: string,
+        avitaElement: () => Avita<HTMLElement>,
+        title?: string
+    ) {
         this.routes[path] = { element: avitaElement, title: title }
     }
 
@@ -58,7 +62,6 @@ export default class AvitaRouter {
     navigate(path: string) {
         window.history.pushState({}, path, window.location.origin + path)
         this.loadRoute(path)
-        window.dispatchEvent(new Event("popstate"))
     }
 
     /**
