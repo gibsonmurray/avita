@@ -1,4 +1,4 @@
-export const DEFAULT_STYLES = `* { box-sizing: border-box; padding: 0; margin: 0; color: inherit; } body { font-family: sans-serif; } a { cursor: pointer; text-decoration: none; } button { border: none; background: none; padding: 0; margin: 0; cursor: pointer; }`
+export const DEFAULT_STYLES = `@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap'); * { box-sizing: border-box; padding: 0; margin: 0; color: inherit; } body { font-family: Inter, sans-serif; } a { cursor: pointer; text-decoration: none; } button { border: none; background: none; padding: 0; margin: 0; cursor: pointer; }`
 
 export const CSS_ID = "avita-css"
 
