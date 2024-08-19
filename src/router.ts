@@ -96,7 +96,7 @@ export default class AvitaRouter {
      * @param message - The error message to display.
      */
     private displayError(message: string) {
-        const errorElement = div(message)
+        const errorElement = div()(message)
         Avita.render(errorElement)
     }
 }

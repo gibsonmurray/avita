@@ -1,3 +1,4 @@
+import type { Children } from "./avita"
 import Avita from "./avita"
 
 /**
@@ -11,7 +12,7 @@ export function element<T extends HTMLElement>(
     tag: string,
     idAndClass?: string
 ) {
-    return (...children: Avita<T>[]) => {
+    return (...children: Children<T>) => {
         const avita = new Avita(tag, children)
         if (idAndClass !== undefined) {
             const lst = idAndClass.split(" ")
