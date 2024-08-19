@@ -307,7 +307,7 @@ export default class Avita<T extends HTMLTag> {
         if (id === undefined) {
             return this.element.id
         }
-        this.element.id = id
+        this.element.id = id.trim()
         return this
     }
 
@@ -331,7 +331,7 @@ export default class Avita<T extends HTMLTag> {
         } else {
             // Setter: Add the new classes
             classNames.forEach((className) => {
-                const splitName = className.split(" ")
+                const splitName = className.trim().split(" ")
                 splitName.forEach((name) => {
                     this.addClass(name)
                 })
