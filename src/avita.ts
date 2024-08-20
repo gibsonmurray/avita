@@ -595,7 +595,7 @@ export default class Avita<T extends HTMLElement> {
      * @param value - The new translation values to merge with the current values.
      * @returns The merged translation values as a string.
      */
-    private mergeTranslations(value: string) {
+    private mergeTranslate(value: string) {
         if (!this.getStyle("translate")) return value
 
         const [prevX, prevY, prevZ] = this.getStyle("translate")!.split(" ")
@@ -604,7 +604,7 @@ export default class Avita<T extends HTMLElement> {
         const mergedX = x.startsWith("0") ? prevX || 0 : x
         const mergedY = y.startsWith("0") ? prevY || 0 : y
         const mergedZ = z.startsWith("0") ? prevZ || 0 : z
-        
+
         return `${mergedX} ${mergedY} ${mergedZ}`
     }
 
@@ -616,7 +616,7 @@ export default class Avita<T extends HTMLElement> {
     private applyStyle(prop: keyof CSSStyleDeclaration, val: string) {
         if (this.element.style[prop] === undefined) return
         if (prop === "translate") {
-            val = this.mergeTranslations(val)
+            val = this.mergeTranslate(val)
         }
         this.element.style[prop as any] = val
         this.elements.forEach((element) => {
