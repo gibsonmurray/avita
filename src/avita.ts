@@ -236,18 +236,12 @@ export default class Avita<T extends HTMLElement> {
 
         if (raw) {
             // If the raw argument is provided and true
-            if (elements.length > 1) {
+            if (elements.length > 0) {
                 return Array.from(elements) // Return an array of raw elements
             }
-            if (elements.length === 1) {
-                return elements[0] // Return the single raw element
-            }
         } else {
-            if (elements.length > 1) {
+            if (elements.length > 0) {
                 return new Avita<T>(Array.from(elements)) // Return an Avita instance with multiple elements
-            }
-            if (elements.length === 1) {
-                return new Avita<T>(elements[0]) // Return an Avita instance with a single element
             }
         }
 
@@ -283,18 +277,12 @@ export default class Avita<T extends HTMLElement> {
 
         if (raw) {
             // If the raw argument is provided and true
-            if (elements.length > 1) {
+            if (elements.length > 0) {
                 return Array.from(elements) // Return an array of raw elements
             }
-            if (elements.length === 1) {
-                return elements[0] // Return the single raw element
-            }
         } else {
-            if (elements.length > 1) {
+            if (elements.length > 0) {
                 return new Avita<T>(Array.from(elements)) // Return an Avita instance with multiple elements
-            }
-            if (elements.length === 1) {
-                return new Avita<T>(elements[0]) // Return an Avita instance with a single element
             }
         }
 
