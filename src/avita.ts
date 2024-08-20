@@ -560,13 +560,13 @@ export default class Avita<T extends HTMLElement> {
      */
     private translateMap(prop: string, value: string) {
         if (prop === "translateX") {
-            return ["transform", `translate3d(${value}, 0, 0)`]
+            return ["translate", `${value} 0 0`]
         }
         if (prop === "translateY") {
-            return ["transform", `translate3d(0, ${value}, 0)`]
+            return ["translate", `0 ${value} 0`]
         }
         if (prop === "translateZ") {
-            return ["transform", `translate3d(0, 0, ${value})`]
+            return ["translate", `0 0 ${value}`]
         }
         return ["translate", value]
     }
@@ -579,28 +579,33 @@ export default class Avita<T extends HTMLElement> {
      */
     private rotateMap(prop: string, value: string) {
         if (prop === "rotateX") {
-            return ["transform", `rotate3d(${value}, 0, 0)`]
+            return ["rotate", `x ${value}`]
         }
         if (prop === "rotateY") {
-            return ["transform", `rotate3d(0, ${value}, 0)`]
+            return ["rotate", `y ${value}`]
         }
         if (prop === "rotateZ") {
-            return ["transform", `rotate3d(0, 0, ${value})`]
+            return ["rotate", `z ${value}`]
         }
         return ["rotate", value]
     }
 
     /**
-     * Merges the provided transform value with any existing transform styles on the element.
-     * @param val - The transform value to apply.
-     * @returns The merged transform value.
+     * Merges the current translation values with the provided translation values.
+     * @param value - The new translation values to merge with the current values.
+     * @returns The merged translation values as a string.
      */
-    private mergeTransform(val: string) {
-        const existingTransform = this.getStyle("transform")
-        if (existingTransform) {
-            val = `${existingTransform} ${val}`
-        }
-        return val
+    private mergeTranslations(value: string) {
+        if (!this.getStyle("translate")) return value
+
+        const [prevX, prevY, prevZ] = this.getStyle("translate")!.split(" ")
+        const [x, y, z] = value.split(" ")
+
+        const mergedX = x.startsWith("0") ? prevX || 0 : x
+        const mergedY = y.startsWith("0") ? prevY || 0 : y
+        const mergedZ = z.startsWith("0") ? prevZ || 0 : z
+        
+        return `${mergedX} ${mergedY} ${mergedZ}`
     }
 
     /**
@@ -610,8 +615,8 @@ export default class Avita<T extends HTMLElement> {
      */
     private applyStyle(prop: keyof CSSStyleDeclaration, val: string) {
         if (this.element.style[prop] === undefined) return
-        if (prop === "transform") {
-            val = this.mergeTransform(val)
+        if (prop === "translate") {
+            val = this.mergeTranslations(val)
         }
         this.element.style[prop as any] = val
         this.elements.forEach((element) => {
