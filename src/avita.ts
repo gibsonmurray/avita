@@ -254,10 +254,12 @@ export default class Avita<T extends HTMLElement> {
      */
     static ready(callback: () => void) {
         if (document.readyState === "complete") {
-            callback()
+            setTimeout(callback, 0)
         } else {
-            document.addEventListener("DOMContentLoaded", callback)
-            window.addEventListener("popstate", callback)
+            document.addEventListener("DOMContentLoaded", () =>
+                setTimeout(callback, 0)
+            )
+            window.addEventListener("popstate", () => setTimeout(callback, 0))
         }
     }
 

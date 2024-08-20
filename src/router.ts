@@ -30,6 +30,7 @@ export default class AvitaRouter {
 
         // Listen to popstate events (browser back/forward navigation)
         window.addEventListener("popstate", () => {
+            window.location.reload()
             this.loadRoute(window.location.pathname)
         })
     }
