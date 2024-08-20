@@ -332,7 +332,7 @@ export default class Avita<T extends HTMLElement> {
         } else {
             // Setter: Add the new classes
             classNames.forEach((className) => {
-                const splitName = className.trim().split(" ")
+                const splitName = className.trim().split(/\s+/)
                 splitName.forEach((name) => {
                     this.addClass(name)
                 })
@@ -342,11 +342,12 @@ export default class Avita<T extends HTMLElement> {
     }
 
     /**
-     * Toggles the specified CSS class on the current Avita element and all its child elements.
-     * @param className - The CSS class to toggle.
+     * Toggles the specified CSS class(es) on the current Avita element and all its child elements.
+     * @param className - The CSS class(es) to toggle.
      * @returns The current Avita instance, for method chaining.
      */
     toggleClass(className: string) {
+        className = className.trim()
         this.element.classList.toggle(className)
         if (this.elements.length > 0) {
             this.elements.forEach((element) => {
@@ -362,6 +363,7 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current Avita instance, for method chaining.
      */
     addClass(...classNames: string[]) {
+        classNames.map((className) => className.trim().split(/\s+/))
         this.element.classList.add(...classNames)
         if (this.elements.length > 0) {
             this.elements.forEach((element) => {
@@ -377,6 +379,7 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current Avita instance, for method chaining.
      */
     removeClass(...classNames: string[]) {
+        classNames.map((className) => className.trim().split(/\s+/))
         this.element.classList.remove(...classNames)
         if (this.elements.length > 0) {
             this.elements.forEach((element) => {
@@ -392,6 +395,7 @@ export default class Avita<T extends HTMLElement> {
      * @returns `true` if the element has the specified class, `false` otherwise.
      */
     hasClass(className: string): boolean {
+        className = className.trim()
         return this.element.classList.contains(className)
     }
 
@@ -406,7 +410,7 @@ export default class Avita<T extends HTMLElement> {
             this.addClass(uniqueClass)
         } else {
             uniqueClass = this.class()
-                .split(" ")
+                .split(/\s+/)
                 .find((c: string) => c.includes(CSS_ID))!
         }
         return uniqueClass
@@ -424,7 +428,7 @@ export default class Avita<T extends HTMLElement> {
      * @param property - The CSS property to get the value of.
      * @returns The value of the specified CSS property.
      */
-    css(property: keyof CSSStyleDeclaration): string | undefined
+    css(property: string): string | undefined
 
     /**
      * Sets the inline styles of the element(s).
@@ -433,7 +437,7 @@ export default class Avita<T extends HTMLElement> {
      * @param value - The value to set for the CSS property.
      * @returns The current Avita instance for chaining.
      */
-    css(property: keyof CSSStyleDeclaration, value: string): this
+    css(property: string, value: string): this
 
     /**
      * Sets the inline styles of the element(s).
@@ -441,47 +445,162 @@ export default class Avita<T extends HTMLElement> {
      * @param props - An object containing the CSS styles to apply to the element(s).
      * @returns The current Avita instance for chaining.
      */
-    css(props: Partial<CSSStyleDeclaration>): this
+    css(props: Record<string, string | number>): this
 
     css(
-        propertyOrProps?:
-            | keyof CSSStyleDeclaration
-            | Partial<CSSStyleDeclaration>,
-        value?: string
+        propertyOrProps?: string | Record<string, string | number>,
+        value?: string | number
     ): string | this | CSSStyleDeclaration | undefined {
-        const styles = getComputedStyle(this.element)
-
         if (propertyOrProps === undefined && value === undefined) {
-            // Return all computed styles when no arguments are provided
-            return styles
+            // Get all CSS styles
+            return this.getAllStyles()
         }
 
         if (typeof propertyOrProps === "string") {
             if (value === undefined) {
                 // Get the value of a single CSS property
-                return styles.getPropertyValue(propertyOrProps) || undefined
+                return this.getStyle(propertyOrProps)
             } else {
                 // Set a single CSS property
-                this.applyStyle(
-                    propertyOrProps as keyof CSSStyleDeclaration,
-                    value
-                )
-                return this
+                return this.setStyle(propertyOrProps, value)
             }
         }
 
         if (typeof propertyOrProps === "object") {
             // Set multiple CSS properties
-            for (const [prop, val] of Object.entries(propertyOrProps)) {
-                if (val !== undefined) {
-                    this.applyStyle(
-                        prop as keyof CSSStyleDeclaration,
-                        String(val)
-                    )
-                }
-            }
-            return this
+            return this.setStyles(propertyOrProps)
         }
+    }
+
+    private getAllStyles(): CSSStyleDeclaration {
+        return this.element.style
+    }
+
+    private getStyle(prop: string): string | undefined {
+        return this.element.style.getPropertyValue(prop)
+    }
+
+    private setStyle(prop: string, value: string | number) {
+        if (typeof value === "number") {
+            value = this.pickUnits(prop, value)
+        }
+
+        if (
+            prop === "translateX" ||
+            prop === "translateY" ||
+            prop === "translateZ"
+        ) {
+            ;[prop, value] = this.translateMap(prop, value as string)
+        }
+
+        if (prop === "rotateX" || prop === "rotateY" || prop === "rotateZ") {
+            ;[prop, value] = this.rotateMap(prop, value as string)
+        }
+
+        this.applyStyle(prop as keyof CSSStyleDeclaration, value)
+        return this
+    }
+
+    private setStyles(props: Record<string, string | number>) {
+        for (let [prop, val] of Object.entries(props)) {
+            if (val !== undefined) {
+                if (typeof val === "number") {
+                    val = this.pickUnits(prop, val)
+                }
+
+                if (
+                    prop === "translateX" ||
+                    prop === "translateY" ||
+                    prop === "translateZ"
+                ) {
+                    ;[prop, val] = this.translateMap(prop, val as string)
+                }
+
+                if (
+                    prop === "rotateX" ||
+                    prop === "rotateY" ||
+                    prop === "rotateZ"
+                ) {
+                    ;[prop, val] = this.rotateMap(prop, val as string)
+                }
+
+                this.applyStyle(prop as keyof CSSStyleDeclaration, val)
+            }
+        }
+        return this
+    }
+
+    /**
+     * Determines the appropriate unit to use for a given CSS property and numeric value.
+     * @param prop - The CSS property name.
+     * @param value - The numeric value to be applied.
+     * @returns The value with the appropriate unit appended.
+     */
+    private pickUnits(prop: string, value: number): string {
+        if (prop === "rotate") {
+            return `${value}deg`
+        }
+        if (prop === "scale") {
+            return `${value}`
+        }
+        if (
+            prop.toLowerCase().includes("duration") ||
+            prop.toLowerCase().includes("delay")
+        ) {
+            return `${value}s`
+        }
+        return `${value}px`
+    }
+
+    /**
+     * Maps the provided CSS transform property and value to the appropriate transform function.
+     * @param prop - The CSS transform property, such as "translateX", "translateY", or "translateZ".
+     * @param value - The value to apply to the transform property.
+     * @returns An array containing the transformed property name and value.
+     */
+    private translateMap(prop: string, value: string) {
+        if (prop === "translateX") {
+            return ["transform", `translate3d(${value}, 0, 0)`]
+        }
+        if (prop === "translateY") {
+            return ["transform", `translate3d(0, ${value}, 0)`]
+        }
+        if (prop === "translateZ") {
+            return ["transform", `translate3d(0, 0, ${value})`]
+        }
+        return ["translate", value]
+    }
+
+    /**
+     * Maps the provided CSS transform property and value to the appropriate rotate transform function.
+     * @param prop - The CSS transform property, such as "rotateX", "rotateY", or "rotateZ".
+     * @param value - The value to apply to the rotate transform property.
+     * @returns An array containing the transformed property name and value.
+     */
+    private rotateMap(prop: string, value: string) {
+        if (prop === "rotateX") {
+            return ["transform", `rotate3d(${value}, 0, 0)`]
+        }
+        if (prop === "rotateY") {
+            return ["transform", `rotate3d(0, ${value}, 0)`]
+        }
+        if (prop === "rotateZ") {
+            return ["transform", `rotate3d(0, 0, ${value})`]
+        }
+        return ["rotate", value]
+    }
+
+    /**
+     * Merges the provided transform value with any existing transform styles on the element.
+     * @param val - The transform value to apply.
+     * @returns The merged transform value.
+     */
+    private mergeTransform(val: string) {
+        const existingTransform = this.getStyle("transform")
+        if (existingTransform) {
+            val = `${existingTransform} ${val}`
+        }
+        return val
     }
 
     /**
@@ -491,6 +610,9 @@ export default class Avita<T extends HTMLElement> {
      */
     private applyStyle(prop: keyof CSSStyleDeclaration, val: string) {
         if (this.element.style[prop] === undefined) return
+        if (prop === "transform") {
+            val = this.mergeTransform(val)
+        }
         this.element.style[prop as any] = val
         this.elements.forEach((element) => {
             element.style[prop as any] = val
