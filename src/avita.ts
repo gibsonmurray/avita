@@ -1188,7 +1188,7 @@ export default class Avita<T extends HTMLElement> {
         let body = ""
 
         // If the first argument is a string, it's a property and value pair
-        if (typeof propsOrProperty === "string" && value) {
+        if (typeof propsOrProperty === "string" && value !== undefined) {
             ;[propsOrProperty, value] = this.filterStyle(propsOrProperty, value)
             body = `${camelToKebab(propsOrProperty)}: ${value} !important; `
         }
@@ -1370,7 +1370,7 @@ export default class Avita<T extends HTMLElement> {
 
         let body = ""
 
-        if (typeof propsOrProperty === "string" && value) {
+        if (typeof propsOrProperty === "string" && value !== undefined) {
             ;[propsOrProperty, value] = this.filterStyle(propsOrProperty, value)
             body = `${camelToKebab(propsOrProperty)}: ${value} !important; `
         }
@@ -1401,7 +1401,7 @@ export default class Avita<T extends HTMLElement> {
         propertyOrProps: string | Record<string, string | number>,
         value?: string | number
     ) {
-        if (typeof propertyOrProps === "string" && value) {
+        if (typeof propertyOrProps === "string" && value !== undefined) {
             this.media("(min-width: 640px)", propertyOrProps, value)
         }
         if (typeof propertyOrProps === "object") {
@@ -1421,7 +1421,7 @@ export default class Avita<T extends HTMLElement> {
         propertyOrProps: string | Record<string, string | number>,
         value?: string | number
     ) {
-        if (typeof propertyOrProps === "string" && value) {
+        if (typeof propertyOrProps === "string" && value !== undefined) {
             this.media("(min-width: 768px)", propertyOrProps, value)
         } else if (typeof propertyOrProps === "object") {
             this.media("(min-width: 768px)", propertyOrProps)
@@ -1440,7 +1440,7 @@ export default class Avita<T extends HTMLElement> {
         propertyOrProps: string | Record<string, string | number>,
         value?: string | number
     ) {
-        if (typeof propertyOrProps === "string" && value) {
+        if (typeof propertyOrProps === "string" && value !== undefined) {
             this.media("(min-width: 1024px)", propertyOrProps, value)
         } else if (typeof propertyOrProps === "object") {
             this.media("(min-width: 1024px)", propertyOrProps)
@@ -1459,7 +1459,7 @@ export default class Avita<T extends HTMLElement> {
         propertyOrProps: string | Record<string, string | number>,
         value?: string | number
     ) {
-        if (typeof propertyOrProps === "string" && value) {
+        if (typeof propertyOrProps === "string" && value !== undefined) {
             this.media("(min-width: 1280px)", propertyOrProps, value)
         } else if (typeof propertyOrProps === "object") {
             this.media("(min-width: 1280px)", propertyOrProps)
@@ -1478,7 +1478,7 @@ export default class Avita<T extends HTMLElement> {
         propertyOrProps: string | Record<string, string | number>,
         value?: string | number
     ) {
-        if (typeof propertyOrProps === "string" && value) {
+        if (typeof propertyOrProps === "string" && value !== undefined) {
             this.media("(min-width: 1536px)", propertyOrProps, value)
         } else if (typeof propertyOrProps === "object") {
             this.media("(min-width: 1536px)", propertyOrProps)
