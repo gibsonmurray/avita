@@ -12,5 +12,4 @@ tsup.config.ts
 bun.lockb
 typedoc.json
 
-*.map
 .npmignore

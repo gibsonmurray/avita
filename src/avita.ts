@@ -7,6 +7,7 @@ export default class Avita<T extends HTMLElement> {
     private element: T
     private elements: T[] = [] // mostly used when querying for multiple elements, otherwise empty
     private avitaChildren: Children<T> = []
+    length: number = 1
 
     private static avitaCSS = false
 
@@ -39,6 +40,7 @@ export default class Avita<T extends HTMLElement> {
             }
             this.element = tagOrElement[0]
             this.elements = tagOrElement
+            this.length = tagOrElement.length
             return
         }
         if (typeof tagOrElement === "string") {
@@ -234,18 +236,12 @@ export default class Avita<T extends HTMLElement> {
 
         if (raw) {
             // If the raw argument is provided and true
-            if (elements.length > 1) {
+            if (elements.length > 0) {
                 return Array.from(elements) // Return an array of raw elements
             }
-            if (elements.length === 1) {
-                return elements[0] // Return the single raw element
-            }
         } else {
-            if (elements.length > 1) {
+            if (elements.length > 0) {
                 return new Avita<T>(Array.from(elements)) // Return an Avita instance with multiple elements
-            }
-            if (elements.length === 1) {
-                return new Avita<T>(elements[0]) // Return an Avita instance with a single element
             }
         }
 
@@ -258,10 +254,12 @@ export default class Avita<T extends HTMLElement> {
      */
     static ready(callback: () => void) {
         if (document.readyState === "complete") {
-            callback()
+            setTimeout(callback, 0)
         } else {
-            document.addEventListener("DOMContentLoaded", callback)
-            window.addEventListener("popstate", callback)
+            document.addEventListener("DOMContentLoaded", () =>
+                setTimeout(callback, 0)
+            )
+            window.addEventListener("popstate", () => setTimeout(callback, 0))
         }
     }
 
@@ -281,18 +279,12 @@ export default class Avita<T extends HTMLElement> {
 
         if (raw) {
             // If the raw argument is provided and true
-            if (elements.length > 1) {
+            if (elements.length > 0) {
                 return Array.from(elements) // Return an array of raw elements
             }
-            if (elements.length === 1) {
-                return elements[0] // Return the single raw element
-            }
         } else {
-            if (elements.length > 1) {
+            if (elements.length > 0) {
                 return new Avita<T>(Array.from(elements)) // Return an Avita instance with multiple elements
-            }
-            if (elements.length === 1) {
-                return new Avita<T>(elements[0]) // Return an Avita instance with a single element
             }
         }
 
@@ -340,7 +332,7 @@ export default class Avita<T extends HTMLElement> {
         } else {
             // Setter: Add the new classes
             classNames.forEach((className) => {
-                const splitName = className.trim().split(" ")
+                const splitName = className.trim().split(/\s+/)
                 splitName.forEach((name) => {
                     this.addClass(name)
                 })
@@ -350,11 +342,12 @@ export default class Avita<T extends HTMLElement> {
     }
 
     /**
-     * Toggles the specified CSS class on the current Avita element and all its child elements.
-     * @param className - The CSS class to toggle.
+     * Toggles the specified CSS class(es) on the current Avita element and all its child elements.
+     * @param className - The CSS class(es) to toggle.
      * @returns The current Avita instance, for method chaining.
      */
     toggleClass(className: string) {
+        className = className.trim()
         this.element.classList.toggle(className)
         if (this.elements.length > 0) {
             this.elements.forEach((element) => {
@@ -370,6 +363,7 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current Avita instance, for method chaining.
      */
     addClass(...classNames: string[]) {
+        classNames.map((className) => className.trim().split(/\s+/))
         this.element.classList.add(...classNames)
         if (this.elements.length > 0) {
             this.elements.forEach((element) => {
@@ -385,6 +379,7 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current Avita instance, for method chaining.
      */
     removeClass(...classNames: string[]) {
+        classNames.map((className) => className.trim().split(/\s+/))
         this.element.classList.remove(...classNames)
         if (this.elements.length > 0) {
             this.elements.forEach((element) => {
@@ -400,6 +395,7 @@ export default class Avita<T extends HTMLElement> {
      * @returns `true` if the element has the specified class, `false` otherwise.
      */
     hasClass(className: string): boolean {
+        className = className.trim()
         return this.element.classList.contains(className)
     }
 
@@ -414,7 +410,7 @@ export default class Avita<T extends HTMLElement> {
             this.addClass(uniqueClass)
         } else {
             uniqueClass = this.class()
-                .split(" ")
+                .split(/\s+/)
                 .find((c: string) => c.includes(CSS_ID))!
         }
         return uniqueClass
@@ -432,7 +428,7 @@ export default class Avita<T extends HTMLElement> {
      * @param property - The CSS property to get the value of.
      * @returns The value of the specified CSS property.
      */
-    css(property: keyof CSSStyleDeclaration): string | undefined
+    css(property: string): string | undefined
 
     /**
      * Sets the inline styles of the element(s).
@@ -441,7 +437,7 @@ export default class Avita<T extends HTMLElement> {
      * @param value - The value to set for the CSS property.
      * @returns The current Avita instance for chaining.
      */
-    css(property: keyof CSSStyleDeclaration, value: string): this
+    css(property: string, value: string | number): this
 
     /**
      * Sets the inline styles of the element(s).
@@ -449,47 +445,153 @@ export default class Avita<T extends HTMLElement> {
      * @param props - An object containing the CSS styles to apply to the element(s).
      * @returns The current Avita instance for chaining.
      */
-    css(props: Partial<CSSStyleDeclaration>): this
+    css(props: Record<string, string | number>): this
 
     css(
-        propertyOrProps?:
-            | keyof CSSStyleDeclaration
-            | Partial<CSSStyleDeclaration>,
-        value?: string
+        propertyOrProps?: string | Record<string, string | number>,
+        value?: string | number
     ): string | this | CSSStyleDeclaration | undefined {
-        const styles = getComputedStyle(this.element)
-
         if (propertyOrProps === undefined && value === undefined) {
-            // Return all computed styles when no arguments are provided
-            return styles
+            // Get all CSS styles
+            return this.getAllStyles()
         }
 
         if (typeof propertyOrProps === "string") {
             if (value === undefined) {
                 // Get the value of a single CSS property
-                return styles.getPropertyValue(propertyOrProps) || undefined
+                return this.getStyle(propertyOrProps)
             } else {
                 // Set a single CSS property
-                this.applyStyle(
-                    propertyOrProps as keyof CSSStyleDeclaration,
-                    value
-                )
-                return this
+                return this.setStyle(propertyOrProps, value)
             }
         }
 
         if (typeof propertyOrProps === "object") {
             // Set multiple CSS properties
-            for (const [prop, val] of Object.entries(propertyOrProps)) {
-                if (val !== undefined) {
-                    this.applyStyle(
-                        prop as keyof CSSStyleDeclaration,
-                        String(val)
-                    )
-                }
-            }
-            return this
+            return this.setStyles(propertyOrProps)
         }
+    }
+
+    private getAllStyles(): CSSStyleDeclaration {
+        return this.element.style
+    }
+
+    private getStyle(prop: string): string | undefined {
+        return this.element.style.getPropertyValue(prop)
+    }
+
+    private setStyle(prop: string, value: string | number) {
+        ;[prop, value] = this.filterStyle(prop, value)
+        this.applyStyle(prop as keyof CSSStyleDeclaration, value)
+        return this
+    }
+
+    private setStyles(props: Record<string, string | number>) {
+        for (let [prop, val] of Object.entries(props)) {
+            if (val !== undefined) {
+                ;[prop, val] = this.filterStyle(prop, val)
+                this.applyStyle(prop as keyof CSSStyleDeclaration, val)
+            }
+        }
+        return this
+    }
+
+    private filterStyle(prop: string, val: string | number) {
+        if (typeof val === "number") {
+            val = this.pickUnits(prop, val)
+        }
+
+        if (
+            prop === "translateX" ||
+            prop === "translateY" ||
+            prop === "translateZ"
+        ) {
+            ;[prop, val] = this.translateMap(prop, val as string)
+        }
+
+        if (prop === "rotateX" || prop === "rotateY" || prop === "rotateZ") {
+            ;[prop, val] = this.rotateMap(prop, val as string)
+        }
+
+        return [prop, val]
+    }
+
+    /**
+     * Determines the appropriate unit to use for a given CSS property and numeric value.
+     * @param prop - The CSS property name.
+     * @param value - The numeric value to be applied.
+     * @returns The value with the appropriate unit appended.
+     */
+    private pickUnits(prop: string, value: number): string {
+        if (prop === "rotate") {
+            return `${value}deg`
+        }
+        if (prop === "scale") {
+            return `${value}`
+        }
+        if (
+            prop.toLowerCase().includes("duration") ||
+            prop.toLowerCase().includes("delay")
+        ) {
+            return `${value}s`
+        }
+        return `${value}px`
+    }
+
+    /**
+     * Maps the provided CSS transform property and value to the appropriate transform function.
+     * @param prop - The CSS transform property, such as "translateX", "translateY", or "translateZ".
+     * @param value - The value to apply to the transform property.
+     * @returns An array containing the transformed property name and value.
+     */
+    private translateMap(prop: string, value: string) {
+        if (prop === "translateX") {
+            return ["translate", `${value} 0 0`]
+        }
+        if (prop === "translateY") {
+            return ["translate", `0 ${value} 0`]
+        }
+        if (prop === "translateZ") {
+            return ["translate", `0 0 ${value}`]
+        }
+        return ["translate", value]
+    }
+
+    /**
+     * Maps the provided CSS transform property and value to the appropriate rotate transform function.
+     * @param prop - The CSS transform property, such as "rotateX", "rotateY", or "rotateZ".
+     * @param value - The value to apply to the rotate transform property.
+     * @returns An array containing the transformed property name and value.
+     */
+    private rotateMap(prop: string, value: string) {
+        if (prop === "rotateX") {
+            return ["rotate", `x ${value}`]
+        }
+        if (prop === "rotateY") {
+            return ["rotate", `y ${value}`]
+        }
+        if (prop === "rotateZ") {
+            return ["rotate", `z ${value}`]
+        }
+        return ["rotate", value]
+    }
+
+    /**
+     * Merges the current translation values with the provided translation values.
+     * @param value - The new translation values to merge with the current values.
+     * @returns The merged translation values as a string.
+     */
+    private mergeTranslate(value: string) {
+        if (!this.getStyle("translate")) return value
+
+        const [prevX, prevY, prevZ] = this.getStyle("translate")!.split(" ")
+        const [x, y, z] = value.split(" ")
+
+        const mergedX = x.startsWith("0") ? prevX || 0 : x
+        const mergedY = y.startsWith("0") ? prevY || 0 : y
+        const mergedZ = z.startsWith("0") ? prevZ || 0 : z
+
+        return `${mergedX} ${mergedY} ${mergedZ}`
     }
 
     /**
@@ -499,6 +601,9 @@ export default class Avita<T extends HTMLElement> {
      */
     private applyStyle(prop: keyof CSSStyleDeclaration, val: string) {
         if (this.element.style[prop] === undefined) return
+        if (prop === "translate") {
+            val = this.mergeTranslate(val)
+        }
         this.element.style[prop as any] = val
         this.elements.forEach((element) => {
             element.style[prop as any] = val
@@ -1075,21 +1180,23 @@ export default class Avita<T extends HTMLElement> {
      */
     pseudo(
         pseudoClass: string,
-        propsOrProperty:
-            | Partial<CSSStyleDeclaration>
-            | keyof CSSStyleDeclaration,
-        value?: string
+        propsOrProperty: Record<string, string | number> | string,
+        value?: string | number
     ) {
         const className = this.uniqueClass()
 
         let body = ""
 
-        if (typeof propsOrProperty === "string" && value) {
+        // If the first argument is a string, it's a property and value pair
+        if (typeof propsOrProperty === "string" && value !== undefined) {
+            ;[propsOrProperty, value] = this.filterStyle(propsOrProperty, value)
             body = `${camelToKebab(propsOrProperty)}: ${value} !important; `
         }
 
+        // If propsOrProperty is an object, iterate through its properties
         if (typeof propsOrProperty === "object") {
             Object.entries(propsOrProperty).forEach(([prop, val]) => {
+                ;[prop, val] = this.filterStyle(prop, val)
                 body += `${camelToKebab(prop)}: ${val} !important; `
             })
         }
@@ -1109,7 +1216,7 @@ export default class Avita<T extends HTMLElement> {
      * @param props - The CSS properties to apply to the element when hovered over.
      * @returns The current `Avita` instance for chaining.
      */
-    hover(props: Partial<CSSStyleDeclaration>): this
+    hover(props: Record<string, string | number>): this
 
     /**
      * Attaches a CSS hover effect to the current `Avita` instance.
@@ -1119,13 +1226,11 @@ export default class Avita<T extends HTMLElement> {
      * @param value - The value to set for the CSS property.
      * @returns The current `Avita` instance for chaining.
      */
-    hover(property: keyof CSSStyleDeclaration, value: string): this
+    hover(property: string, value: string | number): this
 
     hover(
-        propsOrProperty:
-            | Partial<CSSStyleDeclaration>
-            | keyof CSSStyleDeclaration,
-        value?: string
+        propsOrProperty: Record<string, string | number> | string,
+        value?: string | number
     ) {
         return this.pseudo("hover", propsOrProperty, value)
     }
@@ -1137,7 +1242,7 @@ export default class Avita<T extends HTMLElement> {
      * @param props - The CSS properties to apply to the element when it is active.
      * @returns The current `Avita` instance for chaining.
      */
-    active(props: Partial<CSSStyleDeclaration>): this
+    active(props: Record<string, string | number>): this
 
     /**
      * Attaches a CSS active effect to the current `Avita` instance.
@@ -1147,13 +1252,11 @@ export default class Avita<T extends HTMLElement> {
      * @param value - The value to set for the CSS property.
      * @returns The current `Avita` instance for chaining.
      */
-    active(property: keyof CSSStyleDeclaration, value: string): this
+    active(property: string, value: string | number): this
 
     active(
-        propsOrProperty:
-            | Partial<CSSStyleDeclaration>
-            | keyof CSSStyleDeclaration,
-        value?: string
+        propsOrProperty: Record<string, string | number> | string,
+        value?: string | number
     ) {
         return this.pseudo("active", propsOrProperty, value)
     }
@@ -1165,7 +1268,7 @@ export default class Avita<T extends HTMLElement> {
      * @param props - The CSS properties to apply to the element when it is focused.
      * @returns The current `Avita` instance for chaining.
      */
-    focus(props: Partial<CSSStyleDeclaration>): this
+    focus(props: Record<string, string | number>): this
 
     /**
      * Attaches a CSS focus effect to the current `Avita` instance.
@@ -1175,13 +1278,11 @@ export default class Avita<T extends HTMLElement> {
      * @param value - The value to set for the CSS property.
      * @returns The current `Avita` instance for chaining.
      */
-    focus(property: keyof CSSStyleDeclaration, value: string): this
+    focus(property: string, value: string | number): this
 
     focus(
-        propsOrProperty:
-            | Partial<CSSStyleDeclaration>
-            | keyof CSSStyleDeclaration,
-        value?: string
+        propsOrProperty: Record<string, string | number> | string,
+        value?: string | number
     ) {
         return this.pseudo("focus", propsOrProperty, value)
     }
@@ -1262,19 +1363,21 @@ export default class Avita<T extends HTMLElement> {
      */
     media(
         query: string,
-        propsOrProperty: Partial<CSSStyleDeclaration> | string,
-        value?: string
+        propsOrProperty: Record<string, string | number> | string,
+        value?: string | number
     ) {
         const className = this.uniqueClass()
 
         let body = ""
 
-        if (typeof propsOrProperty === "string" && value) {
+        if (typeof propsOrProperty === "string" && value !== undefined) {
+            ;[propsOrProperty, value] = this.filterStyle(propsOrProperty, value)
             body = `${camelToKebab(propsOrProperty)}: ${value} !important; `
         }
 
         if (typeof propsOrProperty === "object") {
             Object.entries(propsOrProperty).forEach(([prop, val]) => {
+                ;[prop, val] = this.filterStyle(prop, val)
                 body += `${camelToKebab(prop)}: ${val} !important; `
             })
         }
@@ -1294,8 +1397,11 @@ export default class Avita<T extends HTMLElement> {
      * @param value - The value to set for the CSS property if `propertyOrProps` is a string.
      * @returns The current Avita instance for chaining.
      */
-    sm(propertyOrProps: string | Partial<CSSStyleDeclaration>, value?: string) {
-        if (typeof propertyOrProps === "string" && value) {
+    sm(
+        propertyOrProps: string | Record<string, string | number>,
+        value?: string | number
+    ) {
+        if (typeof propertyOrProps === "string" && value !== undefined) {
             this.media("(min-width: 640px)", propertyOrProps, value)
         }
         if (typeof propertyOrProps === "object") {
@@ -1311,8 +1417,11 @@ export default class Avita<T extends HTMLElement> {
      * @param value - The value to set for the CSS property if `propertyOrProps` is a string.
      * @returns The current Avita instance for chaining.
      */
-    md(propertyOrProps: string | Partial<CSSStyleDeclaration>, value?: string) {
-        if (typeof propertyOrProps === "string" && value) {
+    md(
+        propertyOrProps: string | Record<string, string | number>,
+        value?: string | number
+    ) {
+        if (typeof propertyOrProps === "string" && value !== undefined) {
             this.media("(min-width: 768px)", propertyOrProps, value)
         } else if (typeof propertyOrProps === "object") {
             this.media("(min-width: 768px)", propertyOrProps)
@@ -1327,8 +1436,11 @@ export default class Avita<T extends HTMLElement> {
      * @param value - The value to set for the CSS property if `propertyOrProps` is a string.
      * @returns The current Avita instance for chaining.
      */
-    lg(propertyOrProps: string | Partial<CSSStyleDeclaration>, value?: string) {
-        if (typeof propertyOrProps === "string" && value) {
+    lg(
+        propertyOrProps: string | Record<string, string | number>,
+        value?: string | number
+    ) {
+        if (typeof propertyOrProps === "string" && value !== undefined) {
             this.media("(min-width: 1024px)", propertyOrProps, value)
         } else if (typeof propertyOrProps === "object") {
             this.media("(min-width: 1024px)", propertyOrProps)
@@ -1343,8 +1455,11 @@ export default class Avita<T extends HTMLElement> {
      * @param value - The value to set for the CSS property if `propertyOrProps` is a string.
      * @returns The current Avita instance for chaining.
      */
-    xl(propertyOrProps: string | Partial<CSSStyleDeclaration>, value?: string) {
-        if (typeof propertyOrProps === "string" && value) {
+    xl(
+        propertyOrProps: string | Record<string, string | number>,
+        value?: string | number
+    ) {
+        if (typeof propertyOrProps === "string" && value !== undefined) {
             this.media("(min-width: 1280px)", propertyOrProps, value)
         } else if (typeof propertyOrProps === "object") {
             this.media("(min-width: 1280px)", propertyOrProps)
@@ -1360,10 +1475,10 @@ export default class Avita<T extends HTMLElement> {
      * @returns The current Avita instance for chaining.
      */
     xxl(
-        propertyOrProps: string | Partial<CSSStyleDeclaration>,
-        value?: string
+        propertyOrProps: string | Record<string, string | number>,
+        value?: string | number
     ) {
-        if (typeof propertyOrProps === "string" && value) {
+        if (typeof propertyOrProps === "string" && value !== undefined) {
             this.media("(min-width: 1536px)", propertyOrProps, value)
         } else if (typeof propertyOrProps === "object") {
             this.media("(min-width: 1536px)", propertyOrProps)
@@ -1554,6 +1669,34 @@ export default class Avita<T extends HTMLElement> {
      */
     static width(): number {
         return window.innerWidth
+    }
+
+    /**
+     * Returns a new array of `Avita` instances, each wrapping one of the elements in the current `Avita` instance.
+     * @returns A new array of `Avita` instances, each wrapping one of the elements in the current `Avita` instance.
+     */
+    toArray(): Avita<T>[] {
+        const elts: Avita<T>[] = []
+        this.elements.forEach((element) => {
+            elts.push(new Avita(element))
+        })
+        return elts
+    }
+
+    /**
+     * Returns the raw HTMLElement represented by the current Avita instance.
+     * @returns The raw HTMLElement.
+     */
+    toRaw(): HTMLElement {
+        return this.element
+    }
+
+    /**
+     * Returns the raw HTMLElement[] represented by the current Avita instance.
+     * @returns The raw HTMLElement[].
+     */
+    toRawArray(): HTMLElement[] {
+        return this.elements
     }
 }
 

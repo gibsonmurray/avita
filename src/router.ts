@@ -30,6 +30,7 @@ export default class AvitaRouter {
 
         // Listen to popstate events (browser back/forward navigation)
         window.addEventListener("popstate", () => {
+            window.location.reload()
             this.loadRoute(window.location.pathname)
         })
     }
@@ -55,13 +56,20 @@ export default class AvitaRouter {
         this.notFoundPath = { element: avitaElement, title: title }
     }
 
+    navigate(path: string, history: boolean = true) {
+        if (history) {
+            window.history.pushState({}, path, window.location.origin + path)
+            this.loadRoute(path)
+        } else {
+            window.location.href = path
+        }
+    }
+
     /**
-     * Navigates to a specific route and loads the corresponding HTML content.
-     * @param path - The URL path to navigate to.
+     * Navigates back to the previous page in the browser history and loads the corresponding route.
      */
-    navigate(path: string) {
-        window.history.pushState({}, path, window.location.origin + path)
-        this.loadRoute(path)
+    back() {
+        window.history.back()
     }
 
     /**
@@ -96,7 +104,7 @@ export default class AvitaRouter {
      * @param message - The error message to display.
      */
     private displayError(message: string) {
-        const errorElement = div(message)
+        const errorElement = div()(message)
         Avita.render(errorElement)
     }
 }
